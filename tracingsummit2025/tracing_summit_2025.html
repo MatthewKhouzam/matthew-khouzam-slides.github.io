@@ -228,13 +228,52 @@
 
       <!-- 7. Trace Event Logger Design -->
       <section>
-        <h2>Trace Event Logger</h2>
-        <ul class="lead spacious">
-          <li>Designed for Java tracing</li>
-          <li>UST-inspired</li>
-          <li>Lightweight &amp; easy integration</li>
-          <li>Trade-off: fewer features than UST</li>
-        </ul>
+        <section>
+          <h2>Trace Event Logger</h2>
+          <ul class="lead spacious">
+            <li>Designed for Java tracing</li>
+            <li>UST-inspired</li>
+            <li>Lightweight &amp; easy integration</li>
+            <li>Trade-off: fewer features than UST</li>
+          </ul>
+        </section>
+        <section>
+          <div class="table-container">
+            <table class="styled-table">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>View</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Scope</td>
+                  <td><img src="./scope.png"
+                      alt="An image showing a scope event view, represented as a block on a timeline." /></td>
+                </tr>
+                <tr>
+                  <td>Flow</td>
+                  <td><img src="./flow.png"
+                      alt="An image showing a flow event view, represented as an arrow connecting two points on different timelines." />
+                  </td>
+                </tr>
+                <tr>
+                  <td>Counter</td>
+                  <td><img src="./counter.png"
+                      alt="An image showing a counter event view, represented as a line graph plotting a value over time." />
+                  </td>
+                </tr>
+                <tr>
+                  <td>Lifespan</td>
+                  <td><img src="./lifespan.png"
+                      alt="An image showing an object lifespan view, represented as a block on a timeline that starts and ends." />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
       </section>
 
       <!-- 8. Tracing Semantics -->
