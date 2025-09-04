@@ -1,2 +1,2 @@
-# matthew-khouzam-slides.github.io
+# Slides
 Slide holder for public talks
