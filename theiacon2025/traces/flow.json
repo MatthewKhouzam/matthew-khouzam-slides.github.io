@@ -1,0 +1,56 @@
+[
+  {
+    "pid": 1234,
+    "tid": 5678,
+    "ts": 1000000,
+    "ph": "B",
+    "name": "StartAsyncOperation",
+    "cat": "tasks",
+    "args": {}
+  },
+  {
+    "pid": 1234,
+    "tid": 5678,
+    "ts": 1000100,
+    "ph": "s",
+    "name": "DataProcessing",
+    "cat": "async",
+    "id": "flow-a"
+  },
+  {
+    "pid": 1234,
+    "tid": 5678,
+    "ts": 1000200,
+    "ph": "E",
+    "name": "StartAsyncOperation",
+    "cat": "tasks",
+    "args": {}
+  },
+  {
+    "pid": 1234,
+    "tid": 5679,
+    "ts": 1001500,
+    "ph": "B",
+    "name": "ProcessDataInParallel",
+    "cat": "worker-thread",
+    "args": {}
+  },
+  {
+    "pid": 1234,
+    "tid": 5679,
+    "ts": 1002500,
+    "ph": "t",
+    "name": "DataProcessing",
+    "cat": "async",
+    "id": "flow-a"
+  },
+  {
+    "pid": 1234,
+    "tid": 5679,
+    "ts": 1002600,
+    "ph": "E",
+    "name": "ProcessDataInParallel",
+    "cat": "worker-thread",
+    "args": {}
+  }
+]

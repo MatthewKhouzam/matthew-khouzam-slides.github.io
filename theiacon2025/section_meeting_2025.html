@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Cache Me If You Can: Diagnosing Cache Allocation Issues with Eclipse Trace Compass</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css" id="theme" />
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/monokai-sublime.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/languages/java.min.js"></script>
+  <script>hljs.highlightAll();</script>
+  <style>
+    :root {
+      --accent: #7bdcb5;
+    }
+
+    .reveal .slides {
+      text-align: left;
+    }
+
+    .reveal h1,
+    .reveal h2,
+    .reveal h3 {
+      text-transform: none;
+    }
+
+    .reveal section .tag {
+      display: inline-block;
+      padding: .15em .45em;
+      border-radius: .6em;
+      background: rgba(123, 220, 181, .15);
+      border: 1px solid rgba(123, 220, 181, .35);
+      font-size: .55em;
+      vertical-align: middle;
+    }
+
+    .reveal .lead {
+      font-size: 1.15em;
+      line-height: 1.35;
+    }
+
+    .twocol {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    .pill {
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid rgba(255, 255, 255, .18);
+      padding: .6em .9em;
+      border-radius: 1rem;
+    }
+
+    .muted {
+      opacity: .75;
+    }
+
+    .callout {
+      border-left: 4px solid var(--accent);
+      padding-left: 1rem;
+    }
+
+    .spacious li {
+      margin: .35em 0;
+    }
+
+    .centered {
+      text-align: center;
+    }
+
+    .tiny {
+      font-size: .7em;
+    }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    }
+
+    @font-face {
+      font-family: 'Hilda';
+      src: url('EricssonHilda-Regular.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    body,
+    .reveal {
+      font-family: 'Hilda', sans-serif;
+    }
+
+    .logo {
+      position: absolute;
+      top: 40px;
+      right: 40px;
+    }
+
+    .logo img {
+      width: 100px;
+      height: auto;
+    }
+  </style>
+  </style>
+</head>
+
+<body>
+  <div class="logo">
+    <img src="ERI_vertical_RGB.svg" alt="Brand Logo">
+  </div>
+
+  <div class="reveal">
+    <div class="slides">
+      <section>
+        <h1>Project Nike</h1>
+        <p>Encouraging Git Signing to Prevent User Impersonations</p>
+      </section>
+
+      <section>
+        <h2>Why Git Signing Matters</h2>
+        <p>Ensures authenticity of commits and tags, prevents malicious identity abuse.</p>
+      </section>
+
+      <section>
+        <h2>Risks Without Git Signing</h2>
+        <ul>
+          <li>User impersonation in commits</li>
+          <li>Security breaches due to forged commits</li>
+          <li>Loss of audit trail integrity</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Gerrit & Git Signing</h2>
+        <p>Gerrit supports enforcing signed pushes via hooks and project config.</p>
+      </section>
+
+      <section>
+        <h2>GitHub & Git Signing</h2>
+        <p>GitHub marks verified commits with a green checkmark when signed with a trusted key.</p>
+      </section>
+
+      <section>
+        <h2>GitLab & Git Signing</h2>
+        <p>GitLab provides commit verification and push rules for enforcing signing policies.</p>
+      </section>
+
+      <section>
+        <h2>How to Enable Git Signing</h2>
+        <pre><code>$ git config --global user.signingkey YOUR_KEY_ID
+$ git config --global commit.gpgsign true
+</code></pre>
+      </section>
+
+      <section>
+        <h2>Generating a GPG Key</h2>
+        <pre><code>$ gpg --full-generate-key
+$ gpg --list-secret-keys --keyid-format=long
+$ git config --global user.signingkey 3AA5C34371567BD2
+</code></pre>
+      </section>
+
+      <section>
+        <h2>Scripting Verification</h2>
+        <pre><code>#!/bin/bash
+# verify-git-signatures.sh
+if git log --show-signature | grep 'Good signature'; then
+  echo "All commits verified."
+else
+  echo "Unverified commits found!"; exit 1
+fi
+</code></pre>
+      </section>
+
+      <section>
+        <h2>Conclusion</h2>
+        <p>Git signing is a simple yet powerful step to protect your codebase from impersonations.</p>
+      </section>
+
+      <section>
+        <h2>Basement 1: Gerrit Config</h2>
+        <pre><code>[receive]
+  requireSignedCommits = true
+</code></pre>
+      </section>
+
+      <section>
+        <h2>Basement 2: GitHub Actions Check</h2>
+        <pre><code>jobs:
+  verify-commits:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: ./verify-git-signatures.sh
+</code></pre>
+      </section>
+
+      <section>
+        <h2>Basement 3: GitLab Push Rule</h2>
+        <p>Enable 'Reject unsigned commits' in repository push rules.</p>
+      </section>
+    </div>
+  </div>
+  <section>
+    <h1>Project Nike</h1>
+    <p>Encouraging Git Signing to Prevent User Impersonations</p>
+  </section>
+
+  <section>
+    <h2>Why Git Signing Matters</h2>
+    <p>Ensures authenticity of commits and tags, prevents malicious identity abuse.</p>
+  </section>
+
+  <section>
+    <h2>Risks Without Git Signing</h2>
+    <ul>
+      <li>User impersonation in commits</li>
+      <li>Security breaches due to forged commits</li>
+      <li>Loss of audit trail integrity</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Gerrit & Git Signing</h2>
+    <p>Gerrit supports enforcing signed pushes via hooks and project config.</p>
+  </section>
+
+  <section>
+    <h2>GitHub & Git Signing</h2>
+    <p>GitHub marks verified commits with a green checkmark when signed with a trusted key.</p>
+    <img src="flow.png" />
+  </section>
+
+  <section>
+    <h2>GitLab & Git Signing</h2>
+    <p>GitLab provides commit verification and push rules for enforcing signing policies.</p>
+  </section>
+
+  <section>
+    <h2>How to Enable Git Signing</h2>
+    <pre><code>$ git config --global user.signingkey YOUR_KEY_ID
+$ git config --global commit.gpgsign true
+</code></pre>
+  </section>
+
+  <section>
+    <h2>Generating a GPG Key</h2>
+    <pre><code>$ gpg --full-generate-key
+$ gpg --list-secret-keys --keyid-format=long
+$ git config --global user.signingkey 3AA5C34371567BD2
+</code></pre>
+  </section>
+
+  <section>
+    <h2>Scripting Verification</h2>
+    <pre><code>#!/bin/bash
+# verify-git-signatures.sh
+if git log --show-signature | grep 'Good signature'; then
+  echo "All commits verified."
+else
+  echo "Unverified commits found!"; exit 1
+fi
+</code></pre>
+  </section>
+
+  <section>
+    <h2>Conclusion</h2>
+    <p>Git signing is a simple yet powerful step to protect your codebase from impersonations.</p>
+  </section>
+
+  <section>
+    <h2>Basement 1: Gerrit Config</h2>
+    <pre><code>[receive]
+  requireSignedCommits = true
+</code></pre>
+  </section>
+
+  <section>
+    <h2>Basement 2: GitHub Actions Check</h2>
+    <pre><code>jobs:
+  verify-commits:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: ./verify-git-signatures.sh
+</code></pre>
+  </section>
+
+  <section>
+    <h2>Basement 3: GitLab Push Rule</h2>
+    <p>Enable 'Reject unsigned commits' in repository push rules.</p>
+    
+  </section>
+  </div>
+  </div>
+
+
+  </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      slideNumber: true
+    });
+  </script>
+</body>
+
+</html>
