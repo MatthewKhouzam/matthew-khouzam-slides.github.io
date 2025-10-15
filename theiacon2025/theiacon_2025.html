@@ -170,12 +170,26 @@
 
       <!-- 3. Who Am I -->
       <section>
-        <h2>Who Am I?</h2>
-        <ul class="lead spacious">
-          <li>Tracing &amp; performance enthusiast</li>
-          <li>Contributor/Maintainer/Co-Lead/Product Owner to some open source tracing tools</li>
-          <li>Experience diagnosing real-world performance issues</li>
-        </ul>
+        <h2>Who Are We?</h2>
+        <div class="twocol">
+          <div>
+            <h3>Matthew Khouzam</h3>
+            <ul>
+              <li>Tracing &amp; performance enthusiast</li>
+              <li>Contributor/Maintainer/Co-Lead/Product Owner to some open source tracing tools</li>
+              <li>Experience diagnosing real-world performance issues</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Anh Nguyen</h3>
+            <ul>
+              <li>Software intern &amp; performance analyst</li>
+              <li>Tracing tools developer</li>
+              <li>Open source contributor</li>
+              <li><a href="https://aaanh.com">aaanh.com</a></li>
+            </ul>
+          </div>
+        </div>
       </section>
 
       <!-- 4. Company Involvement -->
@@ -191,42 +205,62 @@
         </ul>
       </section>
 
-      <!-- 5. Linux Tracing Landscape -->
+      <!-- 5. Tracing Landscape -->
       <section>
-        <h2>Linux Tracing Landscape</h2>
-        There are more!
-        <div class="twocol">
-          <div>
-            <h3>Kernel</h3>
-            <ul>
-              <li>Ftrace</li>
-              <li>LTTng Kernel</li>
-              <li>Perf / eBPF</li>
-            </ul>
-            <h3>Userspace</h3>
-            <ul>
-              <li>LTTng UST</li>
-              <li>UProbes</li>
-              <li>UFtrace</li>
-            </ul>
-          </div>
-          <div>
-            <h3>Java</h3>
-            <ul>
-              <li>LTTng UST Java Agent</li>
-              <li>JFR (Java Flight Recorder)</li>
-              <li>Trace Event Logger</li>
-            </ul>
-          </div>
+        <section>
+          <h2>Tracing Landscape</h2>
+          <p>There are more!</p>
+        </section>
+        <section>
+          <h3>Linux Kernel</h3>
+          <ul>
+            <li>Ftrace</li>
+            <li>LTTng Kernel</li>
+            <li>Perf / eBPF</li>
+          </ul>
+        </section>
+        <section>
+          <h3>Linux Userspace</h3>
+          <ul>
+            <li>LTTng UST</li>
+            <li>UProbes</li>
+            <li>UFtrace</li>
+          </ul>
+        </section>
+        <section>
+          <h3>Windows</h3>
+          <ul>
+            <li>ETW (Event Tracing for Windows)</li>
+            <li>WPA (Windows Performance Analyzer)</li>
+            <li>PerfView</li>
+          </ul>
+        </section>
+        <section>
+          <h3>macOS</h3>
+          <ul>
+            <li>DTrace</li>
+            <li>Instruments</li>
+            <li>OSLog</li>
+          </ul>
+        </section>
+        <section>
+          <h3>Java</h3>
+          <ul>
+            <li>LTTng UST Java Agent</li>
+            <li>JFR (Java Flight Recorder)</li>
+            <li>Trace Event Logger</li>
+          </ul>
+        </section>
+        <section>
           <h3>TypeScript</h3>
-        <ul>
-          <li><strong>OpenTelemetry JS:</strong> Industry standard, comprehensive but heavy</li>
-          <li><strong>Chrome DevTools:</strong> Built-in profiling, limited to browser context</li>
-          <li><strong>Node.js --inspect:</strong> V8 profiler integration, good for CPU/memory</li>
-          <li><strong>Custom JSON tracers:</strong> Lightweight, Trace Compass compatible</li>
-          <li><strong>Gap:</strong> No native equivalent to UST/Trace Event Logger simplicity</li>
-        </ul>
-        </div>
+          <ul>
+            <li><strong>OpenTelemetry JS:</strong> Industry standard, comprehensive but heavy</li>
+            <li><strong>Chrome DevTools:</strong> Built-in profiling, limited to browser context</li>
+            <li><strong>Node.js --inspect:</strong> V8 profiler integration, good for CPU/memory</li>
+            <li><strong>Custom JSON tracers:</strong> Lightweight, Trace Compass compatible</li>
+            <li><strong>Gap:</strong> No native equivalent to UST/Trace Event Logger simplicity</li>
+          </ul>
+        </section>
       </section>
 
       <!-- 6. Visualization Tools -->
