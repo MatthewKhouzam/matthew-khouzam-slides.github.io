@@ -1,0 +1,38 @@
+[
+  {
+    "pid": 1234,
+    "tid": 5678,
+    "ts": 1000000,
+    "ph": "B",
+    "name": "TaskA",
+    "cat": "tasks",
+    "args": {}
+  },
+  {
+    "pid": 1234,
+    "tid": 5678,
+    "ts": 1002000,
+    "ph": "B",
+    "name": "TaskB",
+    "cat": "tasks",
+    "args": {}
+  },
+  {
+    "pid": 1234,
+    "tid": 5678,
+    "ts": 1003500,
+    "ph": "E",
+    "name": "TaskA",
+    "cat": "tasks",
+    "args": {}
+  },
+  {
+    "pid": 1234,
+    "tid": 5678,
+    "ts": 1004500,
+    "ph": "E",
+    "name": "TaskB",
+    "cat": "tasks",
+    "args": {}
+  }
+]

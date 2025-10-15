@@ -1,0 +1,47 @@
+[
+  {
+    "pid": 1234,
+    "tid": 5678,
+    "ts": 1000000,
+    "ph": "C",
+    "name": "System Load",
+    "cat": "performance",
+    "args": { "value": 10 }
+  },
+  {
+    "pid": 1234,
+    "tid": 5678,
+    "ts": 1001000,
+    "ph": "C",
+    "name": "System Load",
+    "cat": "performance",
+    "args": { "value": 25 }
+  },
+  {
+    "pid": 1234,
+    "tid": 5678,
+    "ts": 1002000,
+    "ph": "C",
+    "name": "System Load",
+    "cat": "performance",
+    "args": { "value": 40 }
+  },
+  {
+    "pid": 1234,
+    "tid": 5678,
+    "ts": 1003000,
+    "ph": "C",
+    "name": "System Load",
+    "cat": "performance",
+    "args": { "value": 20 }
+  },
+  {
+    "pid": 1234,
+    "tid": 5678,
+    "ts": 1004000,
+    "ph": "C",
+    "name": "System Load",
+    "cat": "performance",
+    "args": { "value": 5 }
+  }
+]
