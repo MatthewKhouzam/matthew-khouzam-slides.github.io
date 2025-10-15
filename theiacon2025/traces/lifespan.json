@@ -1,0 +1,42 @@
+[
+  {
+    "pid": 1234,
+    "tid": 5678,
+    "ts": 1000000,
+    "ph": "N",
+    "name": "Session",
+    "cat": "memory",
+    "id": "session-1",
+    "args": {}
+  },
+  {
+    "pid": 1234,
+    "tid": 5678,
+    "ts": 1001500,
+    "ph": "N",
+    "name": "Session",
+    "cat": "memory",
+    "id": "session-2",
+    "args": {}
+  },
+  {
+    "pid": 1234,
+    "tid": 5678,
+    "ts": 1002500,
+    "ph": "D",
+    "name": "Session",
+    "cat": "memory",
+    "id": "session-1",
+    "args": {}
+  },
+  {
+    "pid": 1234,
+    "tid": 5678,
+    "ts": 1003500,
+    "ph": "D",
+    "name": "Session",
+    "cat": "memory",
+    "id": "session-2",
+    "args": {}
+  }
+]
