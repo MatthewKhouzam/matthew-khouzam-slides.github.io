@@ -104,7 +104,6 @@
       height: auto;
     }
   </style>
-  </style>
 </head>
 
 <body>
@@ -268,10 +267,10 @@
         <h2>Visualization Tools</h2>
         <ul>
           <li>Command Line: <span class="mono">perf</span>, <span class="mono">trace-cmd</span></li>
-          <li>Open Telemetry : High-level, great down to the uS!</li>
-          <li>Perfetto : beautiful, web-based, Chrome/Android focus</li>
-          <li>KernelShark : kernel views, scheduler focus</li>
-          <li>Trace Compass : unified analysis</li>
+          <li>Open Telemetry: High-level, great down to the uS!</li>
+          <li>Perfetto: beautiful, web-based, Chrome/Android focus</li>
+          <li>KernelShark: kernel views, scheduler focus</li>
+          <li>Trace Compass: unified analysis</li>
         </ul>
       </section>
 
@@ -366,24 +365,24 @@ export class CacheProcessor {
         <section>
           <h2>Instrumented TypeScript Code</h2>
           <pre><code data-line-numbers="2,7,9,15">
-import * as fs from 'fs';
-import { TraceLogger } from './trace-logger';
+ import * as fs from 'fs';
++import { TraceLogger } from './trace-logger';
 
-export class CacheProcessor {
-    private tracer = new TraceLogger();
-    
-    async processData(data: string[]): Promise<void> {
-        console.log("Processing data batch");
-        const span = this.tracer.startScope('processData', { count: data.length });
-        
-        for (const item of data) {
-            await this.processItem(item);
-        }
-        
-        await fs.promises.writeFile('output.txt', data.join('\n'));
-        span.end();
-    }
-}
+ export class CacheProcessor {
++    private tracer = new TraceLogger();
++    
+     async processData(data: string[]): Promise<void> {
+         console.log("Processing data batch");
++        const span = this.tracer.startScope('processData', { count: data.length });
+         
+         for (const item of data) {
+             await this.processItem(item);
+         }
+         
+         await fs.promises.writeFile('output.txt', data.join('\n'));
++        span.end();
+     }
+ }
           </code></pre>
         </section>
         <section>
@@ -500,7 +499,7 @@ export class TraceLogger {
           <li><strong>Killer feature:</strong> Flame graphs + flame charts correlation</li>
           <li>Same powerful backend, modern IDE experience</li>
         </ul>
-        <div class="callout">
+        <div class="callout" style="font-size: 0.8em;">
           <p><a href="https://github.com/eclipse-cdt-cloud/vscode-trace-extension">github.com/eclipse-cdt-cloud/vscode-trace-extension</a></p>
         </div>
       </section>
