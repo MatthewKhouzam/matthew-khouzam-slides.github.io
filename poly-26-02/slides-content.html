@@ -1,0 +1,534 @@
+<!-- 0. Title -->
+<section data-background-color="#0d0f14">
+  <h1>Cache Effect</h1>
+  <h2>The Hidden Cost of Memory Misses</h2>
+  <h3 class="muted">Diagnosing Cache Allocation Issues<br>with Eclipse Trace Compass</h3>
+  <p class="tiny">(Trace Compass · Trace Event Logger · Linux Tracing Landscape)</p>
+  <p class="tiny">Matthew Khouzam & Anh Nguyen | Ericsson Canada | TheiaCon 2025 (Thrilled to be here)
+  </p>
+  <aside class="notes">Welcome! We'll follow a narrative: Problem → Tools → Example → Insight → Takeaways. The
+    theme: KPIs can look green while users still suffer. Tracing bridges that gap.</aside>
+</section>
+
+<!-- 1. Problem Statement -->
+<section>
+  <h2>Problem Statement</h2>
+  <ul class="lead spacious">
+    <li>We explore <strong>cache size effects</strong> on performance &amp; KPIs.</li>
+    <li>Why do dashboards look green while the app feels slow?</li>
+    <li>Tracing reveals <span class="tag">hidden stalls</span> &amp; <span class="tag">contention</span>.</li>
+  </ul>
+  <aside class="notes">Set up the tension: apparent health vs real user experience. Define cache miss cost and
+    synchronization impact at a high level.</aside>
+</section>
+
+<!-- 2. Tools Deep Dive -->
+<section>
+  <section>
+    <h2>Deep Dive Tools</h2>
+    <p class="lead">Two key tools for our cache analysis journey:</p>
+    <ul class="spacious">
+      <li><strong>Trace Compass</strong> - Visualization & analysis</li>
+      <li><strong>Trace Event Logger</strong> - Java instrumentation</li>
+    </ul>
+  </section>
+  <section>
+    <h3>Trace Compass</h3>
+    <ul class="lead spacious">
+      <li>Rich visualization capabilities</li>
+      <li>Cross-stack correlation</li>
+      <li>Extensible analysis framework</li>
+      <li>Perfect for understanding complex interactions</li>
+    </ul>
+  </section>
+  <section>
+    <h3>Trace Event Logger</h3>
+    <ul class="lead spacious">
+      <li>Java-oriented tracing</li>
+      <li>Lightweight, easy to integrate</li>
+      <li>Inspired by UST, simpler developer experience</li>
+      <li>Minimal code changes required</li>
+    </ul>
+  </section>
+</section>
+
+<!-- 3. Who Am I -->
+<section>
+  <h2>Who Are We?</h2>
+  <div class="twocol">
+    <div>
+      <h3>Matthew Khouzam</h3>
+      <ul>
+        <li>Tracing &amp; performance enthusiast</li>
+        <li>Contributor/Maintainer/Co-Lead/Product Owner to some open source tracing tools</li>
+        <li>Experience diagnosing real-world performance issues</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Anh Nguyen</h3>
+      <ul>
+        <li>Software intern &amp; performance analyst</li>
+        <li>Tracing tools developer</li>
+        <li>Open source contributor</li>
+        <li><a href="https://aaanh.com">aaanh.com</a></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 4. Company Involvement -->
+<section>
+  <h2>Ericsson &amp; Tracing</h2>
+  <ul>
+    <li>Active contributor to open tracing ecosystems for over 15 years</li>
+    <li>Academic partner to Ecole Polytechnique Montreal and many industries</li>
+    <li>Supports development of Trace Compass</li>
+    <li>Internally used for software and hardware troubleshooting</li>
+    <li>Helps industry adopt tracing in production</li>
+    <li>Allows me to make the world a better place through FOSS</li>
+  </ul>
+</section>
+
+<!-- 5. Tracing Landscape -->
+<section>
+  <section>
+    <h2>Tracing Landscape</h2>
+    <p>There are more!</p>
+  </section>
+  <section>
+    <h3>Linux Kernel</h3>
+    <ul>
+      <li>Ftrace</li>
+      <li>LTTng Kernel</li>
+      <li>Perf / eBPF</li>
+    </ul>
+  </section>
+  <section>
+    <h3>Linux Userspace</h3>
+    <ul>
+      <li>LTTng UST</li>
+      <li>UProbes</li>
+      <li>UFtrace</li>
+    </ul>
+  </section>
+  <section>
+    <h3>Windows</h3>
+    <ul>
+      <li>ETW (Event Tracing for Windows)</li>
+      <li>WPA (Windows Performance Analyzer)</li>
+      <li>PerfView</li>
+    </ul>
+  </section>
+  <section>
+    <h3>macOS</h3>
+    <ul>
+      <li>DTrace</li>
+      <li>Instruments</li>
+      <li>OSLog</li>
+    </ul>
+  </section>
+  <section>
+    <h3>Java</h3>
+    <ul>
+      <li>LTTng UST Java Agent</li>
+      <li>JFR (Java Flight Recorder)</li>
+      <li>Trace Event Logger</li>
+    </ul>
+  </section>
+  <section>
+    <h3>TypeScript</h3>
+    <ul>
+      <li><strong>OpenTelemetry JS:</strong> Industry standard, comprehensive but heavy</li>
+      <li><strong>Chrome DevTools:</strong> Built-in profiling, limited to browser context</li>
+      <li><strong>Node.js --inspect:</strong> V8 profiler integration, good for CPU/memory</li>
+      <li><strong>Custom JSON tracers:</strong> Lightweight, Trace Compass compatible</li>
+      <li><strong>Gap:</strong> No native equivalent to UST/Trace Event Logger simplicity</li>
+    </ul>
+  </section>
+</section>
+
+<!-- 6. Visualization Tools -->
+<section>
+  <h2>Visualization Tools</h2>
+  <ul>
+    <li>Command Line: <span class="mono">perf</span>, <span class="mono">trace-cmd</span></li>
+    <li>Open Telemetry: High-level, great down to the uS!</li>
+    <li>Perfetto: beautiful, web-based, Chrome/Android focus</li>
+    <li>KernelShark: kernel views, scheduler focus</li>
+    <li>Trace Compass: unified analysis</li>
+  </ul>
+</section>
+
+<!-- 7. Trace Event Logger Design -->
+<section>
+  <section>
+    <h2>Trace Event Logger</h2>
+    <ul class="lead spacious">
+      <li>Designed for Java tracing</li>
+      <li>UST-inspired</li>
+      <li>Lightweight &amp; easy integration</li>
+      <li>Trade-off: fewer features than UST</li>
+    </ul>
+  </section>
+  <section>
+    <div class="table-container">
+      <table class="styled-table">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>View</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Scope</td>
+            <td><img src="./scope.png"
+                alt="An image showing a scope event view, represented as a block on a timeline." /></td>
+          </tr>
+          <tr>
+            <td>Flow</td>
+            <td><img src="./flow.png"
+                alt="An image showing a flow event view, represented as an arrow connecting two points on different timelines." />
+            </td>
+          </tr>
+          <tr>
+            <td>Counter</td>
+            <td><img src="./counter.png"
+                alt="An image showing a counter event view, represented as a line graph plotting a value over time." />
+            </td>
+          </tr>
+          <tr>
+            <td>Lifespan</td>
+            <td><img src="./lifespan.png"
+                alt="An image showing an object lifespan view, represented as a block on a timeline that starts and ends." />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>
+
+<!-- 8. Tracing Semantics -->
+<section>
+  <h2>Tracing Semantics</h2>
+  <ul class="lead spacious">
+    <li>Important to define <strong>what</strong> you trace</li>
+    <li>Placement &amp; granularity change results</li>
+    <li>Avoid misleading conclusions from partial data</li>
+  </ul>
+</section>
+
+<!-- 8.5. TypeScript Instrumentation -->
+<section>
+  <section>
+    <h2>TypeScript Instrumentation</h2>
+    <ul class="lead spacious">
+      <li>Similar approach to Trace Event Logger</li>
+      <li>Generate compatible JSON output</li>
+      <li>Lightweight &amp; easy integration</li>
+    </ul>
+  </section>
+  <section>
+    <h2>Original TypeScript Code</h2>
+    <pre><code>
+import * as fs from 'fs';
+
+export class CacheProcessor {
+  async processData(data: string[]): Promise<void> {
+      console.log("Processing data batch");
+      
+      for (const item of data) {
+          await this.processItem(item);
+      }
+      
+      await fs.promises.writeFile('output.txt', data.join('\n'));
+  }
+}
+    </code></pre>
+  </section>
+  <section>
+    <h2>Instrumented TypeScript Code</h2>
+    <pre><code data-line-numbers="2,7,9,15">
+import * as fs from 'fs';
++import { TraceLogger } from './trace-logger';
+
+export class CacheProcessor {
++    private tracer = new TraceLogger();
++    
+  async processData(data: string[]): Promise<void> {
+      console.log("Processing data batch");
++        const span = this.tracer.startScope('processData', { count: data.length });
+      
+      for (const item of data) {
+          await this.processItem(item);
+      }
+      
+      await fs.promises.writeFile('output.txt', data.join('\n'));
++        span.end();
+  }
+}
+    </code></pre>
+  </section>
+  <section>
+    <h2>Simple Trace Logger Implementation</h2>
+    <pre><code>
+export class TraceLogger {
+  private events: any[] = [];
+  
+  startScope(name: string, args?: any) {
+      const start = Date.now() * 1000; // microseconds
+      const event = {
+          name, ph: 'B', ts: start, pid: process.pid, 
+          tid: 0, args: args || {}
+      };
+      this.events.push(event);
+      
+      return {
+          end: () => {
+              this.events.push({
+                  ...event, ph: 'E', ts: Date.now() * 1000
+              });
+          }
+      };
+  }
+  
+  writeTrace(filename: string) {
+      fs.writeFileSync(filename, JSON.stringify(this.events));
+  }
+}
+    </code></pre>
+  </section>
+</section>
+
+<!-- 9. Trace Compass Design -->
+<section>
+  <h2>Trace Compass Design</h2>
+  <ul class="lead spacious">
+    <li>Modular architecture</li>
+    <li>State system &amp; analysis engines</li>
+    <li>Extensible for custom views</li>
+  </ul>
+  <img src="./tc-flow.png" width="80%" height="auto">
+</section>
+
+<!-- 10. Flame Charts -->
+<section>
+  <section>
+    <h2>Extension frontend architecture</h2>
+    <img src="./trace-ext-arch.png" width="80%" height="auto">
+  </section>
+  <section>
+    <h2>Continuously porting over features to the extension!</h2>
+    <p>...where one of the latest addition is the Flame Graph</p>
+  </section>
+  <section>
+  <h2>Flame Charts &amp; Graphs</h2>
+  <ul class="lead spacious">
+    <li><strong>Flame Graph:</strong> aggregated profiles</li>
+    <li><strong>Flame Chart:</strong> time-aligned stacks</li>
+    <li>Complementary perspectives on performance</li>
+  </ul>
+  </section>
+  <section>
+    <h2>Flame Graph - Aggregated View</h2>
+    <div class="twocol">
+      <div>
+        <ul class="spacious tiny">
+          <li><strong>What:</strong> Stack traces collapsed and sorted by frequency</li>
+          <li><strong>X-axis:</strong> Percentage of samples (width = time spent)</li>
+          <li><strong>Y-axis:</strong> Call stack depth</li>
+          <li><strong>Best for:</strong> Finding hotspots, CPU-bound bottlenecks</li>
+          <li><strong>Loses:</strong> Temporal information, execution order</li>
+        </ul>
+      </div>
+      <div>
+        <img src="./tc-flamegraph.png" width="100%" height="auto">
+      </div>
+    </div>
+  </section>
+  <section>
+    <h2>Flame Chart - Timeline View</h2>
+    <div class="twocol">
+      <div>
+        <ul class="spacious tiny">
+          <li><strong>What:</strong> Stack traces over time, preserving chronology</li>
+          <li><strong>X-axis:</strong> Time progression</li>
+          <li><strong>Y-axis:</strong> Call stack depth</li>
+          <li><strong>Best for:</strong> Understanding execution flow, cache misses, I/O waits</li>
+          <li><strong>Shows:</strong> When things happen, duration patterns</li>
+        </ul>
+      </div>
+      <div>
+        <img src="./tc-flamechart.png" width="100%" height="auto">
+      </div>
+    </div>
+  </section>
+  <section>
+    <h2>Why Both Matter for Cache Analysis</h2>
+    <ul class="lead tiny">
+      <li><strong>Flame Graph:</strong> "Which functions are slow overall?"</li>
+      <li><strong>Flame Chart:</strong> "When do cache misses cause stalls?"</li>
+      <li>Cache issues often show as <em>temporal patterns</em></li>
+      <li>Aggregation can hide intermittent problems</li>
+    </ul>
+  </section>
+  <section>
+  <h2>Flame Chart in action</h2>
+  <img src="./git-compare.png" width="60%" height="80%"> 
+</section>
+<section>
+  <h2>A better explanation</h2>
+  <a href="https://youtu.be/gDe77bVkv50">https://youtu.be/gDe77bVkv50</a>
+  <img src="./youtube-video.png" width="50%" height="auto"> 
+</section>
+</section>
+
+<!-- 11. VS Code Trace Extension -->
+<section>
+  <h2>🎉 New: VS Code Trace Extension</h2>
+  <ul class="lead spacious">
+    <li>Trace Compass analysis now available in VS Code!</li>
+    <li><strong>Killer feature:</strong> Flame graphs + flame charts correlation</li>
+    <li>Same powerful backend, modern IDE experience</li>
+  </ul>
+  <div class="callout" style="font-size: 0.8em;">
+    <p><a href="https://github.com/eclipse-cdt-cloud/vscode-trace-extension">github.com/eclipse-cdt-cloud/vscode-trace-extension</a></p>
+  </div>
+</section>
+
+<!-- 12. Example Project -->
+<section>
+  <h2>Example Project</h2>
+  <p class="lead">A cache with many threads reading from it:</p>
+  <ul class="spacious">
+    <li>Artificially constrained cache size</li>
+    <li>Threads compete for cache access</li>
+    <li>Performance seems fine at first glance</li>
+  </ul>
+</section>
+
+<!-- 12. KPIs Look Good -->
+<section>
+  <h2>Deceptive KPIs</h2>
+  <ul class="lead spacious">
+    <li>Latency metrics: ✅</li>
+    <li>Throughput metrics: ✅</li>
+    <li>User experience: ❌ (super slow)</li>
+  </ul>
+  <div class="callout tiny">Tracing exposes the hidden story behind "green dashboards".</div>
+</section>
+
+<!-- 13. Instrumentation -->
+<section>
+  <section>
+    <h2>Instrumentation Strengths</h2>
+    <ul class="lead spacious">
+      <li>Static instrumentation = always available</li>
+      <li>Low overhead, high precision</li>
+      <li>Minimal perturbation to workload</li>
+    </ul>
+    Code examples below.
+  </section>
+  <section>
+    <h2>Original Code</h2>
+    <pre><code>
+import java.io.FileWriter;
+
+public class SlappyWag {
+  public static void main(String[] args) {
+      System.out.println("The program will write hello 10x between two scope logs\n");
+      try (FileWriter fw = new FileWriter("test.txt")) {
+          for (int i = 0; i < 10; i++) {
+              fw.write("Hello world "+ i);
+          }
+      }
+  }
+}
+    </code></pre>
+  </section>
+  <section>
+    <h2>Instrumented Code</h2>
+    <pre><code data-line-numbers="2,4,11">
+import java.io.FileWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.eclipse.tracecompass.traceeventlogger.LogUtils;
+
+public class SlappyWag {
+  
+  private static Logger logger = Logger.getAnonymousLogger();
+  
+  public static void main(String[] args) {
+      System.out.println("The program will write hello 10x between two scope logs\n");
+      try (LogUtils.ScopeLog sl = new LogUtils.ScopeLog(logger, Level.FINE, "writing to file"); FileWriter fw = new FileWriter("test.txt")) {
+          for (int i = 0; i < 10; i++) {
+              fw.write("Hello world "+ i);
+          }
+      }
+  }
+}
+    </code></pre>
+  </section>
+</section>
+
+<!-- 14. Code Results -->
+<section>
+  <section>
+
+    <h2>Code Results</h2>
+    <ul class="lead spacious">
+      <li>Traces reveal delays at cache boundaries</li>
+      <li>Clear visualization of synchronous stalls</li>
+    </ul>
+
+    Scroll down!
+  </section>
+  <section><h3>Overview</h3><img src="./lru-issue.png" /></section>
+  <section><h3>In depth</h3><img src="./in-depth-stack-cache.png" /></section>
+  
+  
+</section>
+
+<!-- 15. Cache Miss Story -->
+<section>
+  <h2>The Cache Miss Story</h2>
+  <ul class="lead spacious">
+    <li>Synchronous cache misses = correctness intact</li>
+    <li>But waiting destroys performance</li>
+    <li>Tracing shows <em>cause</em>, not just <em>symptom</em></li>
+  </ul>
+</section>
+
+<!-- 16. Filler / Reset -->
+<section>
+  <h2>Breather</h2>
+  <section>
+    <p class="centered"><img src="./xkcd-standards.png" width="90%" /></p>
+  </section>
+  <section>
+    <p class="centered"><img src="./example-radar.png" height="60%" /></p>
+  </section>
+</section>
+
+<!-- 17. Takeaways -->
+<section>
+  <h2>Takeaways</h2>
+  <ul class="lead spacious">
+    <li>High-level KPIs can be misleading</li>
+    <li>Tracing reveals hidden bottlenecks</li>
+    <li>Cache effects must be contextualized</li>
+    <li>Trace Compass + Trace Event Logger = deep insight</li>
+  </ul>
+</section>
+
+<!-- 18. Questions -->
+<section>
+  <h2>Questions?</h2>
+  <p class="centered lead">Let's discuss your own "good KPIs, bad performance" stories.</p>
+  <h3>PS We have references</h3>
+  <href a="https://tracecompass.org" />https://tracecompass.org</href>
+  <href a="https://www.youtube.com/@EclipseTraceCompass" />Our Youtube channel
+  https://www.youtube.com/@EclipseTraceCompass </href>
+  <h3>PPS We want to collaborate!</h3>
+</section>
