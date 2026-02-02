@@ -1,0 +1,494 @@
+<style>
+.reveal .slide-footer {
+  position: absolute;
+  bottom: 10px;
+  left: 20px;
+  font-size: 0.5em;
+  color: #666;
+  z-index: 1000;
+}
+</style>
+
+<!-- Title -->
+<section data-background-color="#0d0f14" data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_11_D_web.jpg" data-background-size="contain">
+  <h1>Model Context Protocol (MCP)</h1>
+  <h2>State of the Art Analysis</h2>
+  <h3 class="muted">Security, Privacy & Enterprise Readiness</h3>
+  <p class="tiny">Executive Summary | February 2026</p>
+  <aside class="notes">
+    Welcome. Today we'll analyze the current state of Model Context Protocol - a technology that's gaining massive adoption but has significant security and privacy concerns that enterprises need to understand before deployment. This is a 25-minute overview.
+  </aside>
+</section>
+
+<div class="slide-footer">Matthew Khouzam - February 24, 2026</div>
+
+<!-- Overview -->
+<section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_07_D_web.jpg" data-background-size="contain">
+    <h2>What is MCP?</h2>
+    <p class="lead">Standardized protocol for LLM-tool integration</p>
+    <aside class="notes">
+      MCP is Anthropic's open protocol that standardizes how LLMs interact with external tools and data sources. Think of it as a universal adapter that lets AI assistants access databases, APIs, file systems, and other resources in a consistent way.
+    </aside>
+  </section>
+  <section data-auto-animate>
+    <h3>MCP Architecture</h3>
+    <div class="mermaid-container" style="position: relative; transform: scale(0.9); transform-origin: top center;">
+      <div class="mermaid" id="mcp-diagram">
+graph LR
+    LLM["🤖 LLM/Host"]
+    MCP["🔌 MCP Server"]
+    
+    LLM -->|Request| MCP
+    MCP -->|Response| LLM
+    
+    MCP --> Tool1["📁 File System"]
+    MCP --> Tool2["🗄️ Database"]
+    MCP --> Tool3["🔀 Git"]
+    MCP --> Tool4["🌐 Web APIs"]
+    MCP --> Tool5["⚙️ Code Analysis"]
+      </div>
+      <canvas id="token-canvas" style="position: absolute; top: 0; left: 0; pointer-events: none;"></canvas>
+    </div>
+  </section>
+  <section data-background-image="mcplsp.jpeg" data-background-size="contain">
+  </section>
+  <section data-auto-animate>
+    <h3>MCP Workflow (Detailed)</h3>
+    <div class="mermaid-container" style="position: relative; transform: scale(0.85); transform-origin: top center;">
+      <div class="mermaid" id="workflow-diagram">
+sequenceDiagram
+    participant User
+    participant Host as Host Application
+    participant Client as MCP Client
+    participant Server as MCP Server
+    participant Ext as External System
+
+    User  ->> Host   : (0) User prompt/request
+    Host  ->> Client : (1) Forward request
+    Client->> Server : (2) initialize()
+    Server-->>Client : (3) InitializeResult
+    Client-->>Server : (4) initialized
+
+    Client ->> Server : (5) tools/list()
+    Server -->> Client: (6) tools[]
+
+    Note over Host,Client: (7) Embed tool schema
+
+    Note over Client, Server: (8) LLM emits call
+
+    Client ->> Server : (9) tools/call()
+    Server ->> Ext    : (10) Delegate
+    Ext    -->> Server : (11) Result
+    Server -->> Client : (12) JSON-RPC Result
+    Client -->> Host   : (13) Inject result
+
+    Host -->> User : (14) Final answer
+    Note over Client,Server: (15) Close
+      </div>
+      <canvas id="workflow-canvas" style="position: absolute; top: 0; left: 0; pointer-events: none;"></canvas>
+    </div>
+  </section>
+  <section>
+    <h3>Practical Example: Kiro CLI</h3>
+    <p class="tiny">User: "List files in this directory and show me the git status"</p>
+    <div style="text-align: left; font-size: 0.6em; margin: 20px;">
+      <p><strong>Kiro (LLM Client):</strong></p>
+      <ul style="font-size: 0.9em;">
+        <li>Calls MCP Server tool: <code>execute_bash("ls -la")</code></li>
+        <li>Calls MCP Server tool: <code>execute_bash("git status")</code></li>
+        <li>Stores results in context window</li>
+        <li>Generates response using both outputs</li>
+      </ul>
+      <p><strong>Context persists:</strong> Next question "What changed?" uses stored git status</p>
+    </div>
+    <p class="tiny">MCP Server provides filesystem and git access; context enables multi-turn conversations</p>
+  </section>
+  <section data-background-image="mcprpc.jpeg" data-background-size="contain">
+  </section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_04_D_web.jpg" data-background-size="contain">
+    <h3>Explosive Adoption</h3>
+    <ul class="spacious">
+      <li><strong>6.7M</strong> weekly downloads (TypeScript SDK)</li>
+      <li><strong>9M+</strong> downloads (Python SDK)</li>
+      <li><strong>16K+</strong> active MCP servers</li>
+      <li>All major LLMs, IDEs, cloud providers</li>
+    </ul>
+    <aside class="notes">
+      The adoption is explosive. 6.7 million weekly downloads for TypeScript, over 9 million for Python. 16,000 active MCP servers. Every major player is on board - OpenAI, Anthropic, Microsoft, AWS. This is becoming the de facto standard for LLM tool integration.
+    </aside>
+  </section>
+</section>
+
+<!-- Security Concerns -->
+<section>
+  <section data-background-color="#2d1b1b">
+    <h2>MCP 2.0 Security Improvements</h2>
+    <p class="lead">March 2026 release addresses critical gaps</p>
+    <aside class="notes">
+      MCP 2.0 was released in March 2026 with major security improvements. Let's look at what was fixed and what still needs attention.
+    </aside>
+  </section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_12_D_web.jpg" data-background-size="contain">
+    <h3>What's Fixed in 2.0</h3>
+    <ul class="spacious">
+      <li>✅ <strong>OAuth 2.1 Authorization:</strong> Built-in auth framework with PKCE</li>
+      <li>✅ <strong>Tool Annotations:</strong> Describe behavior (read-only, destructive)</li>
+      <li>✅ <strong>Dynamic Client Registration:</strong> Automatic OAuth client setup</li>
+      <li>✅ <strong>JSON-RPC Batching:</strong> Improved performance and efficiency</li>
+      <li>✅ <strong>Streamable HTTP Transport:</strong> More flexible than HTTP+SSE</li>
+    </ul>
+    <aside class="notes">
+      MCP 2.0 adds comprehensive OAuth 2.1 authorization with PKCE for secure authentication. Tool annotations let servers describe whether tools are read-only or destructive. Dynamic client registration removes friction. JSON-RPC batching improves efficiency. And the new streamable HTTP transport is more flexible than the old HTTP+SSE approach.
+    </aside>
+  </section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_12_D_web.jpg" data-background-size="contain">
+    <h3>Still Requires Attention</h3>
+    <ul class="spacious">
+      <li>⚠️ <strong>Tool Execution:</strong> Sandboxing still implementation-dependent</li>
+      <li>⚠️ <strong>Tool Poisoning:</strong> Annotations must be treated as untrusted</li>
+      <li>⚠️ <strong>Audit Logging:</strong> No standardized audit framework</li>
+      <li>⚠️ <strong>Transport Encryption:</strong> HTTPS required but not enforced</li>
+      <li>⚠️ <strong>Scalability:</strong> Token bloat and latency issues in production</li>
+    </ul>
+    <aside class="notes">
+      However, several issues remain. Tool execution sandboxing is still up to implementers. Tool annotations help but must be treated as untrusted unless from verified servers. There's no standardized audit logging framework. And while HTTPS is required, it's not protocol-enforced. Additionally, real-world testing shows MCP can consume 20x more tokens than REST endpoints, creating scalability challenges for production agents. These need implementation-level solutions.
+    </aside>
+  </section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_12_D_web.jpg" data-background-size="contain">
+    <h3>Advanced Attack Vectors (Persist in 2.0)</h3>
+    <ul class="spacious">
+      <li><strong>Rug Pulls:</strong> Benign servers turn malicious after trust</li>
+      <li><strong>Cross-Server Shadowing:</strong> Malicious tools mimic legitimate ones</li>
+      <li><strong>Preference Manipulation:</strong> Persuasive metadata biases selection</li>
+      <li><strong>Namespace Typosquatting:</strong> Similar names trick users</li>
+    </ul>
+    <aside class="notes">
+      Despite 2.0 improvements, sophisticated attack patterns remain. Rug pulls occur when a trusted server is updated with malicious code after deployment. Cross-server shadowing exploits multi-server environments where attackers register tools with identical names to intercept calls. Preference manipulation uses psychological tactics in tool descriptions to bias AI selection - tool annotations help but don't eliminate this. And typosquatting leverages similar-looking server names to fool users during installation.
+    </aside>
+  </section>
+</section>
+
+<!-- Scalability & Architecture -->
+<section>
+  <section data-background-color="#1a3a2e">
+    <h2>Scalability Challenges</h2>
+    <p class="lead">Production deployment considerations</p>
+    <aside class="notes">
+      Before diving into solutions, let's understand the scalability challenges that emerge in production deployments. These aren't theoretical - they're based on real-world testing and enterprise feedback.
+    </aside>
+  </section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_12_D_web.jpg" data-background-size="contain">
+    <h3>Token Economics Problem</h3>
+    <ul class="spacious">
+      <li><strong>20x Overhead:</strong> 20,000 tokens (MCP) vs 1,000 (REST) in testing</li>
+      <li><strong>Model Lock-in:</strong> Forces expensive frontier models</li>
+      <li><strong>Latency Impact:</strong> More tokens = longer processing</li>
+      <li><strong>Cost at Scale:</strong> Prohibitive for high-volume operations</li>
+    </ul>
+    <aside class="notes">
+      Real-world testing reveals significant token overhead. Converting natural language to SQL with Couchbase MCP required 20,000 tokens for context about collections and relationships. The same task via REST? Around 1,000 tokens. This 20x difference forces organizations to use expensive frontier models instead of efficient small language models. More tokens mean longer processing times, creating latency issues in dynamic agentic networks. At scale, you're paying for infrastructure overhead instead of AI reasoning.
+    </aside>
+  </section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_04_D_web.jpg" data-background-size="contain">
+    <h3>Agent Type Matters</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 0.8em;">
+      <div>
+        <h4>Coding Agents ✅</h4>
+        <ul>
+          <li>Exploratory work</li>
+          <li>Complex reasoning</li>
+          <li>Many possible tools</li>
+          <li>Overhead justified</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Production Agents ⚠️</h4>
+        <ul>
+          <li>Routine automation</li>
+          <li>Latency-sensitive</li>
+          <li>High-volume operations</li>
+          <li>Cost-conscious</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="notes">
+      The fit varies dramatically by agent type. Coding agents like Claude Code handle complex, exploratory tasks requiring deep reasoning. They need access to many tools and understand sophisticated schemas. When you're doing development work, MCP's overhead is justified - you're optimizing for capability, not speed. But production organizational agents are different. Customer service automation, task routing, and data updates need to be lightweight, fast, and cost-effective at scale. They're latency-sensitive components in dynamic networks where MCP's architecture becomes a fundamental mismatch.
+    </aside>
+  </section>
+</section>
+
+<!-- MCP-T: Enhancement Approach -->
+<section>
+  <section data-background-color="#1a3a1a">
+    <h2>MCP-T: Enhancing the Standard</h2>
+    <p class="lead">Solving scalability without fragmentation</p>
+    <aside class="notes">
+      Rather than creating a competing standard, Huawei developed MCP-T as an enhancement layer. This approach maintains ecosystem compatibility while addressing the performance and scalability concerns we just discussed.
+    </aside>
+  </section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_04_D_web.jpg" data-background-size="contain">
+    <h3>MCP-T Key Features</h3>
+    <ul class="spacious">
+      <li><strong>Token Optimization:</strong> Intelligent caching reduces context overhead</li>
+      <li><strong>Performance Layer:</strong> Addresses latency for production agents</li>
+      <li><strong>Backward Compatible:</strong> Works with existing MCP servers</li>
+      <li><strong>Enterprise Focus:</strong> High-volume, production deployments</li>
+    </ul>
+    <p class="tiny muted">Enhancement approach preserves ecosystem while solving production gaps</p>
+    <aside class="notes">
+      MCP-T tackles the scalability issues head-on. Token optimization through intelligent caching reduces the 20x overhead problem. A performance layer addresses latency concerns, making it viable for production organizational agents. Critically, it maintains backward compatibility - you're not choosing between standards, you're enhancing what exists. The focus is enterprise production use cases where MCP alone struggles. This demonstrates that the identified limitations are solvable within the existing framework.
+    </aside>
+  </section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_06_D_web.jpg" data-background-size="contain">
+    <h3>Deployment Strategy</h3>
+    <ul class="spacious">
+      <li><strong>Coding Agents:</strong> Standard MCP (Claude Code, exploratory work)</li>
+      <li><strong>Production Agents:</strong> MCP-T or direct REST APIs</li>
+      <li><strong>Skills:</strong> Behavioral guidance, lightweight setup</li>
+      <li><strong>Hybrid:</strong> Mix approaches based on requirements</li>
+    </ul>
+    <aside class="notes">
+      The deployment strategy becomes clear. Use standard MCP for coding agents doing exploratory work where capability matters more than speed. For production organizational agents, evaluate MCP-T for enhanced performance or use direct REST APIs for maximum efficiency. Use Skills for behavioral guidance in stable contexts. The key insight: don't let momentum drive architecture. Choose based on actual requirements - agent type, latency needs, volume, and cost constraints. Enhancement approaches like MCP-T show you don't have to choose between ecosystem compatibility and production performance.
+    </aside>
+  </section>
+</section>
+
+<!-- Privacy & Compliance -->
+<section>
+  <section data-background-color="#1a1a2e">
+    <h2>Privacy & Compliance Gaps</h2>
+    <p class="lead">Hidden data exposure risks</p>
+    <aside class="notes">
+      Beyond security, there are significant privacy concerns. These are particularly important for enterprises dealing with sensitive customer data or operating under strict regulatory requirements.
+    </aside>
+  </section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_06_D_web.jpg" data-background-size="contain">
+    <h3>Key Privacy Risks</h3>
+    <ul class="spacious">
+      <li>Sensitive data in context windows</li>
+      <li>Unencrypted server-client communication</li>
+      <li>Third-party server trust issues</li>
+      <li>GDPR compliance unclear</li>
+      <li>Data residency requirements violated</li>
+    </ul>
+    <aside class="notes">
+      Sensitive data gets embedded in context windows and may be sent to third-party LLM providers. Not all MCP implementations use encryption. You're trusting third-party MCP servers with your data. From a compliance perspective, it's murky - GDPR compliance isn't well-defined for MCP implementations, and data residency requirements may be violated when using cloud-based LLMs.
+    </aside>
+  </section>
+</section>
+
+<!-- MCP Server Lifecycle & Threats -->
+<section>
+  <section data-background-color="#1a2a3a">
+    <h2>MCP Server Lifecycle</h2>
+    <p class="lead">Understanding the complete operational journey</p>
+    <aside class="notes">
+      To properly secure MCP, we need to understand its complete lifecycle. Academic research has identified four distinct phases, each with unique security considerations.
+    </aside>
+  </section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_04_D_web.jpg" data-background-size="contain">
+    <h3>Four Phases & Four Threat Types</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 0.8em;">
+      <div>
+        <h4>Lifecycle Phases</h4>
+        <ul>
+          <li><strong>Creation:</strong> Metadata, capabilities</li>
+          <li><strong>Deployment:</strong> Publishing, installation</li>
+          <li><strong>Operation:</strong> Runtime execution</li>
+          <li><strong>Maintenance:</strong> Updates, auditing</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Threat Actors</h4>
+        <ul>
+          <li><strong>Malicious Developers:</strong> Poisoning, backdoors</li>
+          <li><strong>External Attackers:</strong> Spoofing, injection</li>
+          <li><strong>Malicious Users:</strong> Credential theft, escape</li>
+          <li><strong>Security Flaws:</strong> Vulnerable versions</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="notes">
+      Each phase has distinct security requirements. Creation involves defining what the server does. Deployment is when it enters the ecosystem. Operation is runtime execution. Maintenance covers ongoing updates. Research identifies four attacker types - malicious developers create compromised servers, external attackers exploit deployment vulnerabilities, malicious users abuse operational features, and security flaws arise from poor maintenance. Each requires different defensive strategies.
+    </aside>
+  </section>
+</section>
+
+<!-- Enterprise Challenges -->
+<section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_12_D_web.jpg" data-background-size="contain">
+    <h2>Enterprise Challenges</h2>
+    <ul class="spacious">
+      <li><strong>Integration:</strong> Legacy systems, custom auth, network conflicts</li>
+      <li><strong>Governance:</strong> No standard policy enforcement</li>
+      <li><strong>Discovery Gap:</strong> Unknown servers in environment</li>
+      <li><strong>Architecture:</strong> No centralized security oversight</li>
+      <li><strong>Multi-tenant:</strong> Isolation challenges</li>
+      <li><strong>Production Scalability:</strong> Token costs force expensive models</li>
+    </ul>
+    <aside class="notes">
+      For enterprises, integration is challenging. Legacy systems weren't designed for this. There's no standard way to enforce policies. CISOs report a critical discovery gap - they don't know what MCP servers exist in their environment. Research highlights fundamental gaps - there's no central authority to enforce security baselines, and multi-tenant deployments lack proper isolation. Beyond security, production scalability is a major concern. MCP's token overhead forces organizations to use expensive frontier models for simple tasks that could run on efficient small language models with direct APIs. This architectural limitation significantly impacts operational costs at scale.
+    </aside>
+  </section>
+</section>
+
+<!-- Mitigation Strategies -->
+<section>
+  <h2>Recommended Mitigations</h2>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_12_D_web.jpg" data-background-size="contain">
+    <h3>Security Controls</h3>
+    <ul class="spacious">
+      <li><strong>Sandboxing:</strong> Isolated execution (DB: SELECT only, Files: restricted dirs)</li>
+      <li><strong>Input Validation:</strong> Strict parameter checking</li>
+      <li><strong>Audit Logging:</strong> Comprehensive activity tracking</li>
+      <li><strong>Tool Verification:</strong> Cryptographic signatures</li>
+      <li><strong>GraphRAG:</strong> Context-aware authorization</li>
+    </ul>
+    <aside class="notes">
+      The good news is there are mitigations. Sandboxing isolates tool execution - for example, database servers limited to SELECT queries only, file servers restricted to specific directories. Strict input validation prevents injection attacks. Comprehensive audit logging gives you visibility. Tool verification helps detect poisoned or malicious MCP servers. And GraphRAG provides context-aware authorization using knowledge graphs. These aren't optional - they're essential.
+    </aside>
+  </section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_04_D_web.jpg" data-background-size="contain">
+    <h3>Lifecycle-Specific Defenses</h3>
+    <ul class="spacious">
+      <li><strong>Creation:</strong> Automated metadata verification, capability validation</li>
+      <li><strong>Deployment:</strong> Reproducible builds, cryptographic signatures</li>
+      <li><strong>Operation:</strong> Runtime sandboxing, session management</li>
+      <li><strong>Maintenance:</strong> Automated updates, continuous auditing</li>
+    </ul>
+    <aside class="notes">
+      Research shows defenses must align with lifecycle phases. During creation, automate metadata generation and validate capabilities. At deployment, use reproducible builds and verify signatures. During operation, enforce sandboxes and manage sessions. In maintenance, automate version control and conduct continuous security audits.
+    </aside>
+  </section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_06_D_web.jpg" data-background-size="contain">
+    <h3>Enterprise Best Practices</h3>
+    <ul class="spacious">
+      <li>Phased rollout in controlled environments</li>
+      <li>Internal MCP server hosting</li>
+      <li>Role-based access control (RBAC)</li>
+      <li>MCP server inventory and monitoring</li>
+      <li>End-to-end encryption + PII detection</li>
+      <li><strong>Use case assessment:</strong> MCP for coding, REST for production agents</li>
+    </ul>
+    <aside class="notes">
+      For enterprise deployment: start with a phased rollout in controlled environments. Host your own MCP servers internally rather than relying on third parties. Implement proper RBAC. Maintain an inventory of all MCP servers to address the discovery gap. Use end-to-end encryption and implement PII detection and automatic redaction. Critically, assess use cases carefully - deploy MCP for coding agents and exploratory work where its capabilities shine, but use direct REST APIs for production organizational agents where token efficiency and latency matter. Don't let momentum drive architecture decisions.
+    </aside>
+  </section>
+</section>
+
+<!-- Maturity Assessment -->
+<section data-background-color="#1a1a2e">
+  <h2>Enterprise Readiness: 2026</h2>
+  <div class="callout">
+    <p class="lead">MCP 2.0 is <strong>improving - use strategically with enhancements</strong></p>
+  </div>
+  <ul class="spacious">
+    <li>✅ Strong developer adoption & OAuth 2.1 framework</li>
+    <li>✅ Excellent for coding agents and exploratory work</li>
+    <li>✅ Enhancement solutions available (MCP-T)</li>
+    <li>⚠️ Privacy controls & sandboxing need implementation</li>
+    <li>❌ Governance tooling lacking</li>
+    <li>❌ Standard MCP has production scalability challenges</li>
+  </ul>
+  <aside class="notes">
+    Bottom line for 2026: MCP 2.0 is improving significantly. Developer adoption is strong, OAuth 2.1 addresses authorization gaps, and it excels for coding agents. Enhancement solutions like MCP-T show scalability challenges are solvable. But privacy controls need careful implementation, sandboxing is up to individual deployments, and governance tooling is largely absent. Use strategically: standard MCP for coding agents, evaluate enhancements or REST for production automation. Choose based on requirements, not momentum.
+  </aside>
+</section>
+
+<!-- Recommendations -->
+<section>
+  <h2>Strategic Roadmap</h2>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_12_D_web.jpg" data-background-size="contain">
+    <h3>Short Term (2026)</h3>
+    <ul class="spacious">
+      <li>Pilot projects in controlled environments</li>
+      <li>Develop internal security guidelines</li>
+      <li>Train teams on capabilities and limitations</li>
+      <li><strong>Evaluate use cases:</strong> Coding vs production agents</li>
+      <li><strong>Test enhancement solutions:</strong> MCP-T for production needs</li>
+    </ul>
+    <aside class="notes">
+      For 2026, keep it experimental. Run pilot projects in controlled, non-production environments. Develop security guidelines specific to your organization. Train your teams - they need to understand both capabilities and risks. Critically, evaluate use cases: identify which agents are doing coding/exploratory work (good fit for MCP) versus production automation (evaluate enhancements or REST). Test solutions like MCP-T for production needs. Don't deploy everywhere just because it's trending.
+    </aside>
+  </section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_04_D_web.jpg" data-background-size="contain">
+    <h3>Medium Term (2027)</h3>
+    <ul class="spacious">
+      <li>Deploy with strict access controls</li>
+      <li>Implement comprehensive monitoring</li>
+      <li>Build internal MCP server catalog</li>
+      <li>Establish governance framework</li>
+      <li><strong>Production deployment:</strong> MCP-T or optimized solutions</li>
+    </ul>
+    <aside class="notes">
+      By 2027, if pilots are successful, move to limited production with strict access controls. Implement comprehensive monitoring - you need visibility into what's happening. Build an internal catalog of approved MCP servers. Establish a formal governance framework before this spreads across the organization. For production organizational agents, deploy enhancement layers like MCP-T that address scalability concerns while maintaining ecosystem compatibility. The technology will have matured, and best practices will be clearer.
+    </aside>
+  </section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_06_D_web.jpg" data-background-size="contain">
+    <h3>Long Term (2028+)</h3>
+    <ul class="spacious">
+      <li>Full production deployment across use cases</li>
+      <li>Custom MCP server development</li>
+      <li>Integration with enterprise architecture</li>
+      <li>Continuous security improvement</li>
+      <li><strong>Mature ecosystem:</strong> Standards, security scanning, quality metrics</li>
+    </ul>
+    <aside class="notes">
+      Looking to 2028 and beyond, that's when full production deployment makes sense across diverse use cases. You'll likely be developing custom MCP servers for your specific needs. Full integration with enterprise architecture. Continuous security improvement - this will be an ongoing process, not a one-time effort. By then, we should have a mature ecosystem with established standards, automated security scanning, and community-driven quality metrics. Enhancement solutions will be proven at scale.
+    </aside>
+  </section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_04_D_web.jpg" data-background-size="contain">
+    <h3>Market Reality: We're Closer Than We Think</h3>
+    <ul class="spacious">
+      <li><strong>Marketplace Explosion:</strong> Multiple MCP marketplaces emerging now</li>
+      <li><strong>Competitive Landscape:</strong> Expect Ericsson to compete in this space</li>
+      <li><strong>Standardization Ahead:</strong> Single standard likely to emerge</li>
+      <li><strong>Accelerated Timeline:</strong> 2027 readiness more achievable than expected</li>
+    </ul>
+    <p class="tiny muted">The ecosystem is maturing faster than anticipated - position strategically now</p>
+    <aside class="notes">
+      Here's the reality: we're closer to 2027 readiness than we think. Multiple MCP marketplaces are emerging right now - this isn't future speculation, it's happening. The competitive landscape is forming, and we should expect Ericsson to compete in this space. As the market matures, a single standard will likely emerge from the current fragmentation. This means our timeline is accelerating. The infrastructure, tooling, and best practices are developing faster than the conservative roadmap suggests. We need to position ourselves strategically now, not wait until 2028. The question isn't whether to engage, but how to engage effectively while the standards are still being shaped.
+    </aside>
+  </section>
+</section>
+
+<!-- Key Takeaways -->
+<section>
+  <h2>Key Takeaways</h2>
+  <ul class="lead spacious">
+    <li>MCP 2.0 adds OAuth 2.1 & tool annotations (March 2026)</li>
+    <li>Excellent for coding agents, exploratory work</li>
+    <li>Production scalability solved via enhancements (MCP-T)</li>
+    <li>16 threat scenarios remain - lifecycle defenses essential</li>
+    <li>Deploy strategically by agent type and requirements</li>
+    <li>Enhancement > fragmentation - preserve ecosystem</li>
+  </ul>
+  <p class="centered muted">Use MCP strategically: standard for coding, enhanced for production, always with proper security</p>
+  <aside class="notes">
+    To summarize: MCP 2.0 adds critical OAuth 2.1 and tool annotations. It excels for coding agents and exploratory work. Production scalability challenges are real but solvable - enhancement approaches like MCP-T demonstrate this without fragmenting the ecosystem. Security research identifies 16 threat scenarios requiring lifecycle-aware defenses. Deploy strategically based on agent type and requirements - don't let momentum override architecture. Enhancement is better than fragmentation - preserve the ecosystem while solving real problems. This technology is evolving rapidly. Thank you.
+  </aside>
+</section>
+
+<!-- Final Thought -->
+<section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_04_D_web.jpg" data-background-size="contain">
+  <h2>The USB of AI</h2>
+  <p class="lead">MCP promises to be the universal connector for AI agents</p>
+  <div class="callout">
+    <p>And I think it delivers - it covers many use cases well</p>
+  </div>
+  <p class="centered">But remember: USB didn't replace everything</p>
+  <p class="tiny muted">PCIe, SATA, SAS, RAM slots, RS-232, PS/2, HDMI, DisplayPort, 3.5mm audio, LVDS, SMBus, I2C, SPI, ISA... they all still exist for good reasons</p>
+  <aside class="notes">
+    MCP promises to be the USB of AI - a universal connector that simplifies integration. And I think it delivers on that promise. It covers many use cases well, especially for coding agents and exploratory work. But here's the key insight: USB didn't replace everything. We still have PCIe for high-performance graphics and storage. SATA and SAS for drives. RAM slots for memory. RS-232 for industrial equipment. PS/2 for legacy systems. HDMI and DisplayPort for high-bandwidth video. 3.5mm audio jacks. LVDS for displays. SMBus, I2C, and SPI for embedded systems. Even ISA in some legacy industrial applications. Each exists because it's optimized for specific requirements. The same will be true for AI agent integration. MCP is excellent for many scenarios, but direct APIs, enhancement layers like MCP-T, and other approaches will coexist. Choose the right connector for your requirements. Universal doesn't mean exclusive. Thank you.
+  </aside>
+  
+<!-- Questions -->
+<section>
+  <h2>Questions?</h2>
+  <p class="centered lead">Discussion and feedback welcome</p>
+  <p class="tiny muted">Sources: xenoss.io, Medium (azhar labs), Towards Data Science, memgraph.com, Hou et al. (2025) arXiv:2503.23278v3, Rob Murphy (LinkedIn, Dec 2025)</p>
+  <p class="tiny"><a href="../index.html">Back to main page</a></p>
+</section>
+
+</section>

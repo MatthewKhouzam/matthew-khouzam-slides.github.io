@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MCP State of the Art - Executive Summary</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css" id="theme" />
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@latest/dist/reveal.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@latest/plugin/notes/notes.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        @font-face {
+            font-family: 'Hilda';
+            src: url('EricssonHilda-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        body,
+        .reveal {
+            font-family: 'Hilda', sans-serif;
+        }
+
+        .logo {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            z-index: 10;
+        }
+
+        .logo img {
+            width: 100px;
+            height: auto;
+        }
+
+        section[data-background-image] h1,
+        section[data-background-image] h2,
+        section[data-background-image] h3,
+        section[data-background-image] p,
+        section[data-background-image] li {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div class="logo">
+        <img src="./ERI_vertical_RGB.svg" alt="Ericsson Logo">
+    </div>
+    <div class="reveal">
+        <div class="slides" id="slides-container">
+            <!-- Slides will be loaded here -->
+        </div>
+    </div>
+    <script>
+        $(document).ready(function() {
+            mermaid.initialize({ 
+                startOnLoad: false, 
+                theme: 'dark',
+                securityLevel: 'loose'
+            });
+            
+            $('#slides-container').load('mcp-executive-summary.html', function() {
+                Reveal.initialize({
+                    controls: true,
+                    slideNumber: true,
+                    center: true,
+                    transition: 'slide',
+                    plugins: [ RevealNotes ]
+                });
+                
+                Reveal.on('ready', () => {
+                    mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+                    
+                    setTimeout(() => {
+                        animateArchitectureDiagram();
+                        animateWorkflowDiagram();
+                    }, 500);
+                });
+            });
+            
+            function animateArchitectureDiagram() {
+                const canvas = document.getElementById('token-canvas');
+                if (!canvas) return;
+                
+                const diagram = document.getElementById('mcp-diagram');
+                const svg = diagram.querySelector('svg');
+                if (!svg) return;
+                
+                const ctx = canvas.getContext('2d');
+                canvas.width = svg.clientWidth;
+                canvas.height = svg.clientHeight;
+                
+                const paths = Array.from(svg.querySelectorAll('.edges path, .edge path'));
+                if (paths.length === 0) return;
+                
+                const tokens = [];
+                
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    if (Math.random() < 0.05) {
+                        const pathIdx = Math.floor(Math.random() * paths.length);
+                        const path = paths[pathIdx];
+                        const length = path.getTotalLength();
+                        tokens.push({ path, length, progress: 0 });
+                    }
+                    
+                    for (let i = tokens.length - 1; i >= 0; i--) {
+                        const token = tokens[i];
+                        const point = token.path.getPointAtLength(token.progress * token.length);
+                        
+                        ctx.beginPath();
+                        ctx.arc(point.x, point.y, 8, 0, Math.PI * 2);
+                        ctx.fillStyle = '#ff6b6b';
+                        ctx.fill();
+                        
+                        token.progress += 0.02;
+                        if (token.progress >= 1) {
+                            tokens.splice(i, 1);
+                        }
+                    }
+                    
+                    requestAnimationFrame(animate);
+                }
+                
+                animate();
+            }
+            
+            function animateWorkflowDiagram() {
+                const canvas = document.getElementById('workflow-canvas');
+                if (!canvas) return;
+                
+                const diagram = document.getElementById('workflow-diagram');
+                const svg = diagram.querySelector('svg');
+                if (!svg) return;
+                
+                const ctx = canvas.getContext('2d');
+                canvas.width = svg.clientWidth;
+                canvas.height = svg.clientHeight;
+                
+                const lines = Array.from(svg.querySelectorAll('line')).filter(line => {
+                    const parent = line.parentElement;
+                    return parent && (parent.classList.contains('messageLine0') || parent.classList.contains('messageLine1'));
+                });
+                
+                const segments = lines.map(line => ({
+                    x1: parseFloat(line.getAttribute('x1')),
+                    y1: parseFloat(line.getAttribute('y1')),
+                    x2: parseFloat(line.getAttribute('x2')),
+                    y2: parseFloat(line.getAttribute('y2'))
+                }));
+                
+                if (segments.length === 0) return;
+                
+                let segmentIdx = 0;
+                let progress = 0;
+                
+                function animate() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    const seg = segments[segmentIdx];
+                    const x = seg.x1 + (seg.x2 - seg.x1) * progress;
+                    const y = seg.y1 + (seg.y2 - seg.y1) * progress;
+                    
+                    ctx.beginPath();
+                    ctx.arc(x, y, 10, 0, Math.PI * 2);
+                    ctx.fillStyle = '#ff6b6b';
+                    ctx.fill();
+                    
+                    progress += 0.015;
+                    if (progress >= 1) {
+                        progress = 0;
+                        segmentIdx = (segmentIdx + 1) % segments.length;
+                    }
+                    
+                    requestAnimationFrame(animate);
+                }
+                
+                animate();
+            }
+        });
+    </script>
+</body>
+</html>
