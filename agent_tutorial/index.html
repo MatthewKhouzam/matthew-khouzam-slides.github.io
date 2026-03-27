@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Building AI Agents — Gemini CLI, Kiro CLI &amp; Goose</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css" id="theme" />
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@latest/dist/reveal.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@latest/plugin/notes/notes.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@latest/plugin/highlight/highlight.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@latest/plugin/highlight/monokai.css" />
+    <style>
+        @font-face {
+            font-family: 'Hilda';
+            src: url('../EricssonHilda-Regular.ttf') format('truetype');
+        }
+        body, .reveal { font-family: 'Hilda', sans-serif; }
+        .logo { position: absolute; top: 40px; right: 40px; z-index: 10; }
+        .logo img { width: 100px; height: auto; }
+        .reveal pre code { font-size: 0.55em; max-height: 500px; }
+        .reveal .small { font-size: 0.6em; }
+        .reveal table { font-size: 0.7em; margin: auto; }
+        .reveal table th, .reveal table td { padding: 0.3em 0.6em; }
+        .two-col { display: flex; gap: 2em; align-items: flex-start; }
+        .two-col > * { flex: 1; }
+        .highlight { color: #ff6b6b; }
+        .reveal .slides section { text-align: left; }
+        .reveal .slides section.center-slide { text-align: center; }
+        .diagram { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0.3em; margin: 1em 0; }
+        .diagram.vertical { flex-direction: column; }
+        .dbox { background: #2a2a5a; border: 2px solid #6a6aff; border-radius: 8px; padding: 0.4em 0.7em; font-size: 0.65em; text-align: center; }
+        .dbox.highlight-box { border-color: #ff6b6b; background: #3a1a1a; }
+        .dbox.green { border-color: #6aff6a; background: #1a3a1a; }
+        .darrow { font-size: 1.2em; color: #888; }
+        .darrow-label { font-size: 0.5em; color: #aaa; }
+    </style>
+</head>
+<body>
+    <div class="logo">
+        <img src="../mcp_sota/ERI_vertical_RGB.svg" alt="Ericsson Logo">
+    </div>
+    <div class="reveal">
+        <div class="slides">
+
+<!-- Title -->
+<section class="center-slide">
+    <h2>Building AI Agents</h2>
+    <h3>A Practical Guide with Gemini CLI, Kiro CLI &amp; Goose</h3>
+    <p>Matthew Khouzam</p>
+    <p class="small">Ericsson</p>
+    <aside class="notes">Today we'll walk through what an agent actually is, and how to build one using three different CLI tools: Google's Gemini CLI, Amazon's Kiro CLI, and Block's Goose.</aside>
+</section>
+
+<!-- Agenda -->
+<section>
+    <h3>Agenda</h3>
+    <ol>
+        <li>What is an Agent?</li>
+        <li>Anatomy of an Agent</li>
+        <li>MCP — The Glue</li>
+        <li>Building an Agent with Gemini CLI</li>
+        <li>Building an Agent with Kiro CLI</li>
+        <li>Building an Agent with Goose</li>
+        <li>Comparison &amp; When to Use Which</li>
+        <li>Live Demo</li>
+    </ol>
+    <aside class="notes">We'll start with concepts, then get hands-on with both tools.</aside>
+</section>
+
+<!-- What is an Agent? -->
+<section>
+    <h3>What is an Agent?</h3>
+    <ul>
+        <li>An LLM that can <span class="highlight">take actions</span>, not just generate text</li>
+        <li>It has a <span class="highlight">loop</span>: observe → think → act → observe…</li>
+        <li>It uses <span class="highlight">tools</span> to interact with the real world</li>
+        <li>It decides <em>which</em> tools to call and <em>when</em></li>
+    </ul>
+    <aside class="notes">The key difference between a chatbot and an agent is the ability to take actions. An agent doesn't just tell you what to do — it does it.</aside>
+</section>
+
+<!-- Agent vs Chatbot -->
+<section>
+    <h3>Agent vs Chatbot</h3>
+    <table>
+        <tr><th></th><th>Chatbot</th><th>Agent</th></tr>
+        <tr><td>Output</td><td>Text</td><td>Text + Actions</td></tr>
+        <tr><td>Tools</td><td>None</td><td>File I/O, shell, APIs, MCP…</td></tr>
+        <tr><td>Loop</td><td>Single turn</td><td>Multi-step reasoning</td></tr>
+        <tr><td>Autonomy</td><td>Answers questions</td><td>Solves problems</td></tr>
+    </table>
+    <aside class="notes">A chatbot answers. An agent acts. That's the fundamental shift.</aside>
+</section>
+
+<!-- Anatomy of an Agent -->
+<section>
+    <h3>Anatomy of an Agent</h3>
+    <div class="diagram vertical" style="gap:0.15em;">
+        <div class="dbox">System Prompt (personality, rules, constraints)</div>
+        <div class="darrow-label">↓</div>
+        <div class="dbox highlight-box">LLM (reasoning engine)</div>
+        <div class="darrow-label">↓</div>
+        <div class="dbox green">Tools (file read/write, shell, MCP servers…)</div>
+        <div class="darrow-label">↓</div>
+        <div class="dbox">Environment (your filesystem, APIs, databases)</div>
+    </div>
+    <aside class="notes">Every agent has these four layers. The system prompt shapes behavior, the LLM reasons, tools provide capabilities, and the environment is what gets acted upon.</aside>
+</section>
+
+<!-- Example Agent: MONCEF -->
+<section>
+    <h3>Example: MONCEF Agent</h3>
+    <p><strong>MONCEF</strong>: <em>Monitoring OWASP Non-Compliance &amp; Exploit Flaws</em></p>
+    <pre><code class="language-json">{
+  "name": "moncef",
+  "description": "Security guard — OWASP Top 10",
+  "prompt": "You are a security-focused code reviewer
+    specializing in OWASP Top 10 vulnerabilities...",
+  "mcpServers": {},
+  "tools": ["*"],
+  "allowedTools": [
+    "execute_bash", "fs_read", "grep", "code"
+  ],
+  "includeMcpJson": true
+}</code></pre>
+    <p class="small">No MCP needed — uses only built-in tools.<br>This same config works with <span class="highlight">Gemini CLI, Kiro CLI &amp; Goose</span>.</p>
+    <aside class="notes">Here's a concrete agent example. MONCEF is a security reviewer that only needs built-in tools. The config format is portable — we'll show how to enable it in each CLI next.</aside>
+</section>
+
+<!-- What is MCP -->
+<section>
+    <h3>MCP — The Tool Layer</h3>
+    <ul>
+        <li><span class="highlight">Model Context Protocol</span> — open standard by Anthropic</li>
+        <li>Lets agents call external tools via JSON-RPC</li>
+        <li>Write a tool once → use it from any MCP-compatible agent</li>
+        <li>Gemini CLI, Kiro CLI &amp; Goose all support MCP</li>
+    </ul>
+    <div class="diagram" style="margin-top:0.5em;">
+        <div class="dbox">Agent</div>
+        <div class="darrow">→</div>
+        <div class="dbox highlight-box">MCP Server</div>
+        <div class="darrow">→</div>
+        <div class="dbox green">Your Tool / API</div>
+    </div>
+    <aside class="notes">MCP is the universal adapter. You write a server that exposes tools, and any agent can use them.</aside>
+</section>
+
+<!-- Writing an MCP Server -->
+<section>
+    <section>
+        <h3>Writing an MCP Server (Python)</h3>
+        <pre><code class="language-python">from mcp.server.fastmcp import FastMCP
+
+mcp = FastMCP("my-tools")
+
+@mcp.tool()
+def greet(name: str) -> str:
+    """Say hello to someone."""
+    return f"Hello, {name}!"
+
+@mcp.tool()
+def add(a: int, b: int) -> int:
+    """Add two numbers."""
+    return a + b
+
+if __name__ == "__main__":
+    mcp.run()</code></pre>
+        <p class="small">Install: <code>pip install mcp</code></p>
+        <aside class="notes">This is a complete MCP server. Two tools, 15 lines. The docstrings tell the AI what each tool does.</aside>
+    </section>
+    <section>
+        <h3>Wrapping a CLI Tool as MCP</h3>
+        <pre><code class="language-python">import subprocess
+from mcp.server.fastmcp import FastMCP
+
+mcp = FastMCP("git-tools")
+
+@mcp.tool()
+def git_log(n: int = 5) -> str:
+    """Show recent git commits."""
+    return subprocess.run(
+        ["git", "log", f"-{n}", "--oneline"],
+        capture_output=True, text=True
+    ).stdout
+
+if __name__ == "__main__":
+    mcp.run()</code></pre>
+        <p class="small">Any CLI program → MCP tool in <span class="highlight">5 lines</span>.</p>
+        <aside class="notes">This is the key insight. Any command-line tool can become an MCP server with a thin Python wrapper. subprocess.run is all you need. The docstring tells the AI when to use it.</aside>
+    </section>
+</section>
+
+<!-- Part 1: Gemini CLI -->
+<section>
+    <section class="center-slide">
+        <h2>Part 1: Gemini CLI</h2>
+        <p class="small">Google's open-source AI agent in your terminal</p>
+        <aside class="notes">Let's start with Gemini CLI — Google's take on a terminal-based AI agent.</aside>
+    </section>
+
+    <!-- Gemini CLI: Install -->
+    <section>
+        <h3>Gemini CLI: Setup</h3>
+        <pre><code class="language-bash"># Install
+npm install -g @anthropic-ai/gemini-cli
+# or
+npx @anthropic-ai/gemini-cli
+
+# Authenticate (uses Google account)
+gemini</code></pre>
+        <ul>
+            <li>Open source (Apache 2.0)</li>
+            <li>Uses Gemini 2.5 Pro by default</li>
+            <li>1 million token context window</li>
+        </ul>
+        <aside class="notes">Gemini CLI is installed via npm. First run authenticates with your Google account.</aside>
+    </section>
+
+    <!-- Gemini CLI: Making an Agent -->
+    <section>
+        <h3>Gemini CLI: Creating an Agent</h3>
+        <p>Create <code>GEMINI.md</code> in your project root:</p>
+        <pre><code class="language-markdown"># Agent Instructions
+
+You are a code review assistant.
+
+## Rules
+- Always check for security issues first
+- Suggest fixes, don't just point out problems
+- Be concise
+
+## Tools Available
+- You can read and write files
+- You can run shell commands
+- You can use git</code></pre>
+        <p class="small"><code>GEMINI.md</code> = the system prompt for your agent</p>
+        <aside class="notes">GEMINI.md is the personality file. It tells the agent who it is and how to behave. It's checked into your repo so the whole team shares the same agent.</aside>
+    </section>
+
+    <!-- Gemini CLI: Enabling MONCEF -->
+    <section>
+        <h3>Gemini CLI: Enabling MONCEF</h3>
+        <p>Add the prompt to <code>GEMINI.md</code> and configure in <code>.gemini/settings.json</code>:</p>
+        <pre><code class="language-json">{
+  "customAgents": [{
+    "name": "moncef",
+    "configPath": "moncef.json"
+  }]
+}</code></pre>
+        <p>Then invoke it:</p>
+        <pre><code class="language-bash">gemini --agent moncef</code></pre>
+        <aside class="notes">In Gemini CLI, you reference the agent config from settings.json and select it with the --agent flag. Same agent, different plumbing.</aside>
+    </section>
+
+    <!-- Gemini CLI: Adding MCP -->
+    <section>
+        <h3>Gemini CLI: Adding MCP Tools</h3>
+        <p>Create <code>.gemini/settings.json</code>:</p>
+        <pre><code class="language-json">{
+  "mcpServers": {
+    "my-tools": {
+      "command": "python3",
+      "args": ["mcp_server.py"]
+    }
+  }
+}</code></pre>
+        <p>Now the agent can call <code>greet</code> and <code>add</code> from our MCP server.</p>
+        <aside class="notes">Point Gemini CLI at your MCP server and it automatically discovers the tools. The agent decides when to use them based on the user's request.</aside>
+    </section>
+
+    <!-- Gemini CLI: Extensions -->
+    <section>
+        <h3>Gemini CLI: Built-in Extensions</h3>
+        <ul>
+            <li>Automatic file read/write and shell execution</li>
+            <li>Google Search integration</li>
+            <li>Customizable safety thresholds</li>
+            <li>Sandbox mode for untrusted operations</li>
+        </ul>
+        <pre><code class="language-bash"># Run with sandbox
+gemini --sandbox
+
+# Use a specific model
+gemini --model gemini-2.5-flash</code></pre>
+        <aside class="notes">Gemini CLI comes with batteries included. File I/O and shell are built in. You add MCP for domain-specific tools.</aside>
+    </section>
+</section>
+
+<!-- Part 2: Kiro CLI -->
+<section>
+    <section class="center-slide">
+        <h2>Part 2: Kiro CLI</h2>
+        <p class="small">Amazon's AI agent for the terminal</p>
+        <aside class="notes">Now let's look at Kiro CLI — Amazon's approach to the same problem.</aside>
+    </section>
+
+    <!-- Kiro CLI: Install -->
+    <section>
+        <h3>Kiro CLI: Setup</h3>
+        <pre><code class="language-bash"># Install
+npm install -g kiro-cli
+
+# Start
+kiro-cli chat</code></pre>
+        <ul>
+            <li>Uses Claude (Anthropic) as the LLM</li>
+            <li>Built-in code intelligence (LSP integration)</li>
+            <li>Subagent delegation for parallel tasks</li>
+        </ul>
+        <aside class="notes">Kiro CLI is installed the same way. It uses Claude under the hood and has some unique features like LSP integration and subagents.</aside>
+    </section>
+
+    <!-- Kiro CLI: Making an Agent -->
+    <section>
+        <h3>Kiro CLI: Creating an Agent</h3>
+        <p>Create <code>.kiro/settings/agent.md</code>:</p>
+        <pre><code class="language-markdown"># Agent Instructions
+
+You are a code review assistant.
+
+## Rules
+- Always check for security issues first
+- Suggest fixes, don't just point out problems
+- Be concise</code></pre>
+        <p class="small">Same idea as GEMINI.md — a markdown file defines the agent's behavior.</p>
+        <aside class="notes">Kiro uses a similar pattern. A markdown file in the .kiro directory defines the agent's personality and rules.</aside>
+    </section>
+
+    <!-- Kiro CLI: Enabling MONCEF -->
+    <section>
+        <h3>Kiro CLI: Enabling MONCEF</h3>
+        <p>Drop the config into <code>.kiro/agents/</code>:</p>
+        <pre><code class="language-bash">cp moncef.json .kiro/agents/moncef.json</code></pre>
+        <p>Then invoke it:</p>
+        <pre><code class="language-bash">kiro-cli chat --agent moncef</code></pre>
+        <p class="small"><code>allowedTools</code> restricts which built-in tools the agent can access.</p>
+        <aside class="notes">In Kiro, agents live in the .kiro/agents directory. You select one with the --agent flag. The allowedTools field acts as a security boundary.</aside>
+    </section>
+
+    <!-- Kiro CLI: Adding MCP -->
+    <section>
+        <h3>Kiro CLI: Adding MCP Tools</h3>
+        <p>Create <code>.kiro/settings/mcp.json</code>:</p>
+        <pre><code class="language-json">{
+  "mcpServers": {
+    "my-tools": {
+      "command": "python3",
+      "args": ["mcp_server.py"]
+    }
+  }
+}</code></pre>
+        <p>Same MCP server, different config location. That's the beauty of MCP.</p>
+        <aside class="notes">Exact same MCP server, just a different config file path. This is why MCP matters — write once, use everywhere.</aside>
+    </section>
+
+    <!-- Kiro CLI: Unique Features -->
+    <section>
+        <h3>Kiro CLI: Unique Features</h3>
+        <ul>
+            <li><span class="highlight">Code Intelligence</span> — LSP-powered symbol search, go-to-definition, find references</li>
+            <li><span class="highlight">Subagents</span> — delegate tasks to parallel workers</li>
+            <li><span class="highlight">Planner Mode</span> — <code>Shift+Tab</code> to switch to read-only planning</li>
+            <li><span class="highlight">AWS Integration</span> — native AWS CLI tool access</li>
+        </ul>
+        <aside class="notes">Kiro's differentiators are code intelligence and subagents. The LSP integration means it actually understands your code structure, not just text.</aside>
+    </section>
+</section>
+
+<!-- Part 3: Goose -->
+<section>
+    <section class="center-slide">
+        <h2>Part 3: Goose</h2>
+        <p class="small">Block's open-source AI agent — MCP-native</p>
+        <aside class="notes">Goose is Block's open-source agent. Its key differentiator: everything is an MCP server, even built-in tools.</aside>
+    </section>
+
+    <!-- Goose: Install -->
+    <section>
+        <h3>Goose: Setup</h3>
+        <pre><code class="language-bash"># Install
+brew install block/goose/goose
+# or
+curl -fsSL https://github.com/block/goose/releases/latest/download/install.sh | sh
+
+# Start
+goose session</code></pre>
+        <ul>
+            <li>Open source (Apache 2.0)</li>
+            <li>Supports multiple LLMs (OpenAI, Anthropic, Google…)</li>
+            <li>Everything is an MCP extension</li>
+        </ul>
+        <aside class="notes">Goose is model-agnostic — you pick your LLM. And its architecture is pure MCP: even built-in capabilities like file I/O are MCP servers.</aside>
+    </section>
+
+    <!-- Goose: Creating an Agent -->
+    <section>
+        <h3>Goose: Enabling MONCEF</h3>
+        <p>Drop the config into <code>.goose/recipes/</code>:</p>
+        <pre><code class="language-bash">cp moncef.json .goose/recipes/moncef.json</code></pre>
+        <p>Then invoke it:</p>
+        <pre><code class="language-bash">goose session --recipe .goose/recipes/moncef.json</code></pre>
+        <p class="small">Same JSON format as Kiro and Gemini — just a different path.</p>
+        <aside class="notes">Goose also supports the same agent JSON config. Drop it in .goose/agent.json and it just works. Same pattern across all three CLIs.</aside>
+    </section>
+
+    <!-- Goose: Adding MCP -->
+    <section>
+        <h3>Goose: Adding MCP Tools</h3>
+        <p>Create <code>.goose/recipes/mcp.json</code>:</p>
+        <pre><code class="language-json">{
+  "mcpServers": {
+    "my-tools": {
+      "command": "python3",
+      "args": ["mcp_server.py"]
+    }
+  }
+}</code></pre>
+        <p class="small">Same MCP server, same JSON format — Goose treats it as just another extension.</p>
+        <aside class="notes">In Goose, MCP config lives in .goose/recipes/mcp.json. Same format as the others. Write once, use everywhere.</aside>
+    </section>
+</section>
+
+<!-- Comparison -->
+<section>
+    <h3>CLI Comparison</h3>
+    <table>
+        <tr><th></th><th>Gemini CLI</th><th>Kiro CLI</th><th>Goose</th></tr>
+        <tr><td>LLM</td><td>Gemini 2.5</td><td>Claude</td><td>Any (pluggable)</td></tr>
+        <tr><td>Agent config</td><td>AGENTS.md, GEMINI.md</td><td>AGENTS.md, .kiro/agents/</td><td>AGENTS.md, .goose/recipes/</td></tr>
+        <tr><td>MCP config</td><td>.gemini/settings.json</td><td>.kiro/settings/mcp.json</td><td>.goose/recipes/mcp.json</td></tr>
+        <tr><td>Code intel</td><td>Basic</td><td>LSP-powered</td><td>Via extensions</td></tr>
+        <tr><td>Parallelism</td><td>—</td><td>Subagents</td><td>Subagents</td></tr>
+        <tr><td>Cloud</td><td>Google Cloud</td><td>AWS</td><td>Agnostic</td></tr>
+        <tr><td>License</td><td>Apache 2.0</td><td>Proprietary</td><td>Apache 2.0</td></tr>
+    </table>
+    <aside class="notes">Three tools, three approaches. Gemini has the biggest context window, Kiro has the deepest code understanding, and Goose is the most flexible with its model-agnostic, MCP-native architecture.</aside>
+</section>
+
+<!-- The Pattern -->
+<section>
+    <h3>The Pattern: Building Any Agent</h3>
+    <ol>
+        <li><span class="highlight">Define behavior</span> — write a system prompt (markdown file)</li>
+        <li><span class="highlight">Add tools</span> — write MCP servers for domain-specific capabilities</li>
+        <li><span class="highlight">Configure</span> — point the CLI at your MCP servers</li>
+        <li><span class="highlight">Iterate</span> — refine the prompt based on agent behavior</li>
+    </ol>
+    <p style="margin-top:1em;">This pattern works for <em>any</em> MCP-compatible agent.</p>
+    <aside class="notes">Regardless of which CLI you use, the pattern is the same. System prompt plus MCP tools equals an agent.</aside>
+</section>
+
+<!-- Real Example: Trace Analysis Agent -->
+<section>
+    <section>
+        <h3>Real Example: Trace Analysis Agent</h3>
+        <div class="diagram vertical" style="gap:0.15em;">
+            <div class="dbox">System Prompt: "You are a trace analysis expert"</div>
+            <div class="darrow-label">↓</div>
+            <div class="dbox highlight-box">Gemini CLI / Kiro CLI / Goose</div>
+            <div class="darrow-label">↓ MCP</div>
+            <div class="dbox green">TMLL MCP Server (12 tools)</div>
+            <div class="darrow-label">↓ HTTP</div>
+            <div class="dbox">Trace Compass Server</div>
+        </div>
+        <aside class="notes">Here's a real example. We built an MCP server that wraps TMLL — a trace analysis ML library. Both CLIs can use it.</aside>
+    </section>
+    <section>
+        <h3>Real Example: User Interaction</h3>
+        <p>User says:</p>
+        <blockquote>"Load /tmp/kernel-trace and find CPU anomalies"</blockquote>
+        <p>Agent does:</p>
+        <ol>
+            <li><code>ensure_server</code> → starts Trace Compass</li>
+            <li><code>create_experiment</code> → loads the trace</li>
+            <li><code>detect_anomalies</code> → runs isolation forest</li>
+            <li>Summarizes: "3 CPU spikes found at t=1.2s, 3.9s, 7.1s"</li>
+        </ol>
+        <aside class="notes">One sentence from the user, four tool calls from the agent, a clear summary at the end. This works identically on both CLIs.</aside>
+    </section>
+</section>
+
+<!-- Tips -->
+<section>
+    <h3>Tips for Good Agents</h3>
+    <ul>
+        <li><span class="highlight">Tool docstrings matter</span> — the AI reads them to decide what to call</li>
+        <li><span class="highlight">Keep tools focused</span> — one tool = one action</li>
+        <li><span class="highlight">Return structured text</span> — helps the AI parse results</li>
+        <li><span class="highlight">System prompt = guardrails</span> — be explicit about what the agent should and shouldn't do</li>
+        <li><span class="highlight">Test with edge cases</span> — agents are creative in unexpected ways</li>
+    </ul>
+    <aside class="notes">The quality of your agent depends more on good tool design and clear prompts than on which LLM you use.</aside>
+</section>
+
+<!-- Demo -->
+<section class="center-slide">
+    <h2>Live Demo</h2>
+    <p>Let's build an agent together.</p>
+    <aside class="notes">Time to see this in action. We'll create an MCP server and connect it to both CLIs.</aside>
+</section>
+
+<!-- Thank You -->
+<section class="center-slide">
+    <h2>Thank You!</h2>
+    <p style="margin-top: 1em;">
+        <a href="https://github.com/google-gemini/gemini-cli">Gemini CLI</a> ·
+        <a href="https://kiro.dev">Kiro CLI</a> ·
+        <a href="https://github.com/block/goose">Goose</a> ·
+        <a href="https://modelcontextprotocol.io">MCP Spec</a>
+    </p>
+    <aside class="notes">Thank you! All the links are here. Go build agents.</aside>
+</section>
+
+        </div>
+    </div>
+    <script>
+        Reveal.initialize({
+            controls: true,
+            slideNumber: true,
+            center: true,
+            transition: 'slide',
+            plugins: [ RevealNotes, RevealHighlight ]
+        });
+    </script>
+</body>
+</html>
