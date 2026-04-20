@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI-Powered Trace Analysis: Adding MCP to TMLL</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css" id="theme" />
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@latest/dist/reveal.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@latest/plugin/notes/notes.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@latest/plugin/highlight/highlight.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@latest/plugin/highlight/monokai.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Inter:ital,wght@1,400&display=swap" />
+    <style>
+        body, .reveal { font-family: 'Inter', sans-serif; }
+        .reveal .slides { text-align: left; }
+        .reveal .slides section { color: #fff; }
+        .reveal .slides section.light { color: #161952; }
+        .reveal .slides section.light h1,
+        .reveal .slides section.light h2,
+        .reveal .slides section.light h3 { color: #161952; }
+        .reveal .slides section.light .muted { color: #666; }
+        .reveal .slides section.light .callout { background: rgba(244,121,32,0.08); }
+        .reveal .slides section.light .callout-teal { background: rgba(84,255,212,0.12); }
+        .reveal .slides section.light .dbox { background: rgba(22,25,82,0.05); }
+        .reveal .slides section.light code { color: #161952; }
+        .reveal .slides section.light pre { background: #f4f4f8; border-radius: 8px; }
+        .reveal .slides section.light pre code { color: #333; background: #f4f4f8; }
+        .reveal .slides section.light .hljs-keyword { color: #d73a49; }
+        .reveal .slides section.light .hljs-string { color: #032f62; }
+        .reveal .slides section.light .hljs-title { color: #6f42c1; }
+        .reveal .slides section.light .hljs-comment, .reveal .slides section.light .hljs-doctag { color: #6a737d; }
+        .reveal .slides section.light .hljs-built_in { color: #005cc5; }
+        .reveal .slides section.light .hljs-params { color: #e36209; }
+        .reveal .slides section.light .hljs-literal { color: #005cc5; }
+        .reveal h1, .reveal h2, .reveal h3 { text-transform: none; color: #FFFFFF; }
+        .reveal .slides section.center-slide { text-align: center; }
+        .reveal .lead { font-size: 1.15em; line-height: 1.35; }
+        .reveal .tiny { font-size: 0.5em; }
+        .reveal .small { font-size: 0.6em; }
+        .reveal .muted { color: #8888aa; }
+        .highlight { color: #F47920; }
+        .teal { color: #54FFD4; }
+        .reveal .spacious li { margin-bottom: 0.5em; }
+        .reveal .callout { background: rgba(244,121,32,0.12); border-left: 4px solid #F47920; padding: 0.8em 1.2em; margin: 0.8em 0; border-radius: 0 8px 8px 0; }
+        .reveal .callout-teal { background: rgba(84,255,212,0.08); border-left: 4px solid #54FFD4; padding: 0.8em 1.2em; margin: 0.8em 0; border-radius: 0 8px 8px 0; }
+        .reveal pre code { font-size: 0.55em; max-height: 500px; }
+        .logo { position: absolute; bottom: 18px; left: 24px; z-index: 10; }
+        .logo img { width: 120px; height: auto; }
+        .twocol { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start; }
+        .diagram { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0.3em; margin: 1em 0; }
+        .diagram.vertical { flex-direction: column; }
+        .dbox { background: rgba(255,255,255,0.07); border: 2px solid #F47920; border-radius: 8px; padding: 0.4em 0.7em; font-size: 0.65em; text-align: center; }
+        .dbox.teal-box { border-color: #54FFD4; }
+        .darrow { font-size: 1.2em; color: #888; }
+        .darrow-label { font-size: 0.5em; color: #aaa; }
+        .slide-footer { position: absolute; bottom: 10px; left: 20px; font-size: 0.45em; color: #666; z-index: 1000; }
+        .reveal section img { border: none; box-shadow: none; }
+        /* Layout 1: Title — text left 45%, right side for imagery */
+        .layout-title { display: flex; align-items: center; }
+        .layout-title .title-text { width: 45%; text-align: left; }
+        .layout-title .title-img { width: 55%; text-align: center; }
+        /* Layout 2: Agenda — bg-section with teal dot bullets */
+        .layout-agenda ul { list-style: none; padding-left: 0; }
+        .layout-agenda li::before { content: '●'; color: #54FFD4; margin-right: 0.6em; font-size: 0.7em; }
+        /* Layout 5: Content + image — text left, image right */
+        .layout-img { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: center; }
+        .layout-img img { max-height: 55vh; border-radius: 8px; }
+        /* Layout 9: Thank you — globe bg, centered */
+        .layout-thankyou { text-align: center; }
+        .layout-thankyou h2 { font-size: 2.5em; margin-bottom: 0.3em; }
+    </style>
+</head>
+<body>
+    <div class="logo">
+        <img src="bg-content.png" alt="OC for AI Logo">
+    </div>
+    <div class="reveal">
+        <div class="slides">
+
+<!-- TITLE -->
+<section data-background-image="bg-title.png" data-background-size="cover">
+  <div style="text-align:left; width:45%;">
+    <img src="oc26-experience.png" alt="OCX 26 Experience" style="width:250px; margin-bottom:0.3em;">
+    <br>
+    <img src="oc-for-ai-logo.png" alt="OC for AI" style="width:160px; margin-bottom:1em;">
+    <h1 style="font-size:1.5em; margin-top:0;">AI-Powered Trace Analysis</h1>
+    <p style="color:#F47920; font-size:1.1em; margin-top:-0.3em;">Adding MCP to TMLL</p>
+    <p class="small">Matthew Khouzam</p>
+    <p class="tiny muted">Ericsson Research · Open Community Experience 2026</p>
+  </div>
+  <aside class="notes">
+    Trace Compass is a powerful open-source trace analysis framework, but extracting insights still requires significant expertise. In this talk we show how we connected TMLL to AI assistants using MCP, the emerging standard for giving AI models access to external tools. With ~615 lines of Python, we built an MCP server that exposes 12 trace analysis tools, enabling users to analyze traces through natural language.
+  </aside>
+</section>
+
+<div class="slide-footer">Matthew Khouzam · Ericsson Research · OCX 2026</div>
+
+<!-- AGENDA -->
+<section class="layout-agenda" data-background-image="bg-section-dots.png" data-background-size="cover">
+  <h2>Agenda</h2>
+  <ul class="spacious">
+    <li>Tracing, Trace Compass &amp; TMLL</li>
+    <li>What is MCP &amp; why it matters</li>
+    <li>Performance, cost &amp; privacy</li>
+    <li>How to start: create a CLI, wrap it in MCP</li>
+    <li>Debug with Theia &amp; MCP Inspector</li>
+    <li>See results in Kiro, Theia &amp; Gemini</li>
+    <li>Key takeaways</li>
+  </ul>
+  <aside class="notes">
+    Here's the roadmap. We'll set context on tracing, explain MCP, walk through the implementation step by step, show debugging tools, and demo the results across multiple AI clients.
+  </aside>
+</section>
+
+<!-- WHO AM I -->
+<section class="layout-agenda" data-background-image="bg-section-dots.png" data-background-size="cover">
+  <h2>Who Am I?</h2>
+  <ul class="spacious small">
+    <li><span class="highlight">Matthew Khouzam</span> — Principal Researcher &amp; Open Source Developer, Ericsson, Montréal</li>
+    <li>16 years in FOSS: Eclipse Trace Compass, Linux tracing, TMLL</li>
+    <li>University collaborations (Polytechnique Montréal, Concordia)</li>
+    <li>Former (and future ;) ) board of directors member, CoC commitee member, former chair of eCDT.</li>
+  </ul>
+  <div class="callout-teal">
+    <p>I have the privilege of being paid by Ericsson to make the world a better place through open source.</p>
+  </div>
+  <aside class="notes">
+    Quick background. I've been doing open source for 16 years, mostly in the tracing and observability space. I work closely with universities and believe deeply that open collaboration produces better software.
+  </aside>
+</section>
+
+<!-- WHAT IS TRACING / TRACE COMPASS / WHY MCP -->
+<section>
+  <section class="light" data-background-color="#FFFFFF">
+    <h2>Tracing &amp; Trace Compass</h2>
+    <p class="lead">Context before the code</p>
+    <aside class="notes">
+      Before we dive into MCP, let's set the stage. What is tracing, what is Trace Compass, and why did we want to add AI to it?
+    </aside>
+  </section>
+
+  <section class="light" data-background-color="#FFFFFF">
+    <h3>What is Tracing?</h3>
+    <ul class="spacious">
+      <li>Recording <span class="highlight">timestamped events</span> from a running system — kernel, userspace, network</li>
+      <li>Non-intrusive: nanosecond overhead, always-on capable</li>
+      <li>Produces massive datasets: a few minutes → <span class="highlight">gigabytes</span> of events</li>
+    </ul>
+    <aside class="notes">
+      Tracing captures what actually happened in a system at nanosecond granularity. Unlike logging, it's designed for minimal overhead so you can leave it on in production. The downside: it produces enormous volumes of data that are hard to analyze manually.
+    </aside>
+  </section>
+
+  <section class="light" data-background-color="#FFFFFF">
+    <h3>What is Trace Compass?</h3>
+    <ul class="spacious">
+      <li>Open-source <span class="highlight">Eclipse</span> project for trace visualization &amp; analysis</li>
+      <li>Supports LTTng, CTF, perf, ftrace, and more</li>
+      <li>Powerful — but requires <span class="teal">expertise</span> to use effectively</li>
+      <li>Trace Server Protocol (TSP) exposes analysis via REST API</li>
+    </ul>
+    <aside class="notes">
+      Trace Compass is the Swiss Army knife of trace analysis. It can handle kernel traces, userspace traces, network traces. But the learning curve is steep — you need to know which views to open, which analyses to run, how to interpret the results.
+    </aside>
+  </section>
+
+  <section class="light" data-background-color="#FFFFFF">
+    <h3>Why Add MCP?</h3>
+    <ul class="spacious">
+      <li>Users shouldn't need to be <span class="highlight">tracing experts</span> to get insights</li>
+      <li>"Find CPU anomalies in this trace" is easier than navigating 20 views</li>
+      <li>AI handles the <em>how</em> — the user focuses on the <em>what</em></li>
+    </ul>
+    <div class="callout">
+      <p>Personal motivation: make trace analysis accessible to everyone, not just the experts who built it</p>
+    </div>
+    <aside class="notes">
+      This is the personal motivation. I've spent 16 years building tracing tools, and I've watched users struggle with the complexity. MCP lets us put a natural language interface on top of all that power. Instead of teaching someone Trace Compass, you teach them to ask a question.
+    </aside>
+  </section>
+
+  <section class="light" data-background-color="#FFFFFF">
+    <h3>What's New in Trace Compass</h3>
+    <ul class="spacious">
+      <li><span class="highlight">CTF2 support</span> — JSON-based trace metadata, human-readable, AI-parseable</li>
+      <li>Opens the door to <span class="teal">smarter AI-driven analysis</span></li>
+      <li>AI can read trace structure without binary parsing</li>
+    </ul>
+    <div class="callout-teal">
+      <p>JSON metadata means AI agents can understand trace schemas natively</p>
+    </div>
+    <aside class="notes">
+      CTF2 replaces the binary TSDL metadata with JSON. This is huge for AI integration because LLMs can read and reason about JSON natively. An AI agent could inspect a trace's metadata, understand what events are available, and decide which analyses to run.
+    </aside>
+  </section>
+
+  <section class="light" data-background-color="#FFFFFF">
+    <h3>TMLL — The ML Layer</h3>
+    <ul class="spacious">
+      <li><span class="highlight">Anomaly detection</span> — iforest, z-score, IQR, moving average, combined</li>
+      <li><span class="highlight">Change point analysis</span> — single, z-score, voting, PCA</li>
+      <li><span class="highlight">Correlation analysis</span> — Pearson, Spearman, Kendall</li>
+      <li><span class="highlight">Memory leak detection</span>, idle resources, capacity planning</li>
+    </ul>
+    <p class="small">Python ML library on top of the Trace Server Protocol — powerful, but requires code to use</p>
+    <aside class="notes">
+      TMLL wraps ML techniques into a clean Python API that talks to the Trace Server. It's the library we're going to make AI-accessible. But until now, users needed to write Python code to use it. That's the gap MCP fills.
+    </aside>
+  </section>
+</section>
+
+<!-- WHAT IS MCP -->
+<section>
+  <section class="light" data-background-color="#FFFFFF">
+    <h2>What is MCP?</h2>
+    <p class="lead">Model Context Protocol — the universal adapter between AI and tools</p>
+    <aside class="notes">
+      MCP is an open protocol by Anthropic that standardizes how LLMs interact with external tools. Think of it as USB-C for AI: one connector, every device.
+    </aside>
+  </section>
+
+  <section class="light" data-background-color="#FFFFFF">
+    <h3>MCP in 30 Seconds</h3>
+    <ul class="spacious">
+      <li>Open protocol: JSON-RPC over stdio or HTTP</li>
+      <li>Write a tool once → use from <span class="highlight">any</span> MCP-compatible agent</li>
+      <li>Adopted by OpenAI, Anthropic, Google, all major IDEs</li>
+    </ul>
+    <div class="diagram">
+      <div class="dbox">AI Agent</div>
+      <div class="darrow">→</div>
+      <div class="dbox" style="border-color:#F47920;">MCP Server</div>
+      <div class="darrow">→</div>
+      <div class="dbox teal-box">Your Tool / API</div>
+    </div>
+    <aside class="notes">
+      The key insight: the AI receives tool schemas and decides autonomously which tools to call. The protocol handles the plumbing. The AI handles the reasoning. JSON-RPC keeps it simple and language-agnostic.
+    </aside>
+  </section>
+</section>
+
+<!-- WHY MCP MATTERS FOR YOU -->
+<section>
+  <section class="light" data-background-color="#FFFFFF">
+    <h2>Why MCP Matters for You</h2>
+    <p class="lead">Deterministic tools + AI reasoning = best of both worlds</p>
+    <aside class="notes">
+      This is the practical pitch. Why should you, as a developer, care about MCP?
+    </aside>
+  </section>
+
+  <section class="light" data-background-color="#FFFFFF">
+    <h3>Deterministic Execution</h3>
+    <ul class="spacious">
+      <li>AI decides <em>what</em> to call — your tool decides <em>how</em> to execute</li>
+      <li>No hallucinated analysis — <span class="highlight">real code runs on real data</span></li>
+      <li>Reproducible results: same input → same output, every time</li>
+    </ul>
+    <aside class="notes">
+      The AI picks the right tool and parameters, but the actual computation is your deterministic code. No hallucinated statistics, no made-up numbers.
+    </aside>
+  </section>
+
+  <section class="light" data-background-color="#FFFFFF">
+    <h3>Save Tokens</h3>
+    <ul class="spacious">
+      <li>Don't paste raw data into the prompt — let the tool <span class="highlight">process it server-side</span></li>
+      <li>Return summaries, not megabytes of CSV</li>
+      <li><span class="teal">Progressive discovery</span>: only load schemas for tools you actually use (~80% savings)</li>
+    </ul>
+    <aside class="notes">
+      Without MCP, you'd paste trace data into the prompt and ask the LLM to analyze it. That's expensive, slow, and limited by context window size. With MCP, the heavy lifting happens server-side.
+    </aside>
+  </section>
+
+  <section class="light" data-background-color="#FFFFFF">
+    <h3>Improve Your Existing Tools</h3>
+    <ul class="spacious">
+      <li>Your CLI already works — MCP makes it <span class="highlight">AI-accessible</span></li>
+      <li>No rewrite needed: wrap, don't replace</li>
+      <li>Users who can't write Python can now use your tool via natural language</li>
+    </ul>
+    <div class="callout">
+      <p>MCP doesn't replace your tools — it gives them a new audience</p>
+    </div>
+    <aside class="notes">
+      You don't need to rewrite anything. Wrap your existing CLI as an MCP server, and suddenly every AI assistant in the world can use your tool.
+    </aside>
+  </section>
+</section>
+
+<!-- PERFORMANCE & COST -->
+<section>
+  <section class="light" data-background-color="#FFFFFF">
+    <h2>Performance &amp; Cost</h2>
+    <p class="lead">Why <em>not</em> just feed the trace to the LLM?</p>
+    <aside class="notes">
+      Before we build anything, let's justify the architecture with numbers. Why do we need MCP + TMLL at all — why not just paste the trace into ChatGPT?
+    </aside>
+  </section>
+
+  <section class="light" data-background-color="#FFFFFF">
+    <h3>Raw Trace → LLM vs MCP + TMLL</h3>
+    <table>
+      <tr><th>Approach</th><th>Tokens</th><th>Cost (est.)</th><th>Result</th></tr>
+      <tr><td>babeltrace → LLM</td><td>~1B+</td><td>$1000s per query</td><td>Hallucinated, non-deterministic</td></tr>
+      <tr><td>MCP + TMLL</td><td>~2K</td><td>fraction of a cent</td><td>Deterministic ML analysis</td></tr>
+    </table>
+    <p class="small" style="margin-top:0.8em;">A 1 GB kernel trace ≈ billions of text tokens — exceeds every context window</p>
+    <ul class="small spacious" style="margin-top:0.5em;">
+      <li>LLMs can't reliably do statistics on raw events</li>
+      <li>MCP approach: AI sends <em>one tool call</em>, gets <em>deterministic</em> results back</li>
+      <li>Trace Server + TMLL do the heavy lifting — AI just interprets</li>
+    </ul>
+    <aside class="notes">
+      This is the key economic argument. A 1 GB trace is billions of tokens — it won't fit in any context window, and even if it did you'd pay thousands of dollars per query and get hallucinated statistics back. With MCP, the AI sends one small tool call and gets a small deterministic answer.
+    </aside>
+  </section>
+
+  <section class="light" data-background-color="#FFFFFF">
+    <h3>MCP Overhead</h3>
+    <table>
+      <tr><th>Operation</th><th>Direct TMLL API</th><th>MCP (via CLI)</th></tr>
+      <tr><td>Experiment creation</td><td>~200 ms</td><td>~800 ms</td></tr>
+      <tr><td>Anomaly detection</td><td>~2 s</td><td>~3 s</td></tr>
+      <tr><td>Correlation analysis</td><td>~1.5 s</td><td>~2.5 s</td></tr>
+    </table>
+    <ul class="small spacious" style="margin-top:0.6em;">
+      <li>~1 s overhead per call (subprocess + Python startup)</li>
+      <li>Negligible next to LLM inference latency</li>
+      <li>Future: in-process mode eliminates the cost</li>
+    </ul>
+    <aside class="notes">
+      The subprocess wrapper adds about a second per call. That's completely dominated by LLM inference time, so it doesn't matter in practice. If it ever does, we can switch to in-process mode.
+    </aside>
+  </section>
+
+  <section class="light" data-background-color="#FFFFFF">
+    <h3>Runs Locally — Privacy &amp; Free Compute</h3>
+    <ul class="spacious">
+      <li>Trace Compass, TMLL, and the MCP server all run <span class="highlight">on your machine</span></li>
+      <li><span class="teal">Your traces never leave the network</span> — critical for regulated, proprietary, or customer data</li>
+      <li>Uses compute you <span class="highlight">already own</span> — no new cloud bill, no GPU rental</li>
+      <li>The AI only sees the small, aggregated result — not the raw events</li>
+    </ul>
+    <div class="callout-teal">
+      <p>We already had the hardware, the server, and the library. MCP just unlocked them.</p>
+    </div>
+    <aside class="notes">
+      This is the part that often gets missed. Everything runs locally: the trace server, TMLL, the MCP server. Your trace data — which is often the most sensitive telemetry a company has — never leaves the machine. The AI receives only the distilled result, a few kilobytes of summary. And the compute is free in the sense that it's hardware you already bought and a server you were already running. No new cloud spend, no new data-sharing agreements. We're just putting a natural-language front door on infrastructure that was already there.
+    </aside>
+  </section>
+</section>
+
+<!-- HOW TO START: CREATE A CLI -->
+<section>
+  <section class="light" data-background-color="#FFFFFF">
+    <h2>How to Start</h2>
+    <p class="lead">Step 1: Create a CLI</p>
+    <aside class="notes">
+      The recipe is simple. Step 1: if you don't already have a CLI for your tool, write one.
+    </aside>
+  </section>
+
+  <section class="light" data-background-color="#FFFFFF">
+    <h3>Create a CLI</h3>
+    <pre><code class="language-python">#!/usr/bin/env python3
+"""tmll_cli.py — 12 subcommands wrapping the TMLL library."""
+import argparse
+from tmll.tmll_client import TMLLClient
+
+def detect_anomalies(args):
+    client = TMLLClient(args.host, args.port)
+    experiment = get_experiment(client, args.experiment)
+    outputs = experiment.find_outputs(keyword=args.keywords, type=['xy'])
+    ad = AnomalyDetection(client, experiment, outputs)
+    result = ad.find_anomalies(method=args.method)
+    print(f"Found {total} anomalies across {len(result.anomalies)} outputs")
+
+# ... 11 more subcommands ...</code></pre>
+    <p class="small">Standard argparse — nothing MCP-specific yet</p>
+    <aside class="notes">
+      This is just a normal Python CLI. argparse, subcommands, print output. Nothing special. Each subcommand maps to one TMLL analysis.
+    </aside>
+  </section>
+</section>
+
+<!-- STEP 2: WRAP CLI IN MCP -->
+<section>
+  <section class="light" data-background-color="#FFFFFF">
+    <h2>Step 2: Wrap CLI in MCP</h2>
+    <p class="lead">~615 lines of Python total</p>
+    <aside class="notes">
+      Step 2: wrap each CLI subcommand as an MCP tool using FastMCP. subprocess.run bridges them.
+    </aside>
+  </section>
+
+  <section class="light" data-background-color="#FFFFFF">
+    <h3>The MCP Wrapper</h3>
+    <pre><code class="language-python">from mcp.server.fastmcp import FastMCP
+mcp = FastMCP("tmll-cli-mcp-server")
+
+@mcp.tool()
+def detect_anomalies(experiment_id: str,
+                     keywords: list[str] = None,
+                     method: str = None) -> str:
+    """Detect anomalies in trace data using ML methods."""
+    args = build_args({
+        "keywords": ("-k", keywords or ["cpu usage"]),
+        "method": ("-m", method or "iforest"),
+    })
+    return run_cli("anomaly", experiment_id, *args)</code></pre>
+    <p class="small">Any CLI → MCP tool in <span class="highlight">5 lines of glue</span></p>
+    <aside class="notes">
+      The @mcp.tool decorator and the docstring tell the AI what the tool does. FastMCP handles schema generation automatically. subprocess.run bridges to the CLI.
+    </aside>
+  </section>
+
+  <section class="light" data-background-color="#FFFFFF">
+    <h3>The Stack</h3>
+    <div class="diagram vertical" style="gap:0;">
+      <div class="dbox" style="width:80%;">TMLL — Python ML library for trace analysis</div>
+      <div class="darrow-label">↓ wrapped as</div>
+      <div class="dbox" style="width:80%;">CLI — argparse, 12 commands</div>
+      <div class="darrow-label">↓ wrapped as</div>
+      <div class="dbox" style="width:80%; border-color:#F47920;">MCP Server — FastMCP + subprocess</div>
+      <div class="darrow-label">↓ used by</div>
+      <div class="dbox teal-box" style="width:80%;">Any AI agent: Kiro, Gemini, Theia, Goose…</div>
+    </div>
+    <aside class="notes">
+      The CLI uses argparse with 12 subcommands. The MCP server wraps each CLI command as a tool using FastMCP. This pattern works for any existing CLI tool.
+    </aside>
+  </section>
+
+  <section class="light" data-background-color="#FFFFFF">
+    <h3>Why MCP → CLI → Library?</h3>
+    <ul class="spacious">
+      <li><span class="highlight">Separation of concerns</span> — you can access and test your CLI independently, no AI needed</li>
+      <li><span class="highlight">MCP is new</span> (2024) — put it on tested footing by building on a proven CLI layer</li>
+      <li><span class="highlight">One path to maintain</span> — why have two code paths when one works for both humans and AI?</li>
+    </ul>
+    <aside class="notes">
+      This layering is deliberate. The CLI is your stable, testable interface. MCP is exciting but brand new — first released in 2024. By wrapping the CLI rather than calling the library directly, you get a battle-tested layer underneath. And you avoid maintaining two separate code paths: the CLI works for humans, the MCP wrapper makes it work for AI. Same code, two audiences.
+    </aside>
+  </section>
+
+  <section class="light" data-background-color="#FFFFFF">
+    <h3>12 Tools Exposed</h3>
+    <div class="twocol">
+      <div>
+        <ul class="small spacious">
+          <li><code>ensure_server</code></li>
+          <li><code>create_experiment</code></li>
+          <li><code>list_experiments</code></li>
+          <li><code>list_outputs</code></li>
+          <li><code>fetch_data</code></li>
+          <li><code>delete_experiment</code></li>
+        </ul>
+      </div>
+      <div>
+        <ul class="small spacious">
+          <li><code>detect_anomalies</code></li>
+          <li><code>detect_memory_leak</code></li>
+          <li><code>detect_changepoints</code></li>
+          <li><code>analyze_correlation</code></li>
+          <li><code>detect_idle_resources</code></li>
+          <li><code>plan_capacity</code></li>
+        </ul>
+      </div>
+    </div>
+    <aside class="notes">
+      12 tools total. Left column is infrastructure. Right column is ML analysis. Each maps to a CLI subcommand.
+    </aside>
+  </section>
+</section>
+
+<!-- PROGRESSIVE DISCOVERY -->
+<section class="light" data-background-color="#FFFFFF">
+  <h3>Progressive Discovery</h3>
+  <div class="twocol">
+    <div>
+      <h4 style="color:#F47920;">Eager Loading (old)</h4>
+      <ul class="small">
+        <li>All 12 tool schemas sent upfront</li>
+        <li>~2,200 tokens consumed <em>before the user says anything</em></li>
+      </ul>
+    </div>
+    <div>
+      <h4 style="color:#54FFD4;">Progressive Discovery (new)</h4>
+      <ul class="small">
+        <li>Schemas loaded on demand</li>
+        <li>Typical session: 2–3 tools → <span class="highlight">~80% savings</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout">
+    <p>FastMCP's progressive discovery means the AI only pays for what it uses</p>
+  </div>
+  <aside class="notes">
+    Every tool schema consumes tokens. With progressive discovery, the client only resolves schemas for tools it actually invokes. ~80% fewer tokens spent on tool definitions.
+  </aside>
+</section>
+
+<!-- MCP APPS -->
+<section>
+  <section class="light" data-background-color="#FFFFFF">
+    <h2>MCP Apps</h2>
+    <p class="lead">Rich content returned inline</p>
+    <aside class="notes">
+      MCP isn't limited to text. Servers can return images, interactive HTML, charts.
+    </aside>
+  </section>
+
+  <section class="light" data-background-color="#FFFFFF">
+    <h3>Images in AI Output</h3>
+    <pre><code class="language-python">@mcp.tool()
+def plot_xy_with_anomalies(experiment_id: str,
+                           as_image: bool = True):
+    """Detect anomalies and return annotated charts."""
+    # ... run analysis, generate matplotlib plot ...
+    return Image(data=buf.getvalue(), format="png")</code></pre>
+    <div class="callout">
+      <p>The AI doesn't just <em>describe</em> the anomaly — it <em>shows</em> you the chart</p>
+    </div>
+    <aside class="notes">
+      The tool returns an actual annotated chart as a PNG image. The AI embeds it directly in its response.
+    </aside>
+  </section>
+</section>
+
+<!-- DEBUG: THEIA & MCP INSPECTOR -->
+<section>
+  <section class="light" data-background-color="#FFFFFF">
+    <h2>Debugging MCP</h2>
+    <p class="lead">Theia IDE &amp; MCP Inspector</p>
+    <aside class="notes">
+      When things go wrong you need visibility into what the AI is sending and receiving. Theia and the MCP Inspector give you that.
+    </aside>
+  </section>
+
+  <section class="center-slide light" data-background-color="#FFFFFF">
+    <h3>Theia — AI Agent History</h3>
+    <img src="theia-mcp-debugging.png" alt="Theia MCP debugging view" style="max-height:65vh; border-radius:8px;">
+    <aside class="notes">
+      Theia IDE has built-in MCP support. The AI Agent History view shows every MCP tool call: the request payload, the model used, the agent type. Invaluable for debugging.
+    </aside>
+  </section>
+
+  <section class="center-slide light" data-background-color="#FFFFFF">
+    <h3>MCP Inspector</h3>
+    <img src="mcp-inspector.png" alt="MCP Inspector" style="max-height:65vh; border-radius:8px;">
+    <p class="small muted">MCP Inspector — test tools interactively without an AI client</p>
+    <aside class="notes">
+      The MCP Inspector is a standalone web tool that lets you connect to any MCP server, browse its tools, and call them interactively. No AI client needed. Great for testing your server before connecting it to an LLM.
+    </aside>
+  </section>
+</section>
+
+<!-- RESULTS: KIRO, GEMINI, THEIA -->
+<section>
+  <section class="light" data-background-color="#FFFFFF">
+    <h2>See the Results</h2>
+    <p class="lead">One MCP server, every AI client</p>
+    <aside class="notes">
+      The same MCP server working across multiple AI clients. Write once, run anywhere.
+    </aside>
+  </section>
+
+  <section class="center-slide light" data-background-color="#FFFFFF">
+    <h3>Kiro IDE</h3>
+    <img src="kiro.png" alt="Kiro running TMLL MCP" style="max-height:65vh; border-radius:8px;">
+    <aside class="notes">
+      Kiro calling the TMLL MCP server. The user asks in natural language, the agent calls create_experiment, then plot_xy_with_anomalies, and returns annotated charts directly in the conversation.
+    </aside>
+  </section>
+
+  <section class="light" data-background-color="#FFFFFF">
+    <h3>Eclipse Theia &amp; Gemini CLI</h3>
+    <div class="twocol">
+      <div style="text-align:center;">
+        <img src="theia-mcp-results.png" alt="Theia MCP results" style="max-height:55vh; border-radius:8px;">
+        <p class="small">Theia — inline anomaly chart</p>
+      </div>
+      <div style="text-align:center;">
+        <img src="gemini-usage.png" alt="Gemini CLI resource usage" style="max-height:55vh; border-radius:8px;">
+        <p class="small">Gemini — 1 GB trace, 85K tokens, 5 tool calls</p>
+      </div>
+    </div>
+    <aside class="notes">
+      Side by side: Theia shows the inline anomaly chart from the MCP App. Gemini CLI shows the resource cost of analyzing a 1 GB kernel trace — token usage, model calls, and tool invocations. The AI handled the entire workflow autonomously: load trace, detect anomalies, render charts.
+    </aside>
+  </section>
+</section>
+
+<!-- KEY TAKEAWAYS -->
+<section class="light" data-background-color="#FFFFFF">
+  <h2>Key Takeaways</h2>
+  <ul class="spacious">
+    <li><span class="highlight">~615 lines of Python</span> to make TMLL AI-accessible</li>
+    <li>Pattern: <span class="teal">Library → CLI → MCP</span> works for any tool</li>
+    <li>One MCP server → works across Kiro, Gemini, Theia, Goose</li>
+    <li>Progressive discovery saves <span class="highlight">~80%</span> of token overhead</li>
+    <li>Runs <span class="highlight">locally</span> — your traces stay on your machine, on hardware you already own</li>
+    <li>MCP Apps: charts and images inline in AI responses</li>
+    <li>The bottleneck is never the MCP glue — it's the ML analysis and LLM inference</li>
+    <li>Many MCP tools in the wild are <span class="highlight">sub-optimal</span> — don't judge the technology by a few bad implementations</li>
+  </ul>
+  <div class="callout">
+    <p>MCP is a protocol, not a product. The quality is in your hands.</p>
+  </div>
+  <aside class="notes">
+    The main message: making your tools AI-accessible via MCP is surprisingly easy. The pattern is general. The ecosystem is ready. And a word of caution: there are a lot of poorly written MCP servers out there. Don't let that colour your view of the protocol itself. A bad REST API doesn't mean HTTP is broken. Same applies here. Build good tools, and MCP will serve you well.
+  </aside>
+</section>
+
+<!-- THANK YOU -->
+<section class="layout-thankyou" data-background-image="bg-globe.png" data-background-size="cover" data-background-position="center">
+  <img src="oc-for-ai-logo-dark.png" alt="OC for AI" style="width:200px; margin-bottom:0.5em;">
+  <h2>Thank You</h2>
+  <p class="lead" style="color:#F47920;">matthew.khouzam@ericsson.com</p>
+  <p class="small"><a href="https://github.com/eclipse-tmll/tmll/pull/16" style="color:#54FFD4;">github.com/eclipse-tmll/tmll/pull/16</a></p>
+  <p class="tiny muted">Copyright© Eclipse Foundation AISBL and contributors. Made available under CC-BY-SA 4.0 International.</p>
+  <p class="tiny"><a href="../index.html" style="color:#8888aa;">Back to main page</a></p>
+  <aside class="notes">
+    Thank you! The PR with the full MCP server implementation is linked here. Happy to take questions.
+  </aside>
+</section>
+
+        </div>
+    </div>
+    <script>
+        Reveal.initialize({
+            controls: true,
+            slideNumber: true,
+            center: true,
+            transition: 'slide',
+            plugins: [ RevealNotes, RevealHighlight ]
+        });
+    </script>
+</body>
+</html>
