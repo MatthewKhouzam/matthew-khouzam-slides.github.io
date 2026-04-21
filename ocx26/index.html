@@ -55,17 +55,17 @@
         .darrow-label { font-size: 0.5em; color: #aaa; }
         .slide-footer { position: absolute; bottom: 10px; left: 20px; font-size: 0.45em; color: #666; z-index: 1000; }
         .reveal section img { border: none; box-shadow: none; }
-        /* Layout 1: Title — text left 45%, right side for imagery */
+        /* Layout 1: Title, text left 45%, right side for imagery */
         .layout-title { display: flex; align-items: center; }
         .layout-title .title-text { width: 45%; text-align: left; }
         .layout-title .title-img { width: 55%; text-align: center; }
-        /* Layout 2: Agenda — bg-section with teal dot bullets */
+        /* Layout 2: Agenda, bg-section with teal dot bullets */
         .layout-agenda ul { list-style: none; padding-left: 0; }
         .layout-agenda li::before { content: '●'; color: #54FFD4; margin-right: 0.6em; font-size: 0.7em; }
-        /* Layout 5: Content + image — text left, image right */
+        /* Layout 5: Content + image, text left, image right */
         .layout-img { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: center; }
         .layout-img img { max-height: 55vh; border-radius: 8px; }
-        /* Layout 9: Thank you — globe bg, centered */
+        /* Layout 9: Thank you, globe bg, centered */
         .layout-thankyou { text-align: center; }
         .layout-thankyou h2 { font-size: 2.5em; margin-bottom: 0.3em; }
     </style>
@@ -116,7 +116,7 @@
 <section class="layout-agenda" data-background-image="bg-section-dots.png" data-background-size="cover">
   <h2>Who Am I?</h2>
   <ul class="spacious small">
-    <li><span class="highlight">Matthew Khouzam</span> — Principal Researcher &amp; Open Source Developer, Ericsson, Montréal</li>
+    <li><span class="highlight">Matthew Khouzam</span>, Principal Researcher &amp; Open Source Developer, Ericsson, Montréal</li>
     <li>16 years in FOSS: Eclipse Trace Compass, Linux tracing, TMLL</li>
     <li>University collaborations (Polytechnique Montréal, Concordia)</li>
     <li>Former (and future ;) ) board of directors member, CoC commitee member, former chair of eCDT.</li>
@@ -142,7 +142,7 @@
   <section class="light" data-background-color="#FFFFFF">
     <h3>What is Tracing?</h3>
     <ul class="spacious">
-      <li>Recording <span class="highlight">timestamped events</span> from a running system — kernel, userspace, network</li>
+      <li>Recording <span class="highlight">timestamped events</span> from a running system, kernel, userspace, network</li>
       <li>Non-intrusive: nanosecond overhead, always-on capable</li>
       <li>Produces massive datasets: a few minutes → <span class="highlight">gigabytes</span> of events</li>
     </ul>
@@ -156,11 +156,11 @@
     <ul class="spacious">
       <li>Open-source <span class="highlight">Eclipse</span> project for trace visualization &amp; analysis</li>
       <li>Supports LTTng, CTF, perf, ftrace, and more</li>
-      <li>Powerful — but requires <span class="teal">expertise</span> to use effectively</li>
+      <li>Powerful, but requires <span class="teal">expertise</span> to use effectively</li>
       <li>Trace Server Protocol (TSP) exposes analysis via REST API</li>
     </ul>
     <aside class="notes">
-      Trace Compass is the Swiss Army knife of trace analysis. It can handle kernel traces, userspace traces, network traces. But the learning curve is steep — you need to know which views to open, which analyses to run, how to interpret the results.
+      Trace Compass is the Swiss Army knife of trace analysis. It can handle kernel traces, userspace traces, network traces. But the learning curve is steep, you need to know which views to open, which analyses to run, how to interpret the results.
     </aside>
   </section>
 
@@ -169,7 +169,7 @@
     <ul class="spacious">
       <li>Users shouldn't need to be <span class="highlight">tracing experts</span> to get insights</li>
       <li>"Find CPU anomalies in this trace" is easier than navigating 20 views</li>
-      <li>AI handles the <em>how</em> — the user focuses on the <em>what</em></li>
+      <li>AI handles the <em>how</em>, the user focuses on the <em>what</em></li>
     </ul>
     <div class="callout">
       <p>Personal motivation: make trace analysis accessible to everyone, not just the experts who built it</p>
@@ -182,7 +182,7 @@
   <section class="light" data-background-color="#FFFFFF">
     <h3>What's New in Trace Compass</h3>
     <ul class="spacious">
-      <li><span class="highlight">CTF2 support</span> — JSON-based trace metadata, human-readable, AI-parseable</li>
+      <li><span class="highlight">CTF2 support</span>, JSON-based trace metadata, human-readable, AI-parseable</li>
       <li>Opens the door to <span class="teal">smarter AI-driven analysis</span></li>
       <li>AI can read trace structure without binary parsing</li>
     </ul>
@@ -195,14 +195,14 @@
   </section>
 
   <section class="light" data-background-color="#FFFFFF">
-    <h3>TMLL — The ML Layer</h3>
+    <h3>TMLL, The ML Layer</h3>
     <ul class="spacious">
-      <li><span class="highlight">Anomaly detection</span> — iforest, z-score, IQR, moving average, combined</li>
-      <li><span class="highlight">Change point analysis</span> — single, z-score, voting, PCA</li>
-      <li><span class="highlight">Correlation analysis</span> — Pearson, Spearman, Kendall</li>
+      <li><span class="highlight">Anomaly detection</span>, iforest, z-score, IQR, moving average, combined</li>
+      <li><span class="highlight">Change point analysis</span>, single, z-score, voting, PCA</li>
+      <li><span class="highlight">Correlation analysis</span>, Pearson, Spearman, Kendall</li>
       <li><span class="highlight">Memory leak detection</span>, idle resources, capacity planning</li>
     </ul>
-    <p class="small">Python ML library on top of the Trace Server Protocol — powerful, but requires code to use</p>
+    <p class="small">Python ML library on top of the Trace Server Protocol, powerful, but requires code to use</p>
     <aside class="notes">
       TMLL wraps ML techniques into a clean Python API that talks to the Trace Server. It's the library we're going to make AI-accessible. But until now, users needed to write Python code to use it. That's the gap MCP fills.
     </aside>
@@ -213,7 +213,7 @@
 <section>
   <section class="light" data-background-color="#FFFFFF">
     <h2>What is MCP?</h2>
-    <p class="lead">Model Context Protocol — the universal adapter between AI and tools</p>
+    <p class="lead">Model Context Protocol, the universal adapter between AI and tools</p>
     <aside class="notes">
       MCP is an open protocol by Anthropic that standardizes how LLMs interact with external tools. Think of it as USB-C for AI: one connector, every device.
     </aside>
@@ -252,8 +252,8 @@
   <section class="light" data-background-color="#FFFFFF">
     <h3>Deterministic Execution</h3>
     <ul class="spacious">
-      <li>AI decides <em>what</em> to call — your tool decides <em>how</em> to execute</li>
-      <li>No hallucinated analysis — <span class="highlight">real code runs on real data</span></li>
+      <li>AI decides <em>what</em> to call, your tool decides <em>how</em> to execute</li>
+      <li>No hallucinated analysis, <span class="highlight">real code runs on real data</span></li>
       <li>Reproducible results: same input → same output, every time</li>
     </ul>
     <aside class="notes">
@@ -264,7 +264,7 @@
   <section class="light" data-background-color="#FFFFFF">
     <h3>Save Tokens</h3>
     <ul class="spacious">
-      <li>Don't paste raw data into the prompt — let the tool <span class="highlight">process it server-side</span></li>
+      <li>Don't paste raw data into the prompt, let the tool <span class="highlight">process it server-side</span></li>
       <li>Return summaries, not megabytes of CSV</li>
       <li><span class="teal">Progressive discovery</span>: only load schemas for tools you actually use (~80% savings)</li>
     </ul>
@@ -276,12 +276,12 @@
   <section class="light" data-background-color="#FFFFFF">
     <h3>Improve Your Existing Tools</h3>
     <ul class="spacious">
-      <li>Your CLI already works — MCP makes it <span class="highlight">AI-accessible</span></li>
+      <li>Your CLI already works, MCP makes it <span class="highlight">AI-accessible</span></li>
       <li>No rewrite needed: wrap, don't replace</li>
       <li>Users who can't write Python can now use your tool via natural language</li>
     </ul>
     <div class="callout">
-      <p>MCP doesn't replace your tools — it gives them a new audience</p>
+      <p>MCP doesn't replace your tools, it gives them a new audience</p>
     </div>
     <aside class="notes">
       You don't need to rewrite anything. Wrap your existing CLI as an MCP server, and suddenly every AI assistant in the world can use your tool.
@@ -295,37 +295,37 @@
     <h2>Performance &amp; Cost</h2>
     <p class="lead">Why <em>not</em> just feed the trace to the LLM?</p>
     <aside class="notes">
-      Before we build anything, let's justify the architecture with numbers. Why do we need MCP + TMLL at all — why not just paste the trace into ChatGPT?
+      Before we build anything, let's justify the architecture with numbers. Why do we need MCP + TMLL at all, why not just paste the trace into ChatGPT?
     </aside>
   </section>
 
   <section class="light" data-background-color="#FFFFFF">
     <h3>Raw Trace → LLM vs MCP + TMLL</h3>
-    <table>
+    <table class="small">
       <tr><th>Approach</th><th>Tokens</th><th>Cost (est.)</th><th>Result</th></tr>
       <tr><td>babeltrace → LLM</td><td>~1B+</td><td>$1000s per query</td><td>Hallucinated, non-deterministic</td></tr>
       <tr><td>MCP + TMLL</td><td>~2K</td><td>fraction of a cent</td><td>Deterministic ML analysis</td></tr>
     </table>
-    <p class="small" style="margin-top:0.8em;">A 1 GB kernel trace ≈ billions of text tokens — exceeds every context window</p>
+    <p class="small" style="margin-top:0.8em;">A 1 GB kernel trace ≈ billions of text tokens, exceeds every context window</p>
     <ul class="small spacious" style="margin-top:0.5em;">
       <li>LLMs can't reliably do statistics on raw events</li>
       <li>MCP approach: AI sends <em>one tool call</em>, gets <em>deterministic</em> results back</li>
-      <li>Trace Server + TMLL do the heavy lifting — AI just interprets</li>
+      <li>Trace Server + TMLL do the heavy lifting, AI just interprets</li>
     </ul>
     <aside class="notes">
-      This is the key economic argument. A 1 GB trace is billions of tokens — it won't fit in any context window, and even if it did you'd pay thousands of dollars per query and get hallucinated statistics back. With MCP, the AI sends one small tool call and gets a small deterministic answer.
+      This is the key economic argument. A 1 GB trace is billions of tokens, it won't fit in any context window, and even if it did you'd pay thousands of dollars per query and get hallucinated statistics back. With MCP, the AI sends one small tool call and gets a small deterministic answer.
     </aside>
   </section>
 
   <section class="light" data-background-color="#FFFFFF">
     <h3>MCP Overhead</h3>
-    <table>
+    <table class="small">
       <tr><th>Operation</th><th>Direct TMLL API</th><th>MCP (via CLI)</th></tr>
       <tr><td>Experiment creation</td><td>~200 ms</td><td>~800 ms</td></tr>
       <tr><td>Anomaly detection</td><td>~2 s</td><td>~3 s</td></tr>
       <tr><td>Correlation analysis</td><td>~1.5 s</td><td>~2.5 s</td></tr>
     </table>
-    <ul class="small spacious" style="margin-top:0.6em;">
+    <ul class="small" style="margin-top:0.6em;">
       <li>~1 s overhead per call (subprocess + Python startup)</li>
       <li>Negligible next to LLM inference latency</li>
       <li>Future: in-process mode eliminates the cost</li>
@@ -336,18 +336,18 @@
   </section>
 
   <section class="light" data-background-color="#FFFFFF">
-    <h3>Runs Locally — Privacy &amp; Free Compute</h3>
-    <ul class="spacious">
+    <h3>Runs Locally, Privacy &amp; Free Compute</h3>
+    <ul class="spacious small">
       <li>Trace Compass, TMLL, and the MCP server all run <span class="highlight">on your machine</span></li>
-      <li><span class="teal">Your traces never leave the network</span> — critical for regulated, proprietary, or customer data</li>
-      <li>Uses compute you <span class="highlight">already own</span> — no new cloud bill, no GPU rental</li>
-      <li>The AI only sees the small, aggregated result — not the raw events</li>
+      <li><span class="teal">Your traces never leave the network</span>, critical for regulated, proprietary, or customer data</li>
+      <li>Uses compute you <span class="highlight">already own</span>, no new cloud bill, no GPU rental</li>
+      <li>The AI only sees the small, aggregated result, not the raw events</li>
     </ul>
     <div class="callout-teal">
       <p>We already had the hardware, the server, and the library. MCP just unlocked them.</p>
     </div>
     <aside class="notes">
-      This is the part that often gets missed. Everything runs locally: the trace server, TMLL, the MCP server. Your trace data — which is often the most sensitive telemetry a company has — never leaves the machine. The AI receives only the distilled result, a few kilobytes of summary. And the compute is free in the sense that it's hardware you already bought and a server you were already running. No new cloud spend, no new data-sharing agreements. We're just putting a natural-language front door on infrastructure that was already there.
+      This is the part that often gets missed. Everything runs locally: the trace server, TMLL, the MCP server. Your trace data, which is often the most sensitive telemetry a company has, never leaves the machine. The AI receives only the distilled result, a few kilobytes of summary. And the compute is free in the sense that it's hardware you already bought and a server you were already running. No new cloud spend, no new data-sharing agreements. We're just putting a natural-language front door on infrastructure that was already there.
     </aside>
   </section>
 </section>
@@ -365,7 +365,7 @@
   <section class="light" data-background-color="#FFFFFF">
     <h3>Create a CLI</h3>
     <pre><code class="language-python">#!/usr/bin/env python3
-"""tmll_cli.py — 12 subcommands wrapping the TMLL library."""
+"""tmll_cli.py, 12 subcommands wrapping the TMLL library."""
 import argparse
 from tmll.tmll_client import TMLLClient
 
@@ -378,7 +378,7 @@ def detect_anomalies(args):
     print(f"Found {total} anomalies across {len(result.anomalies)} outputs")
 
 # ... 11 more subcommands ...</code></pre>
-    <p class="small">Standard argparse — nothing MCP-specific yet</p>
+    <p class="small">Standard argparse, nothing MCP-specific yet</p>
     <aside class="notes">
       This is just a normal Python CLI. argparse, subcommands, print output. Nothing special. Each subcommand maps to one TMLL analysis.
     </aside>
@@ -419,11 +419,11 @@ def detect_anomalies(experiment_id: str,
   <section class="light" data-background-color="#FFFFFF">
     <h3>The Stack</h3>
     <div class="diagram vertical" style="gap:0;">
-      <div class="dbox" style="width:80%;">TMLL — Python ML library for trace analysis</div>
+      <div class="dbox" style="width:80%;">TMLL, Python ML library for trace analysis</div>
       <div class="darrow-label">↓ wrapped as</div>
-      <div class="dbox" style="width:80%;">CLI — argparse, 12 commands</div>
+      <div class="dbox" style="width:80%;">CLI, argparse, 12 commands</div>
       <div class="darrow-label">↓ wrapped as</div>
-      <div class="dbox" style="width:80%; border-color:#F47920;">MCP Server — FastMCP + subprocess</div>
+      <div class="dbox" style="width:80%; border-color:#F47920;">MCP Server, FastMCP + subprocess</div>
       <div class="darrow-label">↓ used by</div>
       <div class="dbox teal-box" style="width:80%;">Any AI agent: Kiro, Gemini, Theia, Goose…</div>
     </div>
@@ -435,12 +435,12 @@ def detect_anomalies(experiment_id: str,
   <section class="light" data-background-color="#FFFFFF">
     <h3>Why MCP → CLI → Library?</h3>
     <ul class="spacious">
-      <li><span class="highlight">Separation of concerns</span> — you can access and test your CLI independently, no AI needed</li>
-      <li><span class="highlight">MCP is new</span> (2024) — put it on tested footing by building on a proven CLI layer</li>
-      <li><span class="highlight">One path to maintain</span> — why have two code paths when one works for both humans and AI?</li>
+      <li><span class="highlight">Separation of concerns</span>, you can access and test your CLI independently, no AI needed</li>
+      <li><span class="highlight">MCP is new</span> (2024), put it on tested footing by building on a proven CLI layer</li>
+      <li><span class="highlight">One path to maintain</span>, why have two code paths when one works for both humans and AI?</li>
     </ul>
     <aside class="notes">
-      This layering is deliberate. The CLI is your stable, testable interface. MCP is exciting but brand new — first released in 2024. By wrapping the CLI rather than calling the library directly, you get a battle-tested layer underneath. And you avoid maintaining two separate code paths: the CLI works for humans, the MCP wrapper makes it work for AI. Same code, two audiences.
+      This layering is deliberate. The CLI is your stable, testable interface. MCP is exciting but brand new, first released in 2024. By wrapping the CLI rather than calling the library directly, you get a battle-tested layer underneath. And you avoid maintaining two separate code paths: the CLI works for humans, the MCP wrapper makes it work for AI. Same code, two audiences.
     </aside>
   </section>
 
@@ -520,7 +520,7 @@ def plot_xy_with_anomalies(experiment_id: str,
     # ... run analysis, generate matplotlib plot ...
     return Image(data=buf.getvalue(), format="png")</code></pre>
     <div class="callout">
-      <p>The AI doesn't just <em>describe</em> the anomaly — it <em>shows</em> you the chart</p>
+      <p>The AI doesn't just <em>describe</em> the anomaly, it <em>shows</em> you the chart</p>
     </div>
     <aside class="notes">
       The tool returns an actual annotated chart as a PNG image. The AI embeds it directly in its response.
@@ -539,7 +539,7 @@ def plot_xy_with_anomalies(experiment_id: str,
   </section>
 
   <section class="center-slide light" data-background-color="#FFFFFF">
-    <h3>Theia — AI Agent History</h3>
+    <h3>Theia, AI Agent History</h3>
     <img src="theia-mcp-debugging.png" alt="Theia MCP debugging view" style="max-height:65vh; border-radius:8px;">
     <aside class="notes">
       Theia IDE has built-in MCP support. The AI Agent History view shows every MCP tool call: the request payload, the model used, the agent type. Invaluable for debugging.
@@ -549,7 +549,7 @@ def plot_xy_with_anomalies(experiment_id: str,
   <section class="center-slide light" data-background-color="#FFFFFF">
     <h3>MCP Inspector</h3>
     <img src="mcp-inspector.png" alt="MCP Inspector" style="max-height:65vh; border-radius:8px;">
-    <p class="small muted">MCP Inspector — test tools interactively without an AI client</p>
+    <p class="small muted">MCP Inspector, test tools interactively without an AI client</p>
     <aside class="notes">
       The MCP Inspector is a standalone web tool that lets you connect to any MCP server, browse its tools, and call them interactively. No AI client needed. Great for testing your server before connecting it to an LLM.
     </aside>
@@ -579,15 +579,15 @@ def plot_xy_with_anomalies(experiment_id: str,
     <div class="twocol">
       <div style="text-align:center;">
         <img src="theia-mcp-results.png" alt="Theia MCP results" style="max-height:55vh; border-radius:8px;">
-        <p class="small">Theia — inline anomaly chart</p>
+        <p class="small">Theia, inline anomaly chart</p>
       </div>
       <div style="text-align:center;">
         <img src="gemini-usage.png" alt="Gemini CLI resource usage" style="max-height:55vh; border-radius:8px;">
-        <p class="small">Gemini — 1 GB trace, 85K tokens, 5 tool calls</p>
+        <p class="small">Gemini, 1 GB trace, 85K tokens, 5 tool calls</p>
       </div>
     </div>
     <aside class="notes">
-      Side by side: Theia shows the inline anomaly chart from the MCP App. Gemini CLI shows the resource cost of analyzing a 1 GB kernel trace — token usage, model calls, and tool invocations. The AI handled the entire workflow autonomously: load trace, detect anomalies, render charts.
+      Side by side: Theia shows the inline anomaly chart from the MCP App. Gemini CLI shows the resource cost of analyzing a 1 GB kernel trace, token usage, model calls, and tool invocations. The AI handled the entire workflow autonomously: load trace, detect anomalies, render charts.
     </aside>
   </section>
 </section>
@@ -595,15 +595,15 @@ def plot_xy_with_anomalies(experiment_id: str,
 <!-- KEY TAKEAWAYS -->
 <section class="light" data-background-color="#FFFFFF">
   <h2>Key Takeaways</h2>
-  <ul class="spacious">
+  <ul class="small">
     <li><span class="highlight">~615 lines of Python</span> to make TMLL AI-accessible</li>
     <li>Pattern: <span class="teal">Library → CLI → MCP</span> works for any tool</li>
     <li>One MCP server → works across Kiro, Gemini, Theia, Goose</li>
     <li>Progressive discovery saves <span class="highlight">~80%</span> of token overhead</li>
-    <li>Runs <span class="highlight">locally</span> — your traces stay on your machine, on hardware you already own</li>
+    <li>Runs <span class="highlight">locally</span>, your traces stay on your machine, on hardware you already own</li>
     <li>MCP Apps: charts and images inline in AI responses</li>
-    <li>The bottleneck is never the MCP glue — it's the ML analysis and LLM inference</li>
-    <li>Many MCP tools in the wild are <span class="highlight">sub-optimal</span> — don't judge the technology by a few bad implementations</li>
+    <li>The bottleneck is never the MCP glue, it's the ML analysis and LLM inference</li>
+    <li>Many MCP tools in the wild are <span class="highlight">sub-optimal</span>, don't judge the technology by a few bad implementations</li>
   </ul>
   <div class="callout">
     <p>MCP is a protocol, not a product. The quality is in your hands.</p>
@@ -619,6 +619,7 @@ def plot_xy_with_anomalies(experiment_id: str,
   <h2>Thank You</h2>
   <p class="lead" style="color:#F47920;">matthew.khouzam@ericsson.com</p>
   <p class="small"><a href="https://github.com/eclipse-tmll/tmll/pull/16" style="color:#54FFD4;">github.com/eclipse-tmll/tmll/pull/16</a></p>
+  	<section></section><section>Merged last night!</section>
   <p class="tiny muted">Copyright© Eclipse Foundation AISBL and contributors. Made available under CC-BY-SA 4.0 International.</p>
   <p class="tiny"><a href="../index.html" style="color:#8888aa;">Back to main page</a></p>
   <aside class="notes">
