@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MCP vs Skills: When to Use Which</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css" id="theme" />
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@latest/dist/reveal.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@latest/plugin/notes/notes.js"></script>
+    <style>
+        @font-face { font-family: 'Hilda'; src: url('../assets/EricssonHilda-Regular.ttf') format('truetype'); }
+        body, .reveal { font-family: 'Hilda', sans-serif; }
+        .reveal .slides { text-align: left; }
+        .reveal .slides section { text-shadow: 2px 2px 6px rgba(0,0,0,0.9), 0 0 12px rgba(0,0,0,0.7); }
+        .reveal .slides section.center-slide { text-align: center; }
+        .reveal h1, .reveal h2, .reveal h3 { text-transform: none; text-shadow: 3px 3px 8px rgba(0,0,0,1), 0 0 16px rgba(0,0,0,0.9); }
+        .reveal .lead { font-size: 1.15em; line-height: 1.35; }
+        .reveal .tiny { font-size: 0.5em; }
+        .reveal .small { font-size: 0.6em; }
+        .reveal .muted { color: #888; }
+        .reveal .callout { background: rgba(255,255,255,0.07); border-left: 4px solid #ff6b6b; padding: 0.8em 1.2em; margin: 0.8em 0; border-radius: 0 8px 8px 0; }
+        .reveal .callout-blue { background: rgba(255,255,255,0.07); border-left: 4px solid #6bc5ff; padding: 0.8em 1.2em; margin: 0.8em 0; border-radius: 0 8px 8px 0; }
+        .reveal .callout-green { background: rgba(255,255,255,0.07); border-left: 4px solid #6aff6a; padding: 0.8em 1.2em; margin: 0.8em 0; border-radius: 0 8px 8px 0; }
+        .reveal .spacious li { margin-bottom: 0.5em; }
+        .reveal .slide-footer { position: absolute; bottom: 10px; left: 20px; font-size: 0.5em; color: #666; z-index: 1000; }
+        .logo { position: absolute; top: 40px; right: 40px; z-index: 10; }
+        .logo img { width: 100px; height: auto; }
+        .twocol { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start; }
+        .highlight { color: #ff6b6b; }
+        .highlight-blue { color: #6bc5ff; }
+        .highlight-green { color: #6aff6a; }
+        .comp-table { width: 100%; border-collapse: collapse; font-size: 0.55em; }
+        .comp-table th, .comp-table td { padding: 0.4em 0.6em; border: 1px solid #444; text-align: left; }
+        .comp-table th { background: #2a2a5a; }
+        .quiz-table { width: 100%; border-collapse: collapse; font-size: 0.5em; }
+        .quiz-table th, .quiz-table td { padding: 0.3em 0.5em; border: 1px solid #444; text-align: left; }
+        .quiz-table th { background: #2a2a5a; }
+        .quiz-table .answer { color: #6bc5ff; }
+    </style>
+</head>
+<body>
+    <div class="logo"><img src="../assets/ERI_vertical_RGB.svg" alt="Ericsson Logo"></div>
+    <div class="reveal">
+        <div class="slides">
+
+<!-- Title -->
+<section class="center-slide" data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_11_D_web.jpg" data-background-size="contain">
+  <h1>MCP vs Skills</h1>
+  <p class="lead">When to Use Which</p>
+  <p class="tiny">Matthew Khouzam | Ericsson Research | May 2026</p>
+  <aside class="notes">This talk covers the two major paradigms for extending AI agent capabilities: MCP (Model Context Protocol) for tools and data access, and Skills for instructions and workflows. We'll explore when to use each, and how they complement each other.</aside>
+</section>
+
+<div class="slide-footer">Matthew Khouzam, Ericsson Research, May 2026</div>
+
+<!-- What They Are -->
+<section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_04_D_web.jpg" data-background-size="contain">
+    <h2>What They Are</h2>
+    <aside class="notes">Let's start with definitions of both technologies.</aside>
+  </section>
+
+  <section>
+    <h3>MCP (Model Context Protocol)</h3>
+    <ul class="spacious">
+      <li>Open standard (Nov 2024), donated to <span class="highlight">Linux Foundation's Agentic AI Foundation</span> (Dec 2025)</li>
+      <li>Universal way to give LLMs <span class="highlight-blue">tools and real-time data access</span></li>
+      <li>Client-server architecture: AI app → MCP client → MCP server → tools/resources</li>
+    </ul>
+    <aside class="notes">MCP provides a universal protocol layer so that any AI client can connect to any tool server.</aside>
+  </section>
+
+  <section>
+    <h3>MCP: Adoption</h3>
+    <ul class="spacious">
+      <li>97M+ monthly SDK downloads, 10,000+ active servers</li>
+      <li>Backed by Anthropic, OpenAI, Google, Microsoft, AWS</li>
+    </ul>
+    <div class="callout-blue">
+      <p>"The USB-C port of AI applications" — Anthropic</p>
+    </div>
+    <aside class="notes">Think of it like LSP for IDEs but for AI agents. Massive industry adoption.</aside>
+  </section>
+
+  <section>
+    <h3>Skills</h3>
+    <ul class="spacious">
+      <li>Markdown-based instruction sets stored as directories on the filesystem</li>
+      <li>Core: a <code>SKILL.md</code> file with YAML frontmatter, optional scripts, docs, references</li>
+      <li>Introduced by Anthropic (Oct 2025)</li>
+    </ul>
+    <aside class="notes">Skills are plain English instructions that teach the AI how to do something. No code required.</aside>
+  </section>
+
+  <section>
+    <h3>Skills: How They Load</h3>
+    <ul class="spacious">
+      <li><span class="highlight">Progressive disclosure</span>: metadata at startup (~100 tokens) → full body when relevant (~5,000 tokens) → additional files on demand</li>
+      <li>Works across Claude.ai, Claude Code, Agent SDK, Claude API</li>
+    </ul>
+    <div class="callout">
+      <p>A skill tells the agent <em>how</em> to approach a task — like a style guide handed to a developer</p>
+    </div>
+    <aside class="notes">Progressive disclosure keeps context costs low — only what's needed gets loaded.</aside>
+  </section>
+</section>
+
+<!-- Key Differences -->
+<section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_06_D_web.jpg" data-background-size="contain">
+    <h2>Key Differences</h2>
+    <aside class="notes">Let's compare MCP and Skills across multiple dimensions.</aside>
+  </section>
+
+  <section>
+    <h3>Comparison: What &amp; How</h3>
+    <table class="comp-table">
+      <tr><th>Dimension</th><th>MCP</th><th>Skills</th></tr>
+      <tr><td>Nature</td><td>Tools and data access</td><td>Instructions and workflows</td></tr>
+      <tr><td>How they work</td><td>Called on-demand via tool calls</td><td>Loaded into context progressively</td></tr>
+      <tr><td>Data</td><td>Real-time, live (APIs, DBs, tickets)</td><td>Static reference material</td></tr>
+    </table>
+    <aside class="notes">The fundamental difference: MCP gives the AI new abilities to reach external systems. Skills give the AI knowledge about how to do things.</aside>
+  </section>
+
+  <section>
+    <h3>Comparison: Scope</h3>
+    <table class="comp-table">
+      <tr><th>Dimension</th><th>MCP</th><th>Skills</th></tr>
+      <tr><td>Scope</td><td>External systems, network resources</td><td>Local filesystem, coding patterns</td></tr>
+      <tr><td>Auth</td><td>Often requires tokens/OAuth</td><td>None needed</td></tr>
+    </table>
+    <aside class="notes">MCP reaches out to external systems and often needs credentials. Skills stay local.</aside>
+  </section>
+
+  <section>
+    <h3>Comparison: Creation</h3>
+    <table class="comp-table">
+      <tr><th>Dimension</th><th>MCP</th><th>Skills</th></tr>
+      <tr><td>Creation</td><td>Requires writing code (server impl)</td><td>Plain English markdown files</td></tr>
+    </table>
+    <aside class="notes">MCP requires engineering effort. Skills are just markdown files anyone can write.</aside>
+  </section>
+
+  <section>
+    <h3>Comparison: Context Cost</h3>
+    <table class="comp-table">
+      <tr><th>Dimension</th><th>MCP</th><th>Skills</th></tr>
+      <tr><td>Context cost</td><td>Progressive discovery (as of 2.0); previously all schemas at startup</td><td>Progressive disclosure (efficient)</td></tr>
+    </table>
+    <aside class="notes">MCP 2.0 introduced progressive discovery — clients can now lazily discover tools instead of loading all schemas upfront, closing the context-cost gap with Skills.</aside>
+  </section>
+
+  <section>
+    <h3>Comparison: Portability &amp; Distribution</h3>
+    <table class="comp-table">
+      <tr><th>Dimension</th><th>MCP</th><th>Skills</th></tr>
+      <tr><td>Portability</td><td>Any AI app with MCP client</td><td>Primarily Claude ecosystem</td></tr>
+      <tr><td>Distribution</td><td>Hosted servers (local or cloud)</td><td>Files in a directory (git)</td></tr>
+    </table>
+    <aside class="notes">MCP is more portable across AI vendors. Skills are easier to distribute via version control.</aside>
+  </section>
+
+  <section>
+    <h3>Comparison: Lifecycle</h3>
+    <table class="comp-table">
+      <tr><th>Dimension</th><th>MCP</th><th>Skills</th></tr>
+      <tr><td>Persistence</td><td>Only active when connected</td><td>Always active once installed</td></tr>
+      <tr><td>Analogy</td><td>Power tools on a workbench</td><td>Style guide for a developer</td></tr>
+    </table>
+    <aside class="notes">MCP tools disappear when the server disconnects. Skills persist as long as they're in the project.</aside>
+  </section>
+</section>
+
+<!-- When to Use MCP -->
+<section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_07_D_web.jpg" data-background-size="contain">
+    <h2>When to Use MCP</h2>
+    <aside class="notes">MCP is the right choice when you need to reach out to external systems.</aside>
+  </section>
+
+  <section>
+    <h3>MCP Use Cases (1/2)</h3>
+    <ul class="spacious">
+      <li><span class="highlight-blue">Live data access</span> — current inventory, real-time API responses, database queries, latest emails</li>
+      <li><span class="highlight-blue">External system interaction</span> — creating GitHub PRs, reading Jira tickets, querying Figma, deploying resources</li>
+      <li><span class="highlight-blue">Cross-model compatibility</span> — build tool integrations once for multiple AI models</li>
+    </ul>
+    <aside class="notes">MCP is for when the AI needs to reach outside its sandbox to interact with the real world.</aside>
+  </section>
+
+  <section>
+    <h3>MCP Use Cases (2/2)</h3>
+    <ul class="spacious">
+      <li><span class="highlight-blue">Authenticated operations</span> — anything requiring API keys, OAuth tokens, credentials</li>
+      <li><span class="highlight-blue">Simple data retrieval</span> — one API call gets what you need</li>
+    </ul>
+    <aside class="notes">Authentication and simple retrieval are classic MCP territory — the AI can't do these without external access.</aside>
+  </section>
+</section>
+
+<!-- When to Use Skills -->
+<section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_04_D_web.jpg" data-background-size="contain">
+    <h2>When to Use Skills</h2>
+    <aside class="notes">Skills are the right choice when you need to teach the AI how to do something.</aside>
+  </section>
+
+  <section>
+    <h3>Skills Use Cases (1/2)</h3>
+    <ul class="spacious">
+      <li><span class="highlight">Complex multi-step workflows</span> — financial modeling, compliance reviews, data analysis pipelines</li>
+      <li><span class="highlight">Organizational knowledge</span> — brand guidelines, SOPs, domain methodologies, coding conventions</li>
+      <li><span class="highlight">Team standardization</span> — commit skills to repo; every dev gets identical AI behavior</li>
+    </ul>
+    <aside class="notes">Skills encode knowledge and procedures. They're about the how, not the what.</aside>
+  </section>
+
+  <section>
+    <h3>Skills Use Cases (2/2)</h3>
+    <ul class="spacious">
+      <li><span class="highlight">Framework best practices</span> — "prefer Server Components," "always use named exports"</li>
+      <li><span class="highlight">Deterministic operations</span> — data validation, calculations, file format conversions</li>
+      <li><span class="highlight">Multi-tool orchestration</span> — defining the <em>order</em> and <em>logic</em> of how tools combine</li>
+    </ul>
+    <aside class="notes">Skills can also encode executable logic and orchestration patterns, not just prose instructions.</aside>
+  </section>
+</section>
+
+<!-- The Sweet Spot -->
+<section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_11_D_web.jpg" data-background-size="contain">
+    <h2>The Sweet Spot: Using Both</h2>
+    <aside class="notes">MCP and Skills are complementary, not competing.</aside>
+  </section>
+
+  <section>
+    <h3>The Mental Model</h3>
+    <div class="callout-green">
+      <p style="font-size: 1.2em;"><strong>MCP gets data to the AI. Skills tell the AI what to do with it.</strong></p>
+    </div>
+    <p>Skills encode <em>how</em> to do something.<br>MCP provides the <em>ability</em> to do something the AI couldn't do before.</p>
+    <aside class="notes">This is the key insight. They solve different problems and work best together.</aside>
+  </section>
+
+  <section>
+    <h3>Examples: Both Together</h3>
+    <ul class="spacious">
+      <li><span class="highlight-blue">Notion</span>: MCP server provides 15+ CRUD tools → Skill defines <em>how</em> to create a specific page type (sections, format, research steps)</li>
+      <li><span class="highlight-blue">Deployment</span>: Skill defines the process ("check CI → merge → smoke tests → promote") → GitHub &amp; Playwright MCP servers execute each step</li>
+      <li><span class="highlight-blue">Sales CRM</span>: MCP connects to transcription service &amp; CRM API → Skill encodes logic for extracting key points and mapping to CRM fields</li>
+    </ul>
+    <aside class="notes">In each case, MCP provides the hands and Skills provide the brain. The Skill knows what to do; MCP knows how to reach the external systems.</aside>
+  </section>
+</section>
+
+<!-- Anti-Patterns -->
+<section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_06_D_web.jpg" data-background-size="contain">
+    <h2>Anti-Patterns to Avoid</h2>
+    <aside class="notes">Common mistakes when choosing between MCP and Skills.</aside>
+  </section>
+
+  <section>
+    <h3>Don't Do This (1/2)</h3>
+    <ul class="spacious">
+      <li>❌ Putting API docs in a skill <span class="muted">— they go stale; use a live docs MCP server</span></li>
+      <li>❌ Using MCP to enforce coding conventions <span class="muted">— use a skill + linter</span></li>
+      <li>❌ Installing too many skills <span class="muted">— context window bloat; prioritize 5–10</span></li>
+    </ul>
+    <aside class="notes">The key principle: don't use one where the other is a better fit. Static knowledge goes in Skills, live access goes in MCP.</aside>
+  </section>
+
+  <section>
+    <h3>Don't Do This (2/2)</h3>
+    <ul class="spacious">
+      <li>❌ Duplicating MCP tool instructions in a skill <span class="muted">— the server already knows how to create a PR; the skill should describe your <em>team's PR conventions</em></span></li>
+      <li>❌ Too many MCP tools the LLM doesn't need <span class="muted">— causes "context rot" degrading performance</span></li>
+    </ul>
+    <aside class="notes">Redundancy between MCP and Skills wastes context and confuses the model.</aside>
+  </section>
+</section>
+
+<!-- What About Direct API Access? -->
+<section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_07_D_web.jpg" data-background-size="contain">
+    <h2>What About Direct API Access?</h2>
+    <aside class="notes">Some teams skip MCP and hardcode API calls. Let's discuss why that's usually a mistake for agentic workflows.</aside>
+  </section>
+
+  <section>
+    <h3>Direct API: The Pre-LSP World</h3>
+    <div class="twocol">
+      <div>
+        <p><strong>Direct API</strong></p>
+        <ul class="small">
+          <li>Bound to a single tool</li>
+          <li>Only works in one agent</li>
+          <li>No discoverability</li>
+          <li>No standard schema</li>
+          <li>No reuse across models</li>
+          <li>Bespoke, brittle, duplicated</li>
+        </ul>
+      </div>
+      <div>
+        <p><strong>MCP</strong></p>
+        <ul class="small">
+          <li>Universal protocol layer</li>
+          <li>Works across any AI client</li>
+          <li>Self-describing tools</li>
+          <li>Model reasons dynamically</li>
+          <li>Build once, use everywhere</li>
+          <li>Like LSP for AI agents</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout">
+      <p class="small">Before LSP, every editor wrote its own integration for every language. LSP defined clear roles and created a vibrant ecosystem. MCP does the same for AI agents.</p>
+    </div>
+    <aside class="notes">Direct API access still makes sense for one-off scripts or tightly controlled pipelines, but for agentic workflows it quickly becomes a maintenance burden.</aside>
+  </section>
+</section>
+
+<!-- Where Things Are Heading -->
+<section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_11_D_web.jpg" data-background-size="contain">
+    <h2>Where Things Are Heading</h2>
+    <aside class="notes">Both technologies are evolving rapidly.</aside>
+  </section>
+
+  <section>
+    <h3>Future Directions (1/2)</h3>
+    <ul class="spacious">
+      <li>Skills gaining traction <span class="highlight">faster than MCP</span> did at the same stage</li>
+      <li>MCP evolving: <span class="highlight-blue">streamable HTTP</span>, <span class="highlight-blue">OAuth 2.1</span>, headless microservice auth</li>
+      <li>MCP now vendor-neutral under <span class="highlight-blue">Linux Foundation</span> governance</li>
+    </ul>
+    <aside class="notes">Both technologies are maturing rapidly with strong industry backing.</aside>
+  </section>
+
+  <section>
+    <h3>Future Directions (2/2)</h3>
+    <ul class="spacious">
+      <li><span class="highlight-blue">MCP Apps</span> (Jan 2026): tools return interactive UI components in conversation</li>
+      <li>For local coding agents, skills can substitute for some MCP via CLI-calling scripts</li>
+      <li>For <span class="highlight">headless cloud microservices</span>, MCP remains essential — skills don't apply</li>
+    </ul>
+    <aside class="notes">The two technologies are converging in some areas but remain distinct in their core value propositions.</aside>
+  </section>
+
+  <section>
+    <h3>Enterprise Evidence</h3>
+    <ul class="spacious">
+      <li><span class="highlight">Rakuten</span>: ~87.5% faster financial reporting with Skills</li>
+      <li>E-commerce company: automated 50%+ of support tickets, saving ~$2M/year</li>
+      <li>Python API for programmatic skill use in custom agents (early-stage)</li>
+    </ul>
+    <aside class="notes">Real enterprise results showing the value of both approaches.</aside>
+  </section>
+</section>
+
+<!-- Rule of Thumb -->
+<section class="center-slide" data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_12_D_web.jpg" data-background-size="contain">
+  <h2>Rule of Thumb</h2>
+  <p style="font-size: 1.4em;">If it needs to <span class="highlight">know how</span> → <strong>Skill</strong></p>
+  <p style="font-size: 1.4em;">If it needs to <span class="highlight-blue">reach out</span> → <strong>MCP</strong></p>
+  <p style="font-size: 1.4em;">If it needs both → <span class="highlight-green">use both</span></p>
+  <aside class="notes">This is the simplest decision framework. Know how = Skill. Reach out = MCP. Both = both.</aside>
+</section>
+
+<!-- Quiz -->
+<section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_04_D_web.jpg" data-background-size="contain">
+    <h2>Quiz: MCP or Skill?</h2>
+    <p class="lead">For each scenario, decide: MCP, Skill, or Both?</p>
+    <aside class="notes">Interactive quiz to test understanding.</aside>
+  </section>
+
+  <section>
+    <h3>Quiz (1/3)</h3>
+    <table class="quiz-table">
+      <tr><th>#</th><th>Scenario</th><th class="fragment">Answer</th></tr>
+      <tr><td>1</td><td>Always write React components using Server Components + named exports</td><td class="fragment answer">Skill</td></tr>
+      <tr><td>2</td><td>Read Jira tickets and create GitHub PRs that reference them</td><td class="fragment answer">MCP</td></tr>
+      <tr><td>3</td><td>12-step deployment checklist: check CI, smoke tests, promote to prod</td><td class="fragment answer">Both</td></tr>
+      <tr><td>4</td><td>Format every Excel report with company header, colors, pivot layout</td><td class="fragment answer">Skill</td></tr>
+      <tr><td>5</td><td>Query Postgres for latest sales figures</td><td class="fragment answer">MCP</td></tr>
+    </table>
+    <aside class="notes">1: coding conventions = Skill. 2: live API access to two systems = MCP. 3: Skill defines procedure, MCP servers execute. 4: deterministic formatting = Skill. 5: real-time data = MCP.</aside>
+  </section>
+
+  <section>
+    <h3>Quiz (2/3)</h3>
+    <table class="quiz-table">
+      <tr><th>#</th><th>Scenario</th><th class="fragment">Answer</th></tr>
+      <tr><td>6</td><td>All devs on team get same AI coding behavior when they clone the repo</td><td class="fragment answer">Skill</td></tr>
+      <tr><td>7</td><td>Post a message to Slack when a build fails</td><td class="fragment answer">MCP</td></tr>
+      <tr><td>8</td><td>Complex financial model: variance, anomalies, formatted PDF</td><td class="fragment answer">Skill</td></tr>
+      <tr><td>9</td><td>Fetch latest docs for a frequently-updated library</td><td class="fragment answer">MCP</td></tr>
+      <tr><td>10</td><td>Structure PR descriptions with summary + test plan, then create the PR</td><td class="fragment answer">Both</td></tr>
+    </table>
+    <aside class="notes">6: commit to repo = Skill. 7: authenticated Slack API = MCP. 8: multi-step procedural workflow = Skill. 9: live docs = MCP. 10: Skill for template, MCP to create.</aside>
+  </section>
+
+  <section>
+    <h3>Quiz (3/3)</h3>
+    <table class="quiz-table">
+      <tr><th>#</th><th>Scenario</th><th class="fragment">Answer</th></tr>
+      <tr><td>11</td><td>Authenticate with OAuth and access Google Drive files</td><td class="fragment answer">MCP</td></tr>
+      <tr><td>12</td><td>Analyze call transcripts and map info into CRM fields per team taxonomy</td><td class="fragment answer">Both</td></tr>
+      <tr><td>13</td><td>Enforce parameterized SQL queries, never SELECT *</td><td class="fragment answer">Skill</td></tr>
+      <tr><td>14</td><td>Check real-time inventory across three warehouses</td><td class="fragment answer">MCP</td></tr>
+      <tr><td>15</td><td>Generate brand-compliant marketing emails in company voice</td><td class="fragment answer">Skill</td></tr>
+    </table>
+    <aside class="notes">11: credential handling = MCP. 12: MCP for CRM + transcription, Skill for mapping logic. 13: coding standard = Skill. 14: live data = MCP. 15: brand guidelines = Skill.</aside>
+  </section>
+</section>
+
+<!-- References -->
+<section>
+  <h3>References</h3>
+  <ol class="small">
+    <li>Shaw, "Agent Skills vs MCP: What's the difference?" — YouTube</li>
+    <li>Sterling, "Claude Skills vs MCP: What's the Difference and When to Use Each?" — YouTube</li>
+    <li>"Agent Skills or MCP in the era of Claude Code?" — YouTube</li>
+    <li>Developer Toolkit, "Skills vs MCP — When to Use Which" — developertoolkit.ai</li>
+    <li>Anthropic, "Skills explained" — claude.com/blog</li>
+    <li>IntuitionLabs, "Claude Skills vs. MCP: A Technical Comparison" — intuitionlabs.ai</li>
+  </ol>
+  <aside class="notes">Full URLs available in the companion markdown document.</aside>
+</section>
+
+<!-- End -->
+<section class="center-slide" data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_12_D_web.jpg" data-background-size="contain">
+  <h2>Thank You</h2>
+  <p>Matthew Khouzam | Ericsson Research</p>
+  <p class="small muted">May 2026</p>
+  <aside class="notes">Questions?</aside>
+</section>
+
+        </div>
+    </div>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            slideNumber: true,
+            plugins: [RevealNotes]
+        });
+    </script>
+</body>
+</html>
