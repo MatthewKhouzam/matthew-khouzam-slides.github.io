@@ -6,31 +6,43 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
 <style>
-.reveal { font-size: 28px; }
+.reveal { font-size: 24px; }
 .reveal h1 { font-size: 1.8em; }
-.reveal h2 { font-size: 1.4em; }
+.reveal h2 { font-size: 1.3em; }
 .reveal h3 { font-size: 1.1em; }
 .reveal h1, .reveal h2, .reveal h3 { text-transform: none; }
 .reveal ul, .reveal ol { text-align: left; font-size: 0.85em; }
 .reveal li { margin: 0.2em 0; }
 .reveal .highlight { color: #42affa; font-weight: bold; }
 .reveal .big-number { font-size: 2em; color: #42affa; font-weight: bold; }
-.reveal table { margin: 0 auto; font-size: 0.8em; }
+.reveal table { margin: 0 auto; font-size: 0.65em; }
 .reveal td, .reveal th { padding: 0.3em 0.6em; border: 1px solid #555; }
+.reveal .lang-fr { display: none !important; }
+html.fr .reveal .lang-en { display: none !important; }
+html.fr .reveal ul.lang-fr, html.fr .reveal ol.lang-fr { display: block !important; }
+html.fr .reveal p.lang-fr { display: block !important; }
+html.fr .reveal h1.lang-fr, html.fr .reveal h2.lang-fr, html.fr .reveal h3.lang-fr { display: block !important; }
+html.fr .reveal table.lang-fr { display: table !important; }
+html.fr .reveal span.lang-fr { display: inline !important; }
+#lang-toggle { position: fixed; top: 10px; right: 10px; z-index: 9999; background: #42affa; color: #000; border: none; padding: 0.4em 0.8em; font-size: 0.9em; font-weight: bold; cursor: pointer; border-radius: 4px; }
 </style>
 </head>
 <body>
+<button id="lang-toggle" onclick="document.documentElement.classList.toggle('fr'); this.textContent = document.documentElement.classList.contains('fr') ? 'EN' : 'FR';">FR</button>
 <div class="reveal">
 <div class="slides">
 
 <section>
-<h1>Subsidized Interns & Research Funding</h1>
-<h3>Montreal Opportunities</h3>
+<h1 class="lang-en">Subsidized Interns & Research Funding</h1>
+<h1 class="lang-fr">Stagiaires subventionnés et financement de recherche</h1>
+<h3 class="lang-en">Montreal Opportunities</h3>
+<h3 class="lang-fr">Opportunités à Montréal</h3>
 </section>
 
 <section>
-<h2>Overview</h2>
-<ul>
+<h2 class="lang-en">Overview</h2>
+<h2 class="lang-fr">Aperçu</h2>
+<ul class="lang-en">
 <li>NSERC Alliance Project</li>
 <li>Prompt Innov</li>
 <li>NRC IRAP</li>
@@ -42,70 +54,122 @@
 <li>NCC (National Cybersecurity Consortium)</li>
 <li>Tax Credits</li>
 </ul>
+<ul class="lang-fr">
+<li>Projet Alliance CRSNG</li>
+<li>Prompt Innov</li>
+<li>CNRC PARI</li>
+<li>Mitacs</li>
+<li>CRSNG Accélérer / Alliance Mitacs (2:1 + PI)</li>
+<li>Programmes coop universitaires</li>
+<li>Programmes open-source (GSoC, Outreachy, etc.)</li>
+<li>Subventions salariales fédérales</li>
+<li>CCN (Consortium national en cybersécurité)</li>
+<li>Crédits d'impôt</li>
+</ul>
 </section>
 
 <section>
-<h2>NSERC Alliance Project</h2>
+<h2 class="lang-en">NSERC Alliance Project</h2>
+<h2 class="lang-fr">Projet Alliance CRSNG</h2>
 <p class="big-number">1:2 Ratio</p>
-<p>Traditionally: <span class="highlight">$1 industry</span> + <span class="highlight">$1 NSERC</span> + <span class="highlight">$1 Prompt</span></p>
-<ul>
+<p class="lang-en">Traditionally: <span class="highlight">$1 industry</span> + <span class="highlight">$1 NSERC</span> + <span class="highlight">$1 Prompt</span></p>
+<p class="lang-fr">Traditionnellement : <span class="highlight">1$ industrie</span> + <span class="highlight">1$ CRSNG</span> + <span class="highlight">1$ Prompt</span></p>
+<ul class="lang-en">
 <li>The industry $1 can be <strong>split among many companies</strong></li>
 <li>Or keep <strong>all the IP generated</strong> by funding solo</li>
 <li>Access to subsidized interns & grad students</li>
 <li>Direct research collaboration with professors</li>
 <li>Multi-year funded research program</li>
 </ul>
+<ul class="lang-fr">
+<li>Le 1$ industrie peut être <strong>partagé entre plusieurs entreprises</strong></li>
+<li>Ou garder <strong>toute la PI générée</strong> en finançant seul</li>
+<li>Accès à des stagiaires et étudiants subventionnés</li>
+<li>Collaboration de recherche directe avec des professeurs</li>
+<li>Programme de recherche financé pluriannuel</li>
+</ul>
 </section>
 
 <section>
-<h2>NSERC Alliance – What We Get</h2>
-<ul>
+<h2 class="lang-en">NSERC Alliance – What We Get</h2>
+<h2 class="lang-fr">Alliance CRSNG – Ce que nous obtenons</h2>
+<ul class="lang-en">
 <li>Graduate student researchers (MSc/PhD) working on our problems</li>
 <li>Undergraduate interns funded through the grant</li>
 <li>Co-publication opportunities</li>
 <li>Access to university labs & infrastructure</li>
 <li>IP generated aligned with our roadmap</li>
 </ul>
+<ul class="lang-fr">
+<li>Étudiants-chercheurs (M.Sc./Ph.D.) travaillant sur nos problèmes</li>
+<li>Stagiaires de premier cycle financés par la subvention</li>
+<li>Opportunités de co-publication</li>
+<li>Accès aux laboratoires et infrastructures universitaires</li>
+<li>PI générée alignée avec notre feuille de route</li>
+</ul>
 </section>
 
 <section>
 <h2>Prompt Innov</h2>
 <p><a href="https://promptinnov.com/en/">promptinnov.com</a></p>
-<ul>
+<ul class="lang-en">
 <li>Quebec innovation internship facilitator</li>
 <li>50–70% wage subsidy on intern salaries</li>
 <li>Connects with Quebec university/CEGEP talent</li>
 <li>Focus on tech & innovation sectors</li>
 </ul>
+<ul class="lang-fr">
+<li>Facilitateur de stages d'innovation au Québec</li>
+<li>Subvention salariale de 50–70 % sur les salaires des stagiaires</li>
+<li>Connexion avec les talents universitaires/CÉGEP du Québec</li>
+<li>Axé sur les secteurs technologiques et d'innovation</li>
+</ul>
 </section>
 
 <section>
-<h2>NRC IRAP – Youth Programs</h2>
+<h2 class="lang-en">NRC IRAP – Youth Programs</h2>
+<h2 class="lang-fr">CNRC PARI – Programmes jeunesse</h2>
 <p><a href="https://nrc.canada.ca/en/corporate/open-calls-proposals-interest">nrc.canada.ca</a></p>
-<ul>
+<ul class="lang-en">
 <li>Youth Employment Strategy funding</li>
 <li>Subsidizes $15–25/hr for 6–12 months</li>
 <li>Recent grads & students on R&D projects</li>
 <li>Also provides business advisory services</li>
 </ul>
+<ul class="lang-fr">
+<li>Financement via la Stratégie emploi jeunesse</li>
+<li>Subventionne 15–25 $/h pour 6–12 mois</li>
+<li>Diplômés récents et étudiants sur des projets de R-D</li>
+<li>Offre aussi des services-conseils aux entreprises</li>
+</ul>
 </section>
 
 <section>
-<h2>Mitacs Accelerate</h2>
-<ul>
+<h2 class="lang-en">Mitacs Accelerate</h2>
+<h2 class="lang-fr">Mitacs Accélération</h2>
+<ul class="lang-en">
 <li>$15K per 4-month internship unit</li>
 <li>Company contributes $7.5K, Mitacs matches</li>
 <li>Stackable units (4, 8, 12+ months)</li>
 <li>Graduate-level research interns</li>
 <li>Can combine with NSERC Alliance students</li>
 </ul>
+<ul class="lang-fr">
+<li>15 000 $ par unité de stage de 4 mois</li>
+<li>L'entreprise contribue 7 500 $, Mitacs égalise</li>
+<li>Unités cumulables (4, 8, 12+ mois)</li>
+<li>Stagiaires de recherche aux cycles supérieurs</li>
+<li>Combinable avec les étudiants Alliance CRSNG</li>
+</ul>
 </section>
 
 <section>
-<h2>NSERC Accelerate / Mitacs Alliance</h2>
+<h2 class="lang-en">NSERC Accelerate / Mitacs Alliance</h2>
+<h2 class="lang-fr">CRSNG Accélérer / Alliance Mitacs</h2>
 <p class="big-number">2:1 Ratio</p>
-<p>Company invests <span class="highlight">$1</span> → gets <span class="highlight">$2</span> in funded research</p>
-<ul>
+<p class="lang-en">Company invests <span class="highlight">$1</span> → gets <span class="highlight">$2</span> in funded research</p>
+<p class="lang-fr">L'entreprise investit <span class="highlight">1$</span> → obtient <span class="highlight">2$</span> en recherche financée</p>
+<ul class="lang-en">
 <li>NSERC Accelerate & Mitacs Alliance provide matching funds</li>
 <li><strong>Company retains IP</strong> – unlike many grant programs</li>
 <li>Used for the <strong>majority of projects</strong> in Montreal</li>
@@ -113,23 +177,41 @@
 <li>Combines academic research with industry-directed goals</li>
 <li>Grad students work on your problems – you own the results</li>
 </ul>
+<ul class="lang-fr">
+<li>CRSNG Accélérer et Alliance Mitacs fournissent des fonds de contrepartie</li>
+<li><strong>L'entreprise conserve la PI</strong> – contrairement à beaucoup de programmes</li>
+<li>Utilisé pour la <strong>majorité des projets</strong> à Montréal</li>
+<li>Idéal pour la R-D appliquée avec des résultats commerciaux clairs</li>
+<li>Combine recherche académique et objectifs dirigés par l'industrie</li>
+<li>Les étudiants travaillent sur vos problèmes – vous possédez les résultats</li>
+</ul>
 </section>
 
 <section>
-<h2>Open-Source & Community Programs</h2>
-<ul>
+<h2 class="lang-en">Open-Source & Community Programs</h2>
+<h2 class="lang-fr">Programmes open-source et communautaires</h2>
+<ul class="lang-en">
 <li><strong>Google Summer of Code (GSoC)</strong> – Stipends for students contributing to open-source projects</li>
 <li><strong>Linux Foundation Mentorship</strong> – Paid mentorships on LF projects (3–12 months)</li>
 <li><strong>Outreachy</strong> – Paid internships for underrepresented groups in open source</li>
 <li><strong>MLH Fellowship</strong> – 12-week programs contributing to open-source (stipend-funded)</li>
 <li><strong>Season of Docs (Google)</strong> – Technical writing contributions to open-source</li>
 </ul>
-<p>These are <span class="highlight">zero-cost to us</span> – stipends paid by the program. We provide mentorship & project scope.</p>
+<ul class="lang-fr">
+<li><strong>Google Summer of Code (GSoC)</strong> – Bourses pour étudiants contribuant à l'open-source</li>
+<li><strong>Linux Foundation Mentorship</strong> – Mentorats rémunérés sur projets LF (3–12 mois)</li>
+<li><strong>Outreachy</strong> – Stages rémunérés pour groupes sous-représentés</li>
+<li><strong>MLH Fellowship</strong> – Programmes de 12 semaines en open-source (boursiers)</li>
+<li><strong>Season of Docs (Google)</strong> – Contributions en rédaction technique open-source</li>
+</ul>
+<p class="lang-en">These are <span class="highlight">zero-cost to us</span> – stipends paid by the program. We provide mentorship & project scope.</p>
+<p class="lang-fr">Ces programmes sont <span class="highlight">sans coût pour nous</span> – les bourses sont payées par le programme. Nous fournissons le mentorat et la portée du projet.</p>
 </section>
 
 <section>
-<h2>University Co-op Pipeline</h2>
-<table>
+<h2 class="lang-en">University Co-op Pipeline</h2>
+<h2 class="lang-fr">Pipeline coop universitaire</h2>
+<table class="lang-en">
 <tr><th>School</th><th>Strength</th></tr>
 <tr><td>ÉTS</td><td>Mandatory co-op, large volume</td></tr>
 <tr><td>Polytechnique</td><td>Engineering/CS stages</td></tr>
@@ -137,32 +219,60 @@
 <tr><td>McGill</td><td>Research-oriented</td></tr>
 <tr><td>UdeM/HEC</td><td>Stages program</td></tr>
 </table>
-</section>
-
-<section>
-<h2>Federal Wage Subsidies</h2>
-<ul>
-<li><strong>Canada Summer Jobs</strong> – 50% wage reimbursement (private sector)</li>
-<li><strong>Student Work Placement Program (SWPP)</strong> – up to $7,500/placement for STEM</li>
-<li>Apply early (CSJ deadline typically January)</li>
-</ul>
-</section>
-
-<section>
-<h2>Funding Types Compared</h2>
-<table>
-<tr><th></th><th>Tax Credits</th><th>Grants</th><th>Wage Subsidies</th></tr>
-<tr><td><strong>When</strong></td><td>After (at tax time)</td><td>Before/during</td><td>During placement</td></tr>
-<tr><td><strong>Cash flow</strong></td><td>Delayed refund</td><td>Upfront $</td><td>Offset payroll</td></tr>
-<tr><td><strong>Certainty</strong></td><td>High (formula-based)</td><td>Competitive</td><td>Moderate</td></tr>
-<tr><td><strong>Effort</strong></td><td>Accountant files</td><td>Proposal writing</td><td>Application form</td></tr>
-<tr><td><strong>Stackable?</strong></td><td>Yes</td><td>Sometimes</td><td>Yes</td></tr>
+<table class="lang-fr">
+<tr><th>École</th><th>Force</th></tr>
+<tr><td>ÉTS</td><td>Coop obligatoire, grand volume</td></tr>
+<tr><td>Polytechnique</td><td>Stages en génie/info</td></tr>
+<tr><td>Concordia</td><td>Institut coop</td></tr>
+<tr><td>McGill</td><td>Orienté recherche</td></tr>
+<tr><td>UdeM/HEC</td><td>Programme de stages</td></tr>
 </table>
 </section>
 
 <section>
-<h2>Tax Credits</h2>
-<ul>
+<h2 class="lang-en">Federal Wage Subsidies</h2>
+<h2 class="lang-fr">Subventions salariales fédérales</h2>
+<ul class="lang-en">
+<li><strong>Canada Summer Jobs</strong> – 50% wage reimbursement (private sector)</li>
+<li><strong>Student Work Placement Program (SWPP)</strong> – up to $7,500/placement for STEM</li>
+<li>Apply early (CSJ deadline typically January)</li>
+</ul>
+<ul class="lang-fr">
+<li><strong>Emplois d'été Canada</strong> – Remboursement de 50 % du salaire (secteur privé)</li>
+<li><strong>Programme de stages pratiques pour étudiants (PSPE)</strong> – jusqu'à 7 500 $/stage en STIM</li>
+<li>Postuler tôt (date limite EÉC généralement en janvier)</li>
+</ul>
+</section>
+
+<section>
+<h2 class="lang-en">Funding Types Compared</h2>
+<h2 class="lang-fr">Types de financement comparés</h2>
+<table class="lang-en">
+<tr><th></th><th>Tax Credits</th><th>Grants</th><th>Wage Subsidies</th></tr>
+<tr><td><strong>When</strong></td><td>After financial year (taxation period)</td><td>Before/during</td><td>During placement</td></tr>
+<tr><td><strong>Cash flow</strong></td><td>Delayed refund, if refundable</td><td>Upfront $</td><td>Offset payroll</td></tr>
+<tr><td><strong>Case acceptance</strong></td><td>High (formula-based, neutral for all companies)</td><td>Competitive (selective, high scrutiny)</td><td>Moderate</td></tr>
+<tr><td><strong>Effort (before)</strong></td><td>Medium (gathering, organizing, analyzing)</td><td>High (proposal writing, gathering, organizing, analyzing)</td><td>Medium-High (application form, gathering, organizing, analyzing)</td></tr>
+<tr><td><strong>Effort (during)</strong></td><td>High (submitting, audits)</td><td>High (reporting, claiming)</td><td>High (reporting, claiming)</td></tr>
+<tr><td><strong>Effort (after)</strong></td><td>Low</td><td>Medium (survival period)</td><td>Medium (survival period)</td></tr>
+<tr><td><strong>Stackable?</strong></td><td>Yes</td><td>Sometimes</td><td>Yes</td></tr>
+</table>
+<table class="lang-fr">
+<tr><th></th><th>Crédits d'impôt</th><th>Subventions</th><th>Subv. salariales</th></tr>
+<tr><td><strong>Quand</strong></td><td>Après l'année financière (période fiscale)</td><td>Avant/pendant</td><td>Pendant le stage</td></tr>
+<tr><td><strong>Flux de trésorerie</strong></td><td>Remboursement différé, si remboursable</td><td>$ d'avance</td><td>Compense la paie</td></tr>
+<tr><td><strong>Acceptation</strong></td><td>Élevée (formule, neutre pour toutes les entreprises)</td><td>Compétitif (sélectif, examen rigoureux)</td><td>Modérée</td></tr>
+<tr><td><strong>Effort (avant)</strong></td><td>Moyen (collecte, organisation, analyse)</td><td>Élevé (rédaction de proposition, collecte, organisation, analyse)</td><td>Moyen-élevé (formulaire, collecte, organisation, analyse)</td></tr>
+<tr><td><strong>Effort (pendant)</strong></td><td>Élevé (soumission, audits)</td><td>Élevé (rapports, réclamations)</td><td>Élevé (rapports, réclamations)</td></tr>
+<tr><td><strong>Effort (après)</strong></td><td>Faible</td><td>Moyen (période de survie)</td><td>Moyen (période de survie)</td></tr>
+<tr><td><strong>Cumulable ?</strong></td><td>Oui</td><td>Parfois</td><td>Oui</td></tr>
+</table>
+</section>
+
+<section>
+<h2 class="lang-en">Tax Credits</h2>
+<h2 class="lang-fr">Crédits d'impôt</h2>
+<ul class="lang-en">
 <li><strong>SR&ED (Federal)</strong> – 15-35% refund on qualifying R&D salaries</li>
 <li><strong>Quebec R&D Credit</strong> – Additional 14-30% provincial layer</li>
 <li><strong>CDAE / AI (Quebec)</strong> – Credit for development of e-business & AI</li>
@@ -175,45 +285,83 @@
 <li><strong>Interactive Digital Media Credit (QC)</strong> – Up to 37.5% of labour</li>
 <li>Applied retroactively at tax time – low risk, high certainty</li>
 </ul>
+<ul class="lang-fr">
+<li><strong>RS&DE (Fédéral)</strong> – Remboursement de 15-35 % sur les salaires de R-D admissibles</li>
+<li><strong>Crédit R-D du Québec</strong> – Couche provinciale additionnelle de 14-30 %</li>
+<li><strong>CDAE / IA (Québec)</strong> – Crédit pour le développement des affaires électroniques et l'IA</li>
+<ul>
+<li>Jusqu'à 30 % des salaires admissibles (plafonné par employé)</li>
+<li>Couvre le dév. logiciel, l'IA, les services TI</li>
+<li>Administré par Investissement Québec</li>
+<li><a href="https://www.investquebec.com/sites/default/files/2026-01/developpement-affaires-electroniques-ia.pdf">Détails (PDF)</a></li>
+</ul>
+<li><strong>Crédit médias numériques interactifs (QC)</strong> – Jusqu'à 37,5 % de la main-d'œuvre</li>
+<li>Appliqué rétroactivement à l'impôt – faible risque, haute certitude</li>
+</ul>
 </section>
 
 <section>
-<h2>Grants</h2>
-<ul>
+<h2 class="lang-en">Grants</h2>
+<h2 class="lang-fr">Subventions</h2>
+<ul class="lang-en">
 <li><strong>NSERC Alliance</strong> – 1:2 ratio (split costs or keep IP)</li>
 <li><strong>NRC IRAP</strong> – R&D project funding + youth placements</li>
 <li><strong>Prompt Innov</strong> – Innovation internship grants</li>
 <li>Competitive but high payoff</li>
 <li>Require proposals & reporting</li>
 </ul>
+<ul class="lang-fr">
+<li><strong>Alliance CRSNG</strong> – Ratio 1:2 (partager les coûts ou garder la PI)</li>
+<li><strong>CNRC PARI</strong> – Financement de projets R-D + placements jeunesse</li>
+<li><strong>Prompt Innov</strong> – Subventions de stages en innovation</li>
+<li>Compétitif mais rendement élevé</li>
+<li>Nécessite des propositions et des rapports</li>
+</ul>
 </section>
 
 <section>
-<h2>NCC – National Cybersecurity Consortium</h2>
+<h2 class="lang-en">NCC – National Cybersecurity Consortium</h2>
+<h2 class="lang-fr">CCN – Consortium national en cybersécurité</h2>
 <p><a href="https://ncc-cnc.ca/">ncc-cnc.ca</a></p>
-<ul>
+<ul class="lang-en">
 <li>Federal initiative to strengthen Canada's cybersecurity ecosystem</li>
 <li>Funds R&D projects, talent development & training</li>
 <li>Ericsson Security uses NCC programs</li>
 <li>Supports collaboration between industry & academia</li>
 <li>Can fund interns & researchers working on security topics</li>
 </ul>
+<ul class="lang-fr">
+<li>Initiative fédérale pour renforcer l'écosystème de cybersécurité du Canada</li>
+<li>Finance des projets de R-D, le développement des talents et la formation</li>
+<li>Ericsson Sécurité utilise les programmes du CCN</li>
+<li>Soutient la collaboration entre l'industrie et le milieu académique</li>
+<li>Peut financer des stagiaires et chercheurs en sécurité</li>
+</ul>
 </section>
 
 <section>
-<h2>Wage Subsidies & Other</h2>
-<ul>
+<h2 class="lang-en">Wage Subsidies & Other</h2>
+<h2 class="lang-fr">Subventions salariales et autres</h2>
+<ul class="lang-en">
 <li><strong>Mitacs</strong> – Matching funds for intern units</li>
 <li><strong>Canada Summer Jobs</strong> – 50% wage reimbursement</li>
 <li><strong>SWPP</strong> – Up to $7,500/STEM placement</li>
 <li><strong>Emploi-Québec</strong> – Training wage subsidies (up to 50%)</li>
 <li>Simpler applications, faster turnaround</li>
 </ul>
+<ul class="lang-fr">
+<li><strong>Mitacs</strong> – Fonds de contrepartie pour unités de stage</li>
+<li><strong>Emplois d'été Canada</strong> – Remboursement de 50 % du salaire</li>
+<li><strong>PSPE</strong> – Jusqu'à 7 500 $/stage en STIM</li>
+<li><strong>Emploi-Québec</strong> – Subventions salariales de formation (jusqu'à 50 %)</li>
+<li>Demandes plus simples, délais plus rapides</li>
+</ul>
 </section>
 
 <section>
-<h2>The Montreal Advantage</h2>
-<ul>
+<h2 class="lang-en">The Montreal Advantage</h2>
+<h2 class="lang-fr">L'avantage Montréal</h2>
+<ul class="lang-en">
 <li>Quebec <strong>strongly favours local operations</strong> for grants & tax breaks</li>
 <li>Having a group based in Montreal unlocks:</li>
 <ul>
@@ -225,49 +373,86 @@
 <li>Provincial programs often <strong>require</strong> Quebec presence – we qualify</li>
 <li>Municipal incentives (Montréal International, tech ecosystem support)</li>
 </ul>
+<ul class="lang-fr">
+<li>Le Québec <strong>favorise fortement les opérations locales</strong> pour les subventions et crédits d'impôt</li>
+<li>Avoir un groupe basé à Montréal donne accès à :</li>
+<ul>
+<li>Crédits d'impôt R-D exclusifs au Québec (parmi les plus généreux en Amérique du Nord)</li>
+<li>Programmes d'Investissement Québec</li>
+<li>Prompt Innov et autres organismes financés par le Québec</li>
+<li>Subventions salariales d'Emploi-Québec</li>
+</ul>
+<li>Les programmes provinciaux <strong>exigent</strong> souvent une présence au Québec – nous sommes admissibles</li>
+<li>Incitatifs municipaux (Montréal International, soutien à l'écosystème tech)</li>
+</ul>
 </section>
 
 <section>
-<h2>Why This Matters</h2>
-<p>Quebec spends <span class="highlight">~$3.2B/year</span> on business tax credits</p>
-<ul>
+<h2 class="lang-en">Why This Matters</h2>
+<h2 class="lang-fr">Pourquoi c'est important</h2>
+<p class="lang-en">Quebec spends <span class="highlight">~$3.2B/year</span> on business tax credits</p>
+<p class="lang-fr">Le Québec dépense <span class="highlight">~3,2 G$/an</span> en crédits d'impôt aux entreprises</p>
+<ul class="lang-en">
 <li>R&D credits are refundable even without profit</li>
 <li>Designed to keep tech jobs in-province</li>
 <li>Our Montreal presence is a <strong>strategic asset</strong> for funding</li>
 <li>Many programs are non-competitive (formula-based) – just apply</li>
 </ul>
+<ul class="lang-fr">
+<li>Les crédits R-D sont remboursables même sans profit</li>
+<li>Conçus pour garder les emplois tech dans la province</li>
+<li>Notre présence à Montréal est un <strong>atout stratégique</strong> pour le financement</li>
+<li>Plusieurs programmes sont non compétitifs (basés sur une formule) – il suffit de postuler</li>
+</ul>
 </section>
 
 <section>
-<h2>Stacking Strategy</h2>
-<ol>
+<h2 class="lang-en">Stacking Strategy</h2>
+<h2 class="lang-fr">Stratégie de cumul</h2>
+<ol class="lang-en">
 <li>NSERC Alliance for core research + grad students</li>
 <li>Prompt Innov or Mitacs for additional interns</li>
 <li>Target ÉTS/Poly co-op for volume</li>
 <li>Claim SR&ED on qualifying work</li>
 <li>Apply to CSJ/SWPP for summer positions</li>
 </ol>
-<p><span class="highlight">Result:</span> Effective intern cost reduced by 50–75% depending on program mix</p>
+<ol class="lang-fr">
+<li>Alliance CRSNG pour la recherche de base + étudiants gradués</li>
+<li>Prompt Innov ou Mitacs pour des stagiaires additionnels</li>
+<li>Cibler les coop ÉTS/Poly pour le volume</li>
+<li>Réclamer la RS&DE sur les travaux admissibles</li>
+<li>Postuler aux EÉC/PSPE pour les postes d'été</li>
+</ol>
+<p class="lang-en"><span class="highlight">Result:</span> Effective intern cost reduced by 50–75% depending on program mix</p>
+<p class="lang-fr"><span class="highlight">Résultat :</span> Coût effectif des stagiaires réduit de 50–75 % selon le mix de programmes</p>
 </section>
 
 <section>
-<h1>Example: NSERC Alliance in Action</h1>
+<h1 class="lang-en">Example: NSERC Alliance in Action</h1>
+<h1 class="lang-fr">Exemple : L'Alliance CRSNG en action</h1>
 </section>
 
 <section>
-<h2>Our Alliance: 12:1 Ratio</h2>
+<h2 class="lang-en">Our Alliance: 12:1 Ratio</h2>
+<h2 class="lang-fr">Notre Alliance : Ratio 12:1</h2>
 <p class="big-number">12:1</p>
-<p>We invest <span class="highlight">$83K</span> → becomes <span class="highlight">~$1M</span> in funded research</p>
-<ul>
+<p class="lang-en">We invest <span class="highlight">$83K</span> → becomes <span class="highlight">~$1M</span> in funded research</p>
+<p class="lang-fr">Nous investissons <span class="highlight">83 000 $</span> → devient <span class="highlight">~1 M$</span> en recherche financée</p>
+<ul class="lang-en">
 <li>Partners: <strong>AMD / Ciena / Efficios</strong> split the industry contribution</li>
 <li>Multiple companies sharing costs = massive leverage</li>
+</ul>
+<ul class="lang-fr">
+<li>Partenaires : <strong>AMD / Ciena / Efficios</strong> partagent la contribution industrielle</li>
+<li>Plusieurs entreprises partagent les coûts = levier massif</li>
 </ul>
 </section>
 
 <section>
-<h2>Example: DORSAL Lab (Polytechnique)</h2>
+<h2 class="lang-en">Example: DORSAL Lab (Polytechnique)</h2>
+<h2 class="lang-fr">Exemple : Labo DORSAL (Polytechnique)</h2>
 <p><a href="https://www.dorsal.polymtl.ca/en/">dorsal.polymtl.ca</a></p>
-<ul>
+<ul class="lang-en">
 <li>Research lab specializing in tracing, performance analysis & system software</li>
 <li>Our existing NSERC Alliance partner</li>
 <li>Many DORSAL grads hired at Ericsson (including this presenter)</li>
@@ -281,11 +466,26 @@
 <li>Ciena increasing their contribution & consolidating involvement</li>
 <li>Project direction moving towards <strong>agentic AI</strong> and <strong>security tracing</strong></li>
 </ul>
+<ul class="lang-fr">
+<li>Labo de recherche spécialisé en traçage, analyse de performance et logiciel système</li>
+<li>Notre partenaire Alliance CRSNG existant</li>
+<li>Plusieurs diplômés DORSAL embauchés chez Ericsson (incluant ce présentateur)</li>
+<li><strong>16 ans</strong> de collaboration – ils comprennent comment Ericsson fonctionne</li>
+<li>Travaux actifs dans des domaines directement pertinents :</li>
+<ul>
+<li><strong>DPDK</strong> – Traitement de paquets haute performance et traçage</li>
+<li><strong>Cloud et virtualisation</strong> – Analyse de performance de conteneurs/VM</li>
+<li><strong>Noyau Linux</strong> – Infrastructure de traçage, ordonnancement, eBPF</li>
+</ul>
+<li>Ciena augmente sa contribution et consolide son implication</li>
+<li>Direction du projet vers l'<strong>IA agentique</strong> et le <strong>traçage de sécurité</strong></li>
+</ul>
 </section>
 
 <section>
-<h2>DORSAL – Access to Domain Experts</h2>
-<ul>
+<h2 class="lang-en">DORSAL – Access to Domain Experts</h2>
+<h2 class="lang-fr">DORSAL – Accès à des experts du domaine</h2>
+<ul class="lang-en">
 <li>Professors & researchers with deep expertise in systems performance</li>
 <li>Direct collaboration – not just funding, but working relationships</li>
 <li>Grad students supervised by domain experts, working on our problems</li>
@@ -293,17 +493,26 @@
 <li>Connections to upstream open-source communities (LTTng, Trace Compass)</li>
 <li>Montreal is a global AI hub (Mila, IVADO) – students often trained in ML/AI, bringing those skills to systems research</li>
 </ul>
+<ul class="lang-fr">
+<li>Professeurs et chercheurs avec une expertise approfondie en performance des systèmes</li>
+<li>Collaboration directe – pas seulement du financement, mais des relations de travail</li>
+<li>Étudiants gradués supervisés par des experts, travaillant sur nos problèmes</li>
+<li>Des décennies de recherche publiée en traçage noyau et infrastructure cloud</li>
+<li>Connexions aux communautés open-source en amont (LTTng, Trace Compass)</li>
+<li>Montréal est un pôle mondial en IA (Mila, IVADO) – les étudiants formés en ML/IA apportent ces compétences à la recherche systèmes</li>
+</ul>
 </section>
 
 <section>
-<h1>Questions?</h1>
+<h1 class="lang-en">Questions?</h1>
+<h1 class="lang-fr">Questions ?</h1>
 </section>
 
 </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
 <script>
-Reveal.initialize({ hash: true, transition: 'slide' });
+Reveal.initialize({ hash: true, transition: 'slide', width: 960, height: 700 });
 </script>
 </body>
 </html>
