@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Progress Report H2 2026 - Eclipse Trace Compass</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css" id="theme" />
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@latest/dist/reveal.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        @font-face {
+            font-family: 'Hilda';
+            src: url('EricssonHilda-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        body,
+        .reveal {
+            font-family: 'Hilda', sans-serif;
+        }
+
+        .logo {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            z-index: 10;
+        }
+
+        .logo img {
+            width: 100px;
+            height: auto;
+        }
+
+        section[data-background-image] h1,
+        section[data-background-image] h2,
+        section[data-background-image] h3,
+        section[data-background-image] p,
+        section[data-background-image] li {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div class="logo">
+        <img src="./ERI_vertical_RGB.svg" alt="Ericsson Logo">
+    </div>
+    <div class="reveal">
+        <div class="slides" id="slides-container">
+            <!-- Slides will be loaded here -->
+        </div>
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('#slides-container').load('progress-report-slides.html', function() {
+                Reveal.initialize({
+                    controls: true,
+                    slideNumber: true,
+                    center: true,
+                    transition: 'slide'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
