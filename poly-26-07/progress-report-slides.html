@@ -388,6 +388,22 @@
     </ul>
   </section>
   <section>
+    <h3>Discrete Fourier Transforms on Every XY Plot</h3>
+    <p class="lead">Spot periodic behaviour hiding in the time domain</p>
+    <ul class="spacious">
+      <li>A <strong>DFT</strong> is now available on <strong>every XY plot</strong>, one click flips from time to frequency</li>
+      <li>Reveals <strong>periods &amp; cycles</strong>: polling intervals, timers, scheduling quanta, contention beats</li>
+      <li><strong>Power vs Period</strong> spectrum with <code>DC</code> and <code>LOG</code> toggles for wide dynamic range</li>
+      <li>Runs on the same aggregated data, so it scales to large traces</li>
+    </ul>
+  </section>
+  <section>
+    <h3>DFT in Action</h3>
+    <img src="./dft.png" alt="Discrete Fourier transform (power vs period) of an XY plot in Trace Compass"
+         style="width: 85%; max-height: 60vh; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.6);">
+    <p class="tiny muted">Here a strong peak near ~109 ms exposes a dominant periodic pattern invisible in the raw time series</p>
+  </section>
+  <section>
     <h3>Why It Matters</h3>
     <ul class="spacious">
       <li>Broadens the industrial base behind Trace Compass</li>
