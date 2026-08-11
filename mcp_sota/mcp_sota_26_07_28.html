@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MCP 2026-07-28 Spec Update  What Changed &amp; How to Uplift</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css" id="theme" />
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@latest/dist/reveal.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@latest/plugin/notes/notes.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@latest/plugin/highlight/highlight.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@latest/plugin/highlight/monokai.css" />
+    <style>
+        @font-face { font-family: 'Hilda'; src: url('../assets/EricssonHilda-Regular.ttf') format('truetype'); }
+        body, .reveal { font-family: 'Hilda', sans-serif; }
+        .reveal .slides { text-align: left; }
+        .reveal .slides section { text-shadow: 2px 2px 6px rgba(0,0,0,0.9), 0 0 12px rgba(0,0,0,0.7); }
+        .reveal .slides section.center-slide { text-align: center; }
+        .reveal h1, .reveal h2, .reveal h3 { text-transform: none; text-shadow: 3px 3px 8px rgba(0,0,0,1), 0 0 16px rgba(0,0,0,0.9); }
+        .reveal .lead { font-size: 1.15em; line-height: 1.35; }
+        .reveal .tiny { font-size: 0.5em; }
+        .reveal .small { font-size: 0.6em; }
+        .reveal .muted { color: #888; }
+        .reveal .callout { background: rgba(255,255,255,0.07); border-left: 4px solid #ff6b6b; padding: 0.8em 1.2em; margin: 0.8em 0; border-radius: 0 8px 8px 0; }
+        .reveal .callout-blue { background: rgba(255,255,255,0.07); border-left: 4px solid #6bc5ff; padding: 0.8em 1.2em; margin: 0.8em 0; border-radius: 0 8px 8px 0; }
+        .reveal .callout-green { background: rgba(255,255,255,0.07); border-left: 4px solid #6aff6a; padding: 0.8em 1.2em; margin: 0.8em 0; border-radius: 0 8px 8px 0; }
+        .reveal .spacious li { margin-bottom: 0.5em; }
+        .reveal .slide-footer { position: absolute; bottom: 10px; left: 20px; font-size: 0.5em; color: #666; z-index: 1000; }
+        .logo { position: absolute; top: 40px; right: 40px; z-index: 10; }
+        .logo img { width: 100px; height: auto; }
+        .twocol { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start; }
+        .threecol { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.2rem; align-items: start; }
+        .highlight { color: #ff6b6b; }
+        .highlight-blue { color: #6bc5ff; }
+        .highlight-green { color: #6aff6a; }
+        .dbox { background: #2a2a5a; border: 2px solid #6a6aff; border-radius: 8px; padding: 0.4em 0.7em; font-size: 0.65em; text-align: center; }
+        .dbox.red { border-color: #ff6b6b; background: #3a1a1a; }
+        .dbox.green { border-color: #6aff6a; background: #1a3a1a; }
+        .dbox.blue { border-color: #6bc5ff; background: #1a2a3a; }
+        .compare-table { width: 100%; border-collapse: collapse; font-size: 0.55em; }
+        .compare-table th, .compare-table td { padding: 0.4em 0.6em; border: 1px solid #444; text-align: left; }
+        .compare-table th { background: #2a2a5a; }
+        .compare-table tr.changed { background: rgba(107,197,255,0.1); }
+        pre code { font-size: 0.55em !important; line-height: 1.4 !important; }
+    </style>
+</head>
+<body>
+    <div class="logo"><img src="../assets/ERI_vertical_RGB.svg" alt="Ericsson Logo"></div>
+    <div class="reveal">
+        <div class="slides">
+
+<!-- 0. Title -->
+<section class="center-slide" data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_11_D_web.jpg" data-background-size="contain">
+  <h1>MCP 2026-07-28</h1>
+  <p class="lead">Stateless, Streamable &amp; How We Uplifted</p>
+  <p class="tiny">Matthew Khouzam | Ericsson Research | August 2026</p>
+  <aside class="notes">This deck covers the MCP spec update released July 28 2026, what changed from the previous 2025-03-26 spec, and how we uplifted two real projects: TMLL (Python harness) and Theia (TypeScript IDE plugin).</aside>
+</section>
+
+<div class="slide-footer">Matthew Khouzam · Ericsson Research · August 2026</div>
+
+<!-- 1. The Problem -->
+<section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_04_D_web.jpg" data-background-size="contain">
+    <h2>The Problem with 2025-03-26</h2>
+    <p class="lead">Why the spec needed to change</p>
+    <aside class="notes">The original MCP spec was designed for local IDE use cases. It broke down at scale.</aside>
+  </section>
+
+  <section>
+    <h3>Session State Pain</h3>
+    <ul class="spacious">
+      <li><span class="highlight">Long-lived sessions</span>  server accumulates per-client state</li>
+      <li><span class="highlight">Sticky sessions</span>  SSE requires load-balancer affinity</li>
+      <li><span class="highlight">Orphaned state</span>  client drops = no cleanup path</li>
+      <li><span class="highlight">No horizontal scaling</span>  session pinned to one instance</li>
+    </ul>
+    <aside class="notes">If a client disconnected, the server had no standard way to know whether to keep or discard state. This made serverless and CDN deployments impossible.</aside>
+  </section>
+
+  <section>
+    <h3>Transport Limitations</h3>
+    <ul class="spacious">
+      <li><span class="highlight">SSE</span> required two connections: GET (stream) + POST (requests)</li>
+      <li>Not supported by many corporate proxies</li>
+      <li>No request-response correlation built-in</li>
+      <li><span class="highlight">stdio</span> only  fine for local, useless for remote</li>
+    </ul>
+    <div class="callout">
+      <p>SSE was a workaround, not a design choice. It leaked complexity into every deployment.</p>
+    </div>
+    <aside class="notes">SSE was the only remote transport option, and it was problematic in enterprise networks with proxies that terminate long-lived connections.</aside>
+  </section>
+</section>
+
+<!-- 2. What's New -->
+<section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_06_D_web.jpg" data-background-size="contain">
+    <h2>What's New in 2026-07-28</h2>
+    <p class="lead">The headline changes</p>
+    <aside class="notes">This is the biggest MCP spec revision since launch. It fundamentally changes the transport and session model.</aside>
+  </section>
+
+  <section>
+    <h3>🏗️ Stateless by Default</h3>
+    <ul class="spacious">
+      <li>No session IDs required  each request is self-describing</li>
+      <li>Server <span class="highlight">MAY</span> opt into sessions (not MUST)</li>
+      <li><code>Mcp-Session-Id</code> header only if server chooses to issue one</li>
+      <li>Enables serverless, CDN, and horizontal scaling</li>
+    </ul>
+    <div class="callout-green">
+      <p>Stateless servers are now <span class="highlight-green">first-class citizens</span>, not an afterthought.</p>
+    </div>
+    <aside class="notes">This is the single biggest change. Servers no longer need to track clients. A simple tool server can be a plain HTTP endpoint with zero state.</aside>
+  </section>
+
+  <section>
+    <h3>🔀 Streamable HTTP</h3>
+    <ul class="spacious">
+      <li><span class="highlight-blue">Replaces SSE</span> as the remote transport</li>
+      <li>Single endpoint  POST for requests, optional SSE response body</li>
+      <li>Request-response OR streaming  server decides per-call</li>
+      <li>Standard HTTP semantics  works with proxies, CDNs, load balancers</li>
+    </ul>
+    <aside class="notes">Streamable HTTP is elegant: you POST a JSON-RPC request, and the server either returns a JSON response immediately or opens an SSE stream in the response body. Same endpoint, same method.</aside>
+  </section>
+
+  <section>
+    <h3>🔐 OAuth 2.1 &amp; Security</h3>
+    <ul class="spacious">
+      <li><span class="highlight">Mandatory</span> for remote HTTP servers</li>
+      <li>PKCE required  no client secrets in public clients</li>
+      <li>Dynamic client registration supported</li>
+      <li>Resource indicators for token scoping</li>
+      <li>Metadata discovery via <code>/.well-known/oauth-authorization-server</code></li>
+    </ul>
+    <aside class="notes">OAuth 2.1 with PKCE is now the standard auth flow. This replaces the ad-hoc bearer token approaches people were using.</aside>
+  </section>
+
+  <section>
+    <h3>🏷️ Tool Annotations</h3>
+    <ul class="spacious">
+      <li><code>readOnlyHint</code>  tool only reads, never mutates</li>
+      <li><code>destructiveHint</code>  tool may delete or modify irreversibly</li>
+      <li><code>idempotentHint</code>  safe to retry</li>
+      <li><code>openWorldHint</code>  interacts with external systems</li>
+    </ul>
+    <div class="callout-blue">
+      <p>Annotations are <em>hints</em>, not guarantees  but they enable smarter client UX (auto-approve read-only tools)</p>
+    </div>
+    <aside class="notes">Clients can use these to auto-approve safe operations, show warning dialogs for destructive ones, or batch idempotent calls.</aside>
+  </section>
+
+  <section>
+    <h3>📦 More New Features</h3>
+    <ul class="spacious">
+      <li><span class="highlight-blue">Structured output</span>  <code>outputSchema</code> on tools for typed responses</li>
+      <li><span class="highlight-blue">Elicitation</span>  server prompts user for input mid-tool</li>
+      <li><span class="highlight-blue">MCP Apps</span>  <code>text/html;profile=mcp-app</code> for rich UI</li>
+      <li><span class="highlight-blue">JSON-RPC batching</span>  multiple requests per HTTP call</li>
+      <li><span class="highlight-blue">Resource links</span>  tools can return links to resources</li>
+    </ul>
+    <aside class="notes">Structured output is huge for agentic workflows  the LLM can reliably parse tool results. Elicitation lets a tool ask the user a question without aborting. MCP Apps enable inline UIs in chat.</aside>
+  </section>
+</section>
+
+<!-- 3. Transport Deep-Dive -->
+<section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_07_D_web.jpg" data-background-size="contain">
+    <h2>Transport Deep-Dive</h2>
+    <p class="lead">From SSE to Streamable HTTP</p>
+    <aside class="notes">Let's look at exactly how the transport model changed.</aside>
+  </section>
+
+  <section>
+    <h3>Before vs After</h3>
+    <table class="compare-table">
+      <tr><th>Aspect</th><th>2025-03-26 (Old)</th><th>2026-07-28 (New)</th></tr>
+      <tr class="changed"><td>Remote transport</td><td>SSE (GET+POST pair)</td><td>Streamable HTTP (single POST)</td></tr>
+      <tr class="changed"><td>Session</td><td>Required (server-managed)</td><td>Optional (server MAY issue)</td></tr>
+      <tr><td>Local transport</td><td>stdio</td><td>stdio (unchanged)</td></tr>
+      <tr class="changed"><td>Response mode</td><td>Always streaming</td><td>JSON or SSE (per-request)</td></tr>
+      <tr class="changed"><td>Endpoints</td><td>/sse (GET) + /messages (POST)</td><td>/mcp (POST only)</td></tr>
+      <tr class="changed"><td>Connection</td><td>Long-lived</td><td>Per-request</td></tr>
+    </table>
+    <aside class="notes">The key insight: Streamable HTTP is just normal HTTP POST. The server can choose to return a plain JSON response OR upgrade the response body to an SSE stream for long-running operations. Same endpoint either way.</aside>
+  </section>
+
+  <section>
+    <h3>Streamable HTTP  Request Flow</h3>
+    <div class="callout-blue">
+      <p><strong>Simple tool call (fire-and-forget):</strong></p>
+      <p class="small">Client → POST /mcp (JSON-RPC request)<br>
+      Server → 200 OK + JSON-RPC response body</p>
+    </div>
+    <div class="callout-green" style="margin-top: 1em;">
+      <p><strong>Long-running tool (streaming):</strong></p>
+      <p class="small">Client → POST /mcp (JSON-RPC request)<br>
+      Server → 200 OK + Content-Type: text/event-stream<br>
+      Server → SSE events (progress, partial results)<br>
+      Server → final JSON-RPC result event + close</p>
+    </div>
+    <aside class="notes">This is the elegance of the design. Simple tools get simple HTTP semantics. Complex tools get streaming. The client doesn't need to know in advance which it'll get.</aside>
+  </section>
+
+  <section>
+    <h3>Session ID  Now Optional</h3>
+    <ul class="spacious">
+      <li>Server <span class="highlight">MAY</span> return <code>Mcp-Session-Id</code> in initialize response</li>
+      <li>If present, client MUST include it in subsequent requests</li>
+      <li>If absent → <span class="highlight-green">fully stateless</span></li>
+      <li>Server can <code>DELETE /mcp</code> to terminate session</li>
+    </ul>
+    <pre><code class="language-http">// Stateless server  no session header
+POST /mcp HTTP/1.1
+Content-Type: application/json
+
+{"jsonrpc":"2.0","method":"tools/call","params":{...},"id":1}
+</code></pre>
+    <aside class="notes">Most simple tool servers will be stateless. Session IDs are only needed for servers that maintain subscriptions or long-running state across requests.</aside>
+  </section>
+</section>
+
+<!-- 4. TMLL Uplift -->
+<section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_04_D_web.jpg" data-background-size="contain">
+    <h2>Case Study: TMLL</h2>
+    <p class="lead">Python harness-level uplift</p>
+    <aside class="notes">TMLL is a trace analysis MCP server. It's a good example of a simple, tool-heavy server that needed minimal changes to comply with 2026-07-28.</aside>
+  </section>
+
+  <section>
+    <h3>TMLL  Before &amp; After</h3>
+    <div class="twocol">
+      <div>
+        <p class="small"><strong>Before (SDK 1.27.0)</strong></p>
+        <pre><code class="language-python">from mcp.server.fastmcp import FastMCP
+from mcp.server.fastmcp import Image
+
+mcp = FastMCP("tmll-cli-mcp-server")</code></pre>
+      </div>
+      <div>
+        <p class="small"><strong>After (SDK 2.0.0)</strong></p>
+        <pre><code class="language-python">from mcp.server import MCPServer
+from mcp.server.mcpserver import Image
+
+mcp = MCPServer("tmll-cli-mcp-server")</code></pre>
+      </div>
+    </div>
+    <div class="callout-green">
+      <p>Core change: <code>FastMCP</code> → <code>MCPServer</code> class rename. API surface identical.</p>
+    </div>
+    <aside class="notes">The Python SDK 2.0 renamed the high-level class from FastMCP to MCPServer. The decorator-based API (@mcp.tool, @mcp.resource) is unchanged.</aside>
+  </section>
+
+  <section>
+    <h3>TMLL  What Changed</h3>
+    <ul class="spacious">
+      <li><span class="highlight-blue">Import paths</span>  <code>mcp.server.fastmcp</code> → <code>mcp.server</code> / <code>mcp.server.mcpserver</code></li>
+      <li><span class="highlight-blue">Monkey-patching removed</span>  no more <code>_mcp_server</code> internal access</li>
+      <li><span class="highlight-blue">ToolAnnotations</span> added for safety hints</li>
+      <li><span class="highlight-green">Transport unchanged</span>  stdio stays as-is</li>
+      <li><span class="highlight-green">Tool registration unchanged</span>  <code>@mcp.tool()</code> decorators work the same</li>
+    </ul>
+    <aside class="notes">The uplift took one commit. Most of the work was search-and-replace on import paths. The ToolAnnotations addition was optional but good practice.</aside>
+  </section>
+
+  <section>
+    <h3>TMLL  Tool Annotations</h3>
+    <pre><code class="language-python">from mcp.types import ToolAnnotations
+
+@mcp.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    openWorldHint=False
+))
+async def list_experiments() -> str:
+    """List all open experiments."""
+    return await run_cli(["list-experiments"])
+
+@mcp.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    openWorldHint=True
+))
+async def detect_anomalies(...) -> str:
+    """Run anomaly detection on trace data."""
+    ...</code></pre>
+    <aside class="notes">14 tools, most marked readOnly. Only delete_experiment and ensure_server are destructive. detect_anomalies is openWorld because it contacts the trace server.</aside>
+  </section>
+
+  <section>
+    <h3>TMLL  Complexity Assessment</h3>
+    <div class="callout-green">
+      <p><strong>Uplift complexity: LOW</strong></p>
+    </div>
+    <ul class="spacious">
+      <li>✅ Import renames (mechanical)</li>
+      <li>✅ Remove monkey-patching (simplification)</li>
+      <li>✅ Add ToolAnnotations (optional, additive)</li>
+      <li>✅ No transport changes (stdio unchanged in spec)</li>
+      <li>✅ No session logic to remove (was already stateless)</li>
+    </ul>
+    <p class="small muted">Total: 1 commit, ~20 lines changed</p>
+    <aside class="notes">If your server is stdio-only and stateless, the uplift is trivial. It's essentially a dependency bump plus import renames.</aside>
+  </section>
+</section>
+
+<!-- 5. Theia Uplift -->
+<section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_06_D_web.jpg" data-background-size="contain">
+    <h2>Case Study: Theia</h2>
+    <p class="lead">TypeScript plugin-level uplift</p>
+    <aside class="notes">Theia is a full IDE with both MCP client and server. The uplift was significantly more complex  it touched transport, session management, OAuth, and the plugin API.</aside>
+  </section>
+
+  <section>
+    <h3>Theia  Architecture</h3>
+    <div class="twocol">
+      <div>
+        <div class="dbox blue">MCP Client<br><span class="tiny">Connect TO external servers</span></div>
+        <ul class="spacious" style="font-size:0.6em; margin-top:0.8em;">
+          <li>StreamableHTTP (primary)</li>
+          <li>SSE (fallback)</li>
+          <li>stdio (local)</li>
+          <li>OAuth 2.1 + PKCE</li>
+        </ul>
+      </div>
+      <div>
+        <div class="dbox green">MCP Server<br><span class="tiny">Expose Theia AS a server</span></div>
+        <ul class="spacious" style="font-size:0.6em; margin-top:0.8em;">
+          <li>Stateless StreamableHTTP</li>
+          <li>Single <code>/mcp</code> endpoint</li>
+          <li>Per-request transport</li>
+          <li>Tools + Resources + Prompts</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="notes">Theia has both sides: it connects to external MCP servers (client) AND exposes itself as an MCP server for external AI tools to use. Both needed uplifting.</aside>
+  </section>
+
+  <section>
+    <h3>Theia Server  Stateless Uplift</h3>
+    <div class="twocol">
+      <div>
+        <p class="small"><strong>Before</strong></p>
+        <pre><code class="language-typescript">// Session-tracking transport
+const transport =
+  new StreamableHTTPServerTransport({
+    sessionIdGenerator: () =>
+      randomUUID(),
+  });
+// Map of active sessions
+httpTransports.set(
+  sessionId, transport
+);</code></pre>
+      </div>
+      <div>
+        <p class="small"><strong>After (2026-07-28)</strong></p>
+        <pre><code class="language-typescript">// Stateless  no session tracking
+const transport =
+  new StreamableHTTPServerTransport({
+    sessionIdGenerator: undefined,
+  });
+// Per-request, no map needed
+// Transport created and disposed
+// within request handler</code></pre>
+      </div>
+    </div>
+    <aside class="notes">The key change: sessionIdGenerator is set to undefined, which tells the SDK to not generate or expect session IDs. Each request gets its own transport instance that's cleaned up when the response closes.</aside>
+  </section>
+
+  <section>
+    <h3>Theia Client  Transport Negotiation</h3>
+    <pre><code class="language-typescript">async doStart(): Promise&lt;void&gt; {
+  try {
+    // Try Streamable HTTP first (2026-07-28)
+    this.transport = new StreamableHTTPClientTransport(
+      url, { authProvider: this.oauthProvider }
+    );
+    await this.client.connect(this.transport);
+  } catch (e) {
+    // Fall back to SSE for legacy servers
+    this.transport = new SSEClientTransport(
+      url, { authProvider: this.oauthProvider }
+    );
+    await this.client.connect(this.transport);
+  }
+}</code></pre>
+    <div class="callout-blue">
+      <p>Graceful degradation: StreamableHTTP → SSE fallback → stdio for local</p>
+    </div>
+    <aside class="notes">Theia's client is backwards-compatible. It tries the new transport first and falls back to SSE for servers that haven't upgraded yet.</aside>
+  </section>
+
+  <section>
+    <h3>Theia  OAuth 2.1 Stack</h3>
+    <ul class="spacious">
+      <li><span class="highlight">MCPOAuthClientProvider</span>  tokens, PKCE, dynamic registration</li>
+      <li><span class="highlight">Credential store</span>  keyed by server name + URL</li>
+      <li><span class="highlight">Callback service</span>  handles OAuth redirects</li>
+      <li><span class="highlight">Interactive mode</span>  launches browser for consent</li>
+      <li><span class="highlight">Non-interactive mode</span>  autostart with stored tokens</li>
+    </ul>
+    <p class="small muted">+8,190 lines for the full OAuth stack</p>
+    <aside class="notes">OAuth is the biggest single addition. It required a credential store, callback handlers for both browser and Electron, token refresh logic, and integration with the server lifecycle.</aside>
+  </section>
+
+  <section>
+    <h3>Theia  Plugin API</h3>
+    <pre><code class="language-typescript">// Plugin authors register MCP server definitions
+vscode.lm.registerMcpServerDefinitionProvider('my-tools', {
+  provideMcpServerDefinitions(): McpServerDefinition[] {
+    return [{
+      type: 'http',
+      name: 'My Remote Server',
+      url: 'https://my-server.com/mcp',
+      // OAuth handled automatically by Theia
+    }];
+  }
+});</code></pre>
+    <p class="small">Supports <code>McpStdioServerDefinition</code> and <code>McpHttpServerDefinition</code></p>
+    <aside class="notes">Theia plugins can register MCP server definitions declaratively. The IDE handles transport negotiation, auth, and lifecycle.</aside>
+  </section>
+
+  <section>
+    <h3>Theia  Complexity Assessment</h3>
+    <div class="callout">
+      <p><strong>Uplift complexity: HIGH</strong></p>
+    </div>
+    <ul class="spacious">
+      <li>✅ Stateless server transport (moderate  remove session map)</li>
+      <li>✅ StreamableHTTP client + SSE fallback (moderate)</li>
+      <li>⚠️ OAuth 2.1 full stack (high  +8K lines)</li>
+      <li>✅ Plugin API types for HTTP servers (low)</li>
+      <li>✅ SDK bump to 1.30.0 (low)</li>
+    </ul>
+    <p class="small muted">Total: multiple PRs, ~10K lines changed</p>
+    <aside class="notes">The OAuth stack dominates the effort. If you only need stateless transport, the uplift is moderate. Full OAuth for remote servers is where the complexity lives.</aside>
+  </section>
+</section>
+
+<!-- 6. Migration Checklist -->
+<section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_07_D_web.jpg" data-background-size="contain">
+    <h2>Migration Checklist</h2>
+    <p class="lead">What you need to do</p>
+    <aside class="notes">Here's the practical checklist for uplifting your MCP server or client to 2026-07-28.</aside>
+  </section>
+
+  <section>
+    <h3>Server-Side Checklist</h3>
+    <ul class="spacious">
+      <li>✅ <span class="highlight-blue">Bump SDK</span>  Python: <code>mcp&gt;=2.0.0</code> · TS: <code>@modelcontextprotocol/sdk@^1.30.0</code></li>
+      <li>✅ <span class="highlight-blue">Replace SSE</span> with Streamable HTTP transport (if remote)</li>
+      <li>✅ <span class="highlight-blue">Remove session tracking</span>  set <code>sessionIdGenerator: undefined</code></li>
+      <li>✅ <span class="highlight-blue">Add ToolAnnotations</span>  readOnly, destructive, idempotent hints</li>
+      <li>✅ <span class="highlight-blue">Add outputSchema</span> to tools returning structured data</li>
+      <li>⚠️ <span class="highlight">Implement OAuth 2.1</span> if server is exposed remotely</li>
+    </ul>
+    <aside class="notes">Items 1-5 are straightforward. OAuth is the only high-effort item and only needed for remote servers.</aside>
+  </section>
+
+  <section>
+    <h3>Client-Side Checklist</h3>
+    <ul class="spacious">
+      <li>✅ <span class="highlight-blue">StreamableHTTP transport</span> as primary</li>
+      <li>✅ <span class="highlight-blue">SSE fallback</span> for legacy servers</li>
+      <li>✅ <span class="highlight-blue">Handle optional session ID</span>  include if server provides one</li>
+      <li>✅ <span class="highlight-blue">OAuth 2.1 client</span>  PKCE, token refresh, credential store</li>
+      <li>✅ <span class="highlight-blue">Handle structured output</span>  parse outputSchema from tools/list</li>
+      <li>✅ <span class="highlight-blue">Support elicitation</span>  respond to server prompts for user input</li>
+    </ul>
+    <aside class="notes">Clients have more work because they need to handle both old and new servers. The fallback pattern from Theia is a good reference.</aside>
+  </section>
+
+  <section>
+    <h3>Testing &amp; Validation</h3>
+    <ul class="spacious">
+      <li>🧪 <span class="highlight">MCP Inspector</span>  interactive testing tool</li>
+      <li>🧪 Verify <code>initialize</code> handshake with no session header</li>
+      <li>🧪 Test both JSON response and SSE streaming modes</li>
+      <li>🧪 Validate ToolAnnotations appear in <code>tools/list</code></li>
+      <li>🧪 OAuth flow: authorization, token refresh, token expiry</li>
+    </ul>
+    <div class="callout-blue">
+      <p><code>npx @modelcontextprotocol/inspector</code>  test your server interactively</p>
+    </div>
+    <aside class="notes">The MCP Inspector is invaluable. It lets you connect to your server, list tools, call them, and see the raw JSON-RPC traffic.</aside>
+  </section>
+</section>
+
+<!-- 7. Comparison -->
+<section>
+  <h3>Uplift Spectrum</h3>
+  <table class="compare-table">
+    <tr><th>Dimension</th><th>TMLL (Python)</th><th>Theia (TypeScript)</th></tr>
+    <tr><td>Role</td><td>MCP Server only</td><td>Client + Server</td></tr>
+    <tr><td>Transport</td><td>stdio (unchanged)</td><td>StreamableHTTP + SSE + stdio</td></tr>
+    <tr><td>SDK</td><td>Python mcp 2.0.0</td><td>TS @mcp/sdk 1.30.0</td></tr>
+    <tr><td>Session</td><td>Already stateless</td><td>Removed session tracking</td></tr>
+    <tr><td>OAuth</td><td>N/A (local stdio)</td><td>Full OAuth 2.1 + PKCE</td></tr>
+    <tr><td>Tools</td><td>14 (decorator-based)</td><td>Dynamic (contribution API)</td></tr>
+    <tr><td>Annotations</td><td>Added (readOnly, etc.)</td><td>Inherited from tool providers</td></tr>
+    <tr class="changed"><td><strong>Effort</strong></td><td><strong>~1 day</strong></td><td><strong>~2 weeks</strong></td></tr>
+  </table>
+  <aside class="notes">The effort scales with your surface area. A simple tool server is a one-day uplift. A full IDE with client, server, OAuth, and plugin API is a multi-week effort.</aside>
+</section>
+
+<!-- 8. Key Takeaways -->
+<section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_11_D_web.jpg" data-background-size="contain">
+    <h2>Key Takeaways</h2>
+    <p class="lead">What this means for us</p>
+    <aside class="notes">Summary of actionable insights.</aside>
+  </section>
+
+  <section>
+    <h3>The Big Picture</h3>
+    <ul class="spacious">
+      <li><span class="highlight-green">Stateless = simpler servers</span>  easier horizontal scaling, serverless-friendly</li>
+      <li><span class="highlight-blue">Streamable HTTP = modern HTTP</span>  CDN-friendly, proxy-safe, standard semantics</li>
+      <li><span class="highlight">OAuth 2.1 = production security</span>  required for remote, enterprise-grade</li>
+      <li>The spec rewards <span class="highlight-blue">read-only, annotation-rich</span> tool design</li>
+      <li><span class="highlight-green">stdio stays unchanged</span>  simplest path for local tools</li>
+    </ul>
+    <aside class="notes">The protocol is maturing rapidly. The stateless-by-default stance is a clear signal that MCP is targeting production deployments, not just local IDE integrations.</aside>
+  </section>
+
+  <section>
+    <h3>Recommendations</h3>
+    <ul class="spacious">
+      <li>📌 <span class="highlight">Start with annotations</span>  low effort, high value for clients</li>
+      <li>📌 <span class="highlight">Design stateless-first</span>  avoid server-side session state</li>
+      <li>📌 <span class="highlight">Use outputSchema</span>  enables reliable agentic workflows</li>
+      <li>📌 <span class="highlight">Plan for OAuth</span> if deploying remote servers</li>
+      <li>📌 <span class="highlight">Test with Inspector</span> before claiming compliance</li>
+    </ul>
+    <aside class="notes">If you do nothing else, add ToolAnnotations and outputSchema. These are additive, non-breaking, and immediately useful to clients.</aside>
+  </section>
+</section>
+
+<!-- 9. References -->
+<section>
+  <h3>References</h3>
+  <ul class="spacious">
+    <li><span class="highlight-blue">Spec:</span> <a href="https://modelcontextprotocol.io/specification/2026-07-28">modelcontextprotocol.io/specification/2026-07-28</a></li>
+    <li><span class="highlight-blue">Blog:</span> <a href="https://daily.dev/posts/mcp-is-now-stateless-what-the-2026-07-28-update-changes-hc2vhg5ll">MCP Is Now Stateless  What the 2026-07-28 Update Changes</a></li>
+    <li><span class="highlight-blue">Migration:</span> <a href="https://aaif.io/blog/mcp-2026-07-28-whats-changing-and-how-to-migrate">AAIF  What's Changing and How to Migrate</a></li>
+    <li><span class="highlight-blue">TMLL:</span> <code>tmll/mcp/server.py</code>  branch <code>mcp-2.0</code></li>
+    <li><span class="highlight-blue">Theia:</span> commit <code>63218242f</code>  stateless protocol uplift</li>
+  </ul>
+  <aside class="notes">The AAIF migration guide is the most practical reference. The spec itself is comprehensive but dense.</aside>
+</section>
+
+</div>
+    </div>
+    <script>
+        Reveal.initialize({
+            controls: true,
+            slideNumber: true,
+            center: true,
+            transition: 'slide',
+            plugins: [RevealNotes, RevealHighlight]
+        });
+    </script>
+</body>
+</html>
