@@ -5,10 +5,10 @@
     <title>MCP 2026-07-28 Spec Update  What Changed &amp; How to Uplift</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css" id="theme" />
-    <script src="https://cdn.jsdelivr.net/npm/reveal.js@latest/dist/reveal.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/reveal.js@latest/plugin/notes/notes.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/reveal.js@latest/plugin/highlight/highlight.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@latest/plugin/highlight/monokai.css" />
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/notes/notes.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/highlight/highlight.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/highlight/monokai.css" />
     <style>
         @font-face { font-family: 'Hilda'; src: url('../assets/EricssonHilda-Regular.ttf') format('truetype'); }
         body, .reveal { font-family: 'Hilda', sans-serif; }
@@ -97,32 +97,40 @@
   <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_06_D_web.jpg" data-background-size="contain">
     <h2>What's New in 2026-07-28</h2>
     <p class="lead">The headline changes</p>
-    <aside class="notes">This is the biggest MCP spec revision since launch. It fundamentally changes the transport and session model.</aside>
+    <aside class="notes">This is the biggest MCP spec revision since launch. It removes the initialize handshake, kills sessions entirely, and makes every request self-describing.</aside>
   </section>
 
   <section>
-    <h3>🏗️ Stateless by Default</h3>
+    <h3>🏗️ Fully Stateless Protocol</h3>
     <ul class="spacious">
-      <li>No session IDs required  each request is self-describing</li>
-      <li>Server <span class="highlight">MAY</span> opt into sessions (not MUST)</li>
-      <li><code>Mcp-Session-Id</code> header only if server chooses to issue one</li>
-      <li>Enables serverless, CDN, and horizontal scaling</li>
+      <li><span class="highlight">No more <code>initialize</code>/<code>initialized</code></span> handshake</li>
+      <li><span class="highlight">No more <code>Mcp-Session-Id</code></span> header (removed entirely)</li>
     </ul>
     <div class="callout-green">
-      <p>Stateless servers are now <span class="highlight-green">first-class citizens</span>, not an afterthought.</p>
+      <p>2025-03-26 made sessions <em>optional</em>. 2026-07-28 <span class="highlight-green">removes them entirely</span>.</p>
     </div>
-    <aside class="notes">This is the single biggest change. Servers no longer need to track clients. A simple tool server can be a plain HTTP endpoint with zero state.</aside>
+    <aside class="notes">The key distinction: 2025-03-26 already introduced Streamable HTTP and made sessions optional (server MAY issue Mcp-Session-Id). 2026-07-28 goes further by eliminating sessions and the initialize handshake completely.</aside>
   </section>
 
   <section>
-    <h3>🔀 Streamable HTTP</h3>
+    <h3>🏗️ Self-Describing by Design</h3>
     <ul class="spacious">
-      <li><span class="highlight-blue">Replaces SSE</span> as the remote transport</li>
-      <li>Single endpoint  POST for requests, optional SSE response body</li>
-      <li>Request-response OR streaming  server decides per-call</li>
-      <li>Standard HTTP semantics  works with proxies, CDNs, load balancers</li>
+      <li>Every request carries protocol version + capabilities in <code>_meta</code></li>
+      <li>New <code>server/discover</code> RPC for up-front capability discovery</li>
+      <li>Enables serverless, CDN, and horizontal scaling</li>
     </ul>
-    <aside class="notes">Streamable HTTP is elegant: you POST a JSON-RPC request, and the server either returns a JSON response immediately or opens an SSE stream in the response body. Same endpoint, same method.</aside>
+    <aside class="notes">Each request fully describes itself via _meta fields. No prior state needed. This is what makes serverless MCP deployments possible.</aside>
+  </section>
+
+  <section>
+    <h3>🔀 Self-Describing Requests</h3>
+    <ul class="spacious">
+      <li>Each request includes <code>_meta.io.modelcontextprotocol/protocolVersion</code></li>
+      <li>Each request includes <code>_meta.io.modelcontextprotocol/clientCapabilities</code></li>
+      <li>Clients SHOULD include <code>_meta.io.modelcontextprotocol/clientInfo</code></li>
+      <li>Servers SHOULD include <code>_meta.io.modelcontextprotocol/serverInfo</code> in results</li>
+    </ul>
+    <aside class="notes">This replaces the initialize handshake. Instead of one up-front negotiation, every request carries its own context. This enables true statelessness, load balancing, and serverless deployments without sticky sessions.</aside>
   </section>
 
   <section>
@@ -130,94 +138,107 @@
     <ul class="spacious">
       <li><span class="highlight">Mandatory</span> for remote HTTP servers</li>
       <li>PKCE required  no client secrets in public clients</li>
-      <li>Dynamic client registration supported</li>
+      <li>Dynamic client registration deprecated in favor of Client ID Metadata Documents</li>
       <li>Resource indicators for token scoping</li>
       <li>Metadata discovery via <code>/.well-known/oauth-authorization-server</code></li>
     </ul>
-    <aside class="notes">OAuth 2.1 with PKCE is now the standard auth flow. This replaces the ad-hoc bearer token approaches people were using.</aside>
+    <aside class="notes">OAuth 2.1 with PKCE was already the standard auth flow since 2025-03-26. 2026-07-28 deprecates dynamic client registration in favor of Client ID Metadata Documents.</aside>
   </section>
 
   <section>
-    <h3>🏷️ Tool Annotations</h3>
+    <h3>🏷️ Multi Round-Trip Requests (MRTR)</h3>
     <ul class="spacious">
-      <li><code>readOnlyHint</code>  tool only reads, never mutates</li>
-      <li><code>destructiveHint</code>  tool may delete or modify irreversibly</li>
-      <li><code>idempotentHint</code>  safe to retry</li>
-      <li><code>openWorldHint</code>  interacts with external systems</li>
+      <li>Replaces server-initiated requests (sampling, elicitation, roots)</li>
+      <li>Server returns <code>InputRequiredResult</code> with <code>resultType: "input_required"</code></li>
+      <li>Client retries original request with <code>inputResponses</code></li>
+      <li>All results now carry a <code>resultType</code> field</li>
     </ul>
     <div class="callout-blue">
-      <p>Annotations are <em>hints</em>, not guarantees  but they enable smarter client UX (auto-approve read-only tools)</p>
+      <p>Servers no longer initiate JSON-RPC requests. Client always drives the interaction.</p>
     </div>
-    <aside class="notes">Clients can use these to auto-approve safe operations, show warning dialogs for destructive ones, or batch idempotent calls.</aside>
+    <aside class="notes">This is a fundamental architectural change. Previously, servers could send requests to clients (for sampling, elicitation, roots). Now the client always initiates, and the server signals it needs more info via InputRequiredResult.</aside>
   </section>
 
   <section>
-    <h3>📦 More New Features</h3>
+    <h3>📦 More Changes</h3>
     <ul class="spacious">
-      <li><span class="highlight-blue">Structured output</span>  <code>outputSchema</code> on tools for typed responses</li>
-      <li><span class="highlight-blue">Elicitation</span>  server prompts user for input mid-tool</li>
-      <li><span class="highlight-blue">MCP Apps</span>  <code>text/html;profile=mcp-app</code> for rich UI</li>
-      <li><span class="highlight-blue">JSON-RPC batching</span>  multiple requests per HTTP call</li>
-      <li><span class="highlight-blue">Resource links</span>  tools can return links to resources</li>
+      <li><span class="highlight-blue"><code>subscriptions/listen</code></span>  replaces GET endpoint and resource subscriptions</li>
+      <li><span class="highlight-blue">Removes</span> <code>ping</code>, <code>logging/setLevel</code>, <code>notifications/roots/list_changed</code></li>
+      <li><span class="highlight-blue">Deprecates</span> Roots, Sampling, and Logging features</li>
+      <li><span class="highlight-blue">Tasks</span> moved to official extension (<code>io.modelcontextprotocol/tasks</code>)</li>
+      <li><span class="highlight-blue">Cache hints</span>  <code>ttlMs</code> and <code>cacheScope</code> on list results</li>
     </ul>
-    <aside class="notes">Structured output is huge for agentic workflows  the LLM can reliably parse tool results. Elicitation lets a tool ask the user a question without aborting. MCP Apps enable inline UIs in chat.</aside>
+    <aside class="notes">The protocol is being simplified aggressively. Features that were part of the core are either deprecated or moved to extensions. The subscription model is consolidated into a single subscriptions/listen stream.</aside>
   </section>
 </section>
 
 <!-- 3. Transport Deep-Dive -->
 <section>
   <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_07_D_web.jpg" data-background-size="contain">
-    <h2>Transport Deep-Dive</h2>
-    <p class="lead">From SSE to Streamable HTTP</p>
-    <aside class="notes">Let's look at exactly how the transport model changed.</aside>
+    <h2>Protocol Deep-Dive</h2>
+    <p class="lead">From sessions to stateless</p>
+    <aside class="notes">Let's look at exactly how the protocol model changed between 2025-03-26 and 2026-07-28.</aside>
   </section>
 
   <section>
-    <h3>Before vs After</h3>
+    <h3>Before vs After (Protocol)</h3>
     <table class="compare-table">
       <tr><th>Aspect</th><th>2025-03-26 (Old)</th><th>2026-07-28 (New)</th></tr>
-      <tr class="changed"><td>Remote transport</td><td>SSE (GET+POST pair)</td><td>Streamable HTTP (single POST)</td></tr>
-      <tr class="changed"><td>Session</td><td>Required (server-managed)</td><td>Optional (server MAY issue)</td></tr>
-      <tr><td>Local transport</td><td>stdio</td><td>stdio (unchanged)</td></tr>
-      <tr class="changed"><td>Response mode</td><td>Always streaming</td><td>JSON or SSE (per-request)</td></tr>
-      <tr class="changed"><td>Endpoints</td><td>/sse (GET) + /messages (POST)</td><td>/mcp (POST only)</td></tr>
-      <tr class="changed"><td>Connection</td><td>Long-lived</td><td>Per-request</td></tr>
+      <tr class="changed"><td>Initialization</td><td><code>initialize</code>/<code>initialized</code> handshake</td><td>No handshake; self-describing requests</td></tr>
+      <tr class="changed"><td>Session</td><td>Optional (<code>Mcp-Session-Id</code> MAY)</td><td>Removed entirely</td></tr>
+      <tr class="changed"><td>Capabilities</td><td>Exchanged once at init</td><td>Carried per-request in <code>_meta</code></td></tr>
     </table>
-    <aside class="notes">The key insight: Streamable HTTP is just normal HTTP POST. The server can choose to return a plain JSON response OR upgrade the response body to an SSE stream for long-running operations. Same endpoint either way.</aside>
+    <aside class="notes">The protocol layer changed fundamentally. No more handshake, no more sessions, capabilities travel with every request.</aside>
   </section>
 
   <section>
-    <h3>Streamable HTTP  Request Flow</h3>
-    <div class="callout-blue">
-      <p><strong>Simple tool call (fire-and-forget):</strong></p>
-      <p class="small">Client → POST /mcp (JSON-RPC request)<br>
-      Server → 200 OK + JSON-RPC response body</p>
-    </div>
-    <div class="callout-green" style="margin-top: 1em;">
-      <p><strong>Long-running tool (streaming):</strong></p>
-      <p class="small">Client → POST /mcp (JSON-RPC request)<br>
-      Server → 200 OK + Content-Type: text/event-stream<br>
-      Server → SSE events (progress, partial results)<br>
-      Server → final JSON-RPC result event + close</p>
-    </div>
-    <aside class="notes">This is the elegance of the design. Simple tools get simple HTTP semantics. Complex tools get streaming. The client doesn't need to know in advance which it'll get.</aside>
+    <h3>Before vs After (Architecture)</h3>
+    <table class="compare-table" style="font-size: 0.45em;">
+      <tr><th>Aspect</th><th>2025-03-26 (Old)</th><th>2026-07-28 (New)</th></tr>
+      <tr class="changed"><td>Server discovery</td><td>Via initialize response</td><td><code>server/discover</code> RPC</td></tr>
+      <tr class="changed"><td>Server requests</td><td>Server MAY send requests to client</td><td>Removed; MRTR pattern instead</td></tr>
+      <tr><td>Transport</td><td>Streamable HTTP + stdio</td><td>Streamable HTTP + stdio (unchanged)</td></tr>
+    </table>
+    <aside class="notes">Key insight: the transport layer (Streamable HTTP) didn't change. What changed is the protocol layer above it: no more server-initiated requests, replaced by the Multi Round-Trip Request pattern.</aside>
   </section>
 
   <section>
-    <h3>Session ID  Now Optional</h3>
-    <ul class="spacious">
-      <li>Server <span class="highlight">MAY</span> return <code>Mcp-Session-Id</code> in initialize response</li>
-      <li>If present, client MUST include it in subsequent requests</li>
-      <li>If absent → <span class="highlight-green">fully stateless</span></li>
-      <li>Server can <code>DELETE /mcp</code> to terminate session</li>
-    </ul>
-    <pre><code class="language-http">// Stateless server  no session header
-POST /mcp HTTP/1.1
-Content-Type: application/json
-
-{"jsonrpc":"2.0","method":"tools/call","params":{...},"id":1}
+    <h3>Self-Describing Request</h3>
+    <pre style="font-size: 0.45em;"><code class="language-json">// Every request now carries its own context
+{
+  "jsonrpc": "2.0",
+  "method": "tools/call",
+  "params": {
+    "name": "list_experiments",
+    "_meta": {
+      "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+      "io.modelcontextprotocol/clientCapabilities": {},
+      "io.modelcontextprotocol/clientInfo": {
+        "name": "MyClient", "version": "1.0"
+      }
+    }
+  },
+  "id": 1
+}
 </code></pre>
-    <aside class="notes">Most simple tool servers will be stateless. Session IDs are only needed for servers that maintain subscriptions or long-running state across requests.</aside>
+    <aside class="notes">No initialize, no session header, no prior state. Each request stands alone. This is what enables true horizontal scaling and serverless deployments.</aside>
+  </section>
+
+  <section>
+    <h3>Multi Round-Trip Requests</h3>
+    <div class="callout-blue" style="font-size: 0.8em;">
+      <p><strong>Old (2025-03-26):</strong> Server sends request to client</p>
+      <p class="small">Server → <code>elicitation/create</code> request to client<br>
+      Client → responds with user input</p>
+    </div>
+    <div class="callout-green" style="margin-top: 1em; font-size: 0.8em;">
+      <p><strong>New (2026-07-28):</strong> Server returns InputRequiredResult</p>
+      <p class="small">Client → POST tools/call<br>
+      Server → <code>InputRequiredResult</code> (resultType: "input_required")<br>
+      Client → retries with <code>inputResponses</code><br>
+      Server → final result (resultType: "complete")</p>
+    </div>
+    <aside class="notes">Servers no longer initiate JSON-RPC requests. This simplifies the protocol dramatically: clients are always the active party, servers always respond. When a server needs more info, it says so in a structured result, and the client retries.</aside>
   </section>
 </section>
 
@@ -231,7 +252,7 @@ Content-Type: application/json
 
   <section>
     <h3>TMLL  Before &amp; After</h3>
-    <div class="twocol">
+    <div class="twocol" style="font-size: 0.85em;">
       <div>
         <p class="small"><strong>Before (SDK 1.27.0)</strong></p>
         <pre><code class="language-python">from mcp.server.fastmcp import FastMCP
@@ -266,7 +287,7 @@ mcp = MCPServer("tmll-cli-mcp-server")</code></pre>
   </section>
 
   <section>
-    <h3>TMLL  Tool Annotations</h3>
+    <h3>TMLL  Tool Annotations (Read-Only)</h3>
     <pre><code class="language-python">from mcp.types import ToolAnnotations
 
 @mcp.tool(annotations=ToolAnnotations(
@@ -274,19 +295,26 @@ mcp = MCPServer("tmll-cli-mcp-server")</code></pre>
     destructiveHint=False,
     openWorldHint=False
 ))
-async def list_experiments() -> str:
+async def list_experiments() -&gt; str:
     """List all open experiments."""
-    return await run_cli(["list-experiments"])
+    return await run_cli(["list-experiments"])</code></pre>
+    <aside class="notes">Most of TMLL's 14 tools are read-only. Marking them as such lets clients auto-approve without user confirmation.</aside>
+  </section>
 
-@mcp.tool(annotations=ToolAnnotations(
+  <section>
+    <h3>TMLL  Tool Annotations (Open World)</h3>
+    <pre><code class="language-python">@mcp.tool(annotations=ToolAnnotations(
     readOnlyHint=True,
     destructiveHint=False,
     openWorldHint=True
 ))
-async def detect_anomalies(...) -> str:
+async def detect_anomalies(...) -&gt; str:
     """Run anomaly detection on trace data."""
     ...</code></pre>
-    <aside class="notes">14 tools, most marked readOnly. Only delete_experiment and ensure_server are destructive. detect_anomalies is openWorld because it contacts the trace server.</aside>
+    <div class="callout-blue">
+      <p>14 tools total: most <code>readOnly</code>. Only <code>delete_experiment</code> and <code>ensure_server</code> are destructive. <code>detect_anomalies</code> is <code>openWorld</code> (contacts trace server).</p>
+    </div>
+    <aside class="notes">openWorldHint=True signals that the tool reaches out to external systems. Clients may want to show a network indicator or require confirmation for these.</aside>
   </section>
 
   <section>
@@ -298,11 +326,22 @@ async def detect_anomalies(...) -> str:
       <li>✅ Import renames (mechanical)</li>
       <li>✅ Remove monkey-patching (simplification)</li>
       <li>✅ Add ToolAnnotations (optional, additive)</li>
+    </ul>
+    <aside class="notes">The code changes are minimal and low-risk. Import renames are a search-and-replace. Removing monkey-patching actually simplifies the code.</aside>
+  </section>
+
+  <section>
+    <h3>TMLL  Why It Was Easy</h3>
+    <ul class="spacious">
       <li>✅ No transport changes (stdio unchanged in spec)</li>
       <li>✅ No session logic to remove (was already stateless)</li>
+      <li>✅ No server-initiated requests to refactor</li>
     </ul>
     <p class="small muted">Total: 1 commit, ~20 lines changed</p>
-    <aside class="notes">If your server is stdio-only and stateless, the uplift is trivial. It's essentially a dependency bump plus import renames.</aside>
+    <div class="callout-green">
+      <p>If your server is stdio-only and stateless, the uplift is trivial.</p>
+    </div>
+    <aside class="notes">TMLL never used sessions, never used SSE, never sent requests to clients. It's the best-case scenario for a 2026-07-28 uplift. Essentially a dependency bump plus import renames.</aside>
   </section>
 </section>
 
@@ -310,8 +349,32 @@ async def detect_anomalies(...) -> str:
 <section>
   <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_06_D_web.jpg" data-background-size="contain">
     <h2>Case Study: Theia</h2>
-    <p class="lead">TypeScript plugin-level uplift</p>
-    <aside class="notes">Theia is a full IDE with both MCP client and server. The uplift was significantly more complex  it touched transport, session management, OAuth, and the plugin API.</aside>
+    <p class="lead">MCP harness (client) uplift</p>
+    <aside class="notes">Theia is an MCP harness — a client that connects to many different MCP servers. Unlike a simple server like TMLL, a harness must handle multiple protocol versions simultaneously and be tested against servers at various spec levels.</aside>
+  </section>
+
+  <section>
+    <h3>Why Harnesses Are Harder</h3>
+    <ul class="spacious">
+      <li><span class="highlight">Harness = MCP client</span> that connects to many servers</li>
+      <li>Must support servers at <span class="highlight-blue">2024-11-05</span>, <span class="highlight-blue">2025-03-26</span>, and <span class="highlight-blue">2026-07-28</span></li>
+      <li>Also exposes itself as a server (dual role)</li>
+    </ul>
+    <div class="callout">
+      <p>A server only needs to speak one protocol version. A harness must speak <em>all</em> of them.</p>
+    </div>
+    <aside class="notes">This is the fundamental difference: TMLL is a server that only needs to implement one version. Theia as a harness must detect which version a server speaks and adapt accordingly.</aside>
+  </section>
+
+  <section>
+    <h3>Multi-Version Testing</h3>
+    <ul class="spacious">
+      <li>Needs backward-compatible transport negotiation</li>
+      <li>Must be tested against servers at each spec version</li>
+      <li>Protocol detection: try stateless first, fall back to <code>initialize</code></li>
+      <li>Testing matrix multiplies with each supported version</li>
+    </ul>
+    <aside class="notes">The testing burden is the real cost. Every new protocol version adds a row to the compatibility matrix. You need servers at each version in CI to validate the fallback paths work correctly.</aside>
   </section>
 
   <section>
@@ -347,7 +410,7 @@ async def detect_anomalies(...) -> str:
         <pre><code class="language-typescript">// Session-tracking transport
 const transport =
   new StreamableHTTPServerTransport({
-    sessionIdGenerator: () =>
+    sessionIdGenerator: () =&gt;
       randomUUID(),
   });
 // Map of active sessions
@@ -394,23 +457,35 @@ const transport =
   </section>
 
   <section>
-    <h3>Theia  OAuth 2.1 Stack</h3>
+    <h3>Theia  OAuth 2.1 Components</h3>
     <ul class="spacious">
       <li><span class="highlight">MCPOAuthClientProvider</span>  tokens, PKCE, dynamic registration</li>
       <li><span class="highlight">Credential store</span>  keyed by server name + URL</li>
       <li><span class="highlight">Callback service</span>  handles OAuth redirects</li>
+    </ul>
+    <aside class="notes">The OAuth implementation splits into three core pieces: the provider that manages the token lifecycle, a secure credential store, and a callback service to handle the OAuth redirect flow.</aside>
+  </section>
+
+  <section>
+    <h3>Theia  OAuth 2.1 Modes</h3>
+    <ul class="spacious">
       <li><span class="highlight">Interactive mode</span>  launches browser for consent</li>
       <li><span class="highlight">Non-interactive mode</span>  autostart with stored tokens</li>
     </ul>
     <p class="small muted">+8,190 lines for the full OAuth stack</p>
-    <aside class="notes">OAuth is the biggest single addition. It required a credential store, callback handlers for both browser and Electron, token refresh logic, and integration with the server lifecycle.</aside>
+    <div class="callout">
+      <p>OAuth is the biggest single addition. Required credential store, callback handlers for browser and Electron, token refresh logic, and server lifecycle integration.</p>
+    </div>
+    <aside class="notes">Interactive mode is for first-time auth where the user must consent. Non-interactive uses stored refresh tokens for seamless reconnection. Both paths need to handle token expiry gracefully.</aside>
   </section>
 
   <section>
-    <h3>Theia  Plugin API</h3>
+    <h3>Theia  Plugin API (Registration)</h3>
     <pre><code class="language-typescript">// Plugin authors register MCP server definitions
-vscode.lm.registerMcpServerDefinitionProvider('my-tools', {
-  provideMcpServerDefinitions(): McpServerDefinition[] {
+vscode.lm.registerMcpServerDefinitionProvider(
+  'my-tools', {
+  provideMcpServerDefinitions():
+    McpServerDefinition[] {
     return [{
       type: 'http',
       name: 'My Remote Server',
@@ -419,8 +494,31 @@ vscode.lm.registerMcpServerDefinitionProvider('my-tools', {
     }];
   }
 });</code></pre>
-    <p class="small">Supports <code>McpStdioServerDefinition</code> and <code>McpHttpServerDefinition</code></p>
-    <aside class="notes">Theia plugins can register MCP server definitions declaratively. The IDE handles transport negotiation, auth, and lifecycle.</aside>
+    <aside class="notes">Theia plugins can register MCP server definitions declaratively. The IDE handles transport negotiation, auth, and lifecycle automatically.</aside>
+  </section>
+
+  <section>
+    <h3>Theia  Plugin API (Types)</h3>
+    <p>Supports two server definition types:</p>
+    <div class="twocol">
+      <div>
+        <div class="dbox blue">McpHttpServerDefinition</div>
+        <ul class="spacious" style="font-size:0.6em; margin-top:0.8em;">
+          <li><code>type: 'http'</code></li>
+          <li><code>url</code>  server endpoint</li>
+          <li>OAuth handled by IDE</li>
+        </ul>
+      </div>
+      <div>
+        <div class="dbox green">McpStdioServerDefinition</div>
+        <ul class="spacious" style="font-size:0.6em; margin-top:0.8em;">
+          <li><code>type: 'stdio'</code></li>
+          <li><code>command</code> + <code>args</code></li>
+          <li>Local process managed by IDE</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="notes">The Plugin API abstracts away all transport details. Plugin authors just declare what server they want, and Theia handles negotiation, lifecycle, and auth.</aside>
   </section>
 
   <section>
@@ -449,44 +547,67 @@ vscode.lm.registerMcpServerDefinitionProvider('my-tools', {
   </section>
 
   <section>
-    <h3>Server-Side Checklist</h3>
+    <h3>Server-Side Checklist (Protocol)</h3>
     <ul class="spacious">
       <li>✅ <span class="highlight-blue">Bump SDK</span>  Python: <code>mcp&gt;=2.0.0</code> · TS: <code>@modelcontextprotocol/sdk@^1.30.0</code></li>
-      <li>✅ <span class="highlight-blue">Replace SSE</span> with Streamable HTTP transport (if remote)</li>
-      <li>✅ <span class="highlight-blue">Remove session tracking</span>  set <code>sessionIdGenerator: undefined</code></li>
-      <li>✅ <span class="highlight-blue">Add ToolAnnotations</span>  readOnly, destructive, idempotent hints</li>
-      <li>✅ <span class="highlight-blue">Add outputSchema</span> to tools returning structured data</li>
-      <li>⚠️ <span class="highlight">Implement OAuth 2.1</span> if server is exposed remotely</li>
+      <li>✅ <span class="highlight-blue">Remove initialize handler</span>  no more handshake logic</li>
+      <li>✅ <span class="highlight-blue">Remove session tracking</span>  <code>Mcp-Session-Id</code> is gone</li>
     </ul>
-    <aside class="notes">Items 1-5 are straightforward. OAuth is the only high-effort item and only needed for remote servers.</aside>
+    <aside class="notes">These are the mechanical changes. SDK bump gives you the new APIs, then you remove the initialize handler and session tracking code.</aside>
   </section>
 
   <section>
-    <h3>Client-Side Checklist</h3>
+    <h3>Server-Side Checklist (Features)</h3>
     <ul class="spacious">
-      <li>✅ <span class="highlight-blue">StreamableHTTP transport</span> as primary</li>
-      <li>✅ <span class="highlight-blue">SSE fallback</span> for legacy servers</li>
-      <li>✅ <span class="highlight-blue">Handle optional session ID</span>  include if server provides one</li>
-      <li>✅ <span class="highlight-blue">OAuth 2.1 client</span>  PKCE, token refresh, credential store</li>
-      <li>✅ <span class="highlight-blue">Handle structured output</span>  parse outputSchema from tools/list</li>
-      <li>✅ <span class="highlight-blue">Support elicitation</span>  respond to server prompts for user input</li>
+      <li>✅ <span class="highlight-blue">Implement <code>server/discover</code></span>  required RPC for capability advertisement</li>
+      <li>✅ <span class="highlight-blue">Return <code>resultType</code></span> on all results ("complete" or "input_required")</li>
+      <li>⚠️ <span class="highlight">Replace server-initiated requests</span> with MRTR pattern (InputRequiredResult)</li>
     </ul>
-    <aside class="notes">Clients have more work because they need to handle both old and new servers. The fallback pattern from Theia is a good reference.</aside>
+    <aside class="notes">The biggest server-side change is implementing server/discover and ensuring every result has a resultType field. If your server used sampling or elicitation, you need to switch to MRTR.</aside>
+  </section>
+
+  <section>
+    <h3>Client-Side Checklist (Protocol)</h3>
+    <ul class="spacious">
+      <li>✅ <span class="highlight-blue">Include <code>_meta</code></span> on every request (protocol version, capabilities)</li>
+      <li>✅ <span class="highlight-blue">Call <code>server/discover</code></span> for initial capability probing</li>
+      <li>✅ <span class="highlight-blue">Remove initialize/initialized</span> exchange</li>
+    </ul>
+    <aside class="notes">The protocol-level changes for clients: every request must be self-describing, and you use server/discover instead of the old initialize handshake.</aside>
+  </section>
+
+  <section>
+    <h3>Client-Side Checklist (Features)</h3>
+    <ul class="spacious">
+      <li>✅ <span class="highlight-blue">Handle <code>InputRequiredResult</code></span>  retry with inputResponses</li>
+      <li>✅ <span class="highlight-blue">Use <code>subscriptions/listen</code></span> for server notifications</li>
+      <li>⚠️ <span class="highlight">Backward compat</span>  detect older servers, fall back to initialize</li>
+    </ul>
+    <aside class="notes">Clients need to support both old and new servers during the transition. The spec defines a backward-compatibility detection mechanism for this.</aside>
   </section>
 
   <section>
     <h3>Testing &amp; Validation</h3>
     <ul class="spacious">
       <li>🧪 <span class="highlight">MCP Inspector</span>  interactive testing tool</li>
-      <li>🧪 Verify <code>initialize</code> handshake with no session header</li>
-      <li>🧪 Test both JSON response and SSE streaming modes</li>
-      <li>🧪 Validate ToolAnnotations appear in <code>tools/list</code></li>
-      <li>🧪 OAuth flow: authorization, token refresh, token expiry</li>
+      <li>🧪 Verify requests work without <code>initialize</code> handshake</li>
+      <li>🧪 Test <code>server/discover</code> returns correct capabilities</li>
     </ul>
     <div class="callout-blue">
       <p><code>npx @modelcontextprotocol/inspector</code>  test your server interactively</p>
     </div>
     <aside class="notes">The MCP Inspector is invaluable. It lets you connect to your server, list tools, call them, and see the raw JSON-RPC traffic.</aside>
+  </section>
+
+  <section>
+    <h3>Testing &amp; Validation (cont.)</h3>
+    <ul class="spacious">
+      <li>🧪 Validate <code>resultType</code> on all tool call responses</li>
+      <li>🧪 Test MRTR flow if using elicitation/sampling</li>
+      <li>🧪 Backward compat: test against 2025-03-26 servers</li>
+      <li>🧪 Verify <code>_meta</code> fields propagate correctly</li>
+    </ul>
+    <aside class="notes">Don't forget to test backward compatibility. Your client should gracefully fall back to the initialize handshake when talking to older servers.</aside>
   </section>
 </section>
 
