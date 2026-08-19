@@ -101,7 +101,7 @@
   </section>
 
   <section>
-    <h3>🏗️ Fully Stateless Protocol</h3>
+    <h3>Fully Stateless Protocol</h3>
     <ul class="spacious">
       <li><span class="highlight">No more <code>initialize</code>/<code>initialized</code></span> handshake</li>
       <li><span class="highlight">No more <code>Mcp-Session-Id</code></span> header (removed entirely)</li>
@@ -113,7 +113,7 @@
   </section>
 
   <section>
-    <h3>🏗️ Self-Describing by Design</h3>
+    <h3>Self-Describing by Design</h3>
     <ul class="spacious">
       <li>Every request carries protocol version + capabilities in <code>_meta</code></li>
       <li>New <code>server/discover</code> RPC for up-front capability discovery</li>
@@ -123,7 +123,7 @@
   </section>
 
   <section>
-    <h3>🔀 Self-Describing Requests</h3>
+    <h3>Self-Describing Requests</h3>
     <ul class="spacious">
       <li>Each request includes <code>_meta.io.modelcontextprotocol/protocolVersion</code></li>
       <li>Each request includes <code>_meta.io.modelcontextprotocol/clientCapabilities</code></li>
@@ -134,7 +134,7 @@
   </section>
 
   <section>
-    <h3>🔐 OAuth 2.1 &amp; Security</h3>
+    <h3>OAuth 2.1 &amp; Security</h3>
     <ul class="spacious">
       <li><span class="highlight">Mandatory</span> for remote HTTP servers</li>
       <li>PKCE required  no client secrets in public clients</li>
@@ -146,7 +146,21 @@
   </section>
 
   <section>
-    <h3>🏷️ Multi Round-Trip Requests (MRTR)</h3>
+    <h3>Enterprise-Managed Authorization (EMA)</h3>
+    <ul class="spacious">
+      <li><span class="highlight">EMA extension</span>  IT admins centrally provision MCP server access via IdP</li>
+      <li>Users auto-connected to required servers on login  no per-app OAuth prompts</li>
+      <li><span class="highlight-blue">Incremental scope consent</span>  servers request additional permissions mid-session via <code>WWW-Authenticate</code></li>
+      <li>Robust issuer validation per <span class="highlight-blue">RFC 9207</span></li>
+    </ul>
+    <div class="callout">
+      <p>Direct response to enterprise feedback: orgs couldn't adopt MCP without central IT control over which servers employees connect to.</p>
+    </div>
+    <aside class="notes">EMA is a new extension that lets IT administrators centrally provision MCP server access through an identity provider. Incremental scope consent allows more granular permission management instead of requesting all scopes upfront.</aside>
+  </section>
+
+  <section>
+    <h3>Multi Round-Trip Requests (MRTR)</h3>
     <ul class="spacious">
       <li>Replaces server-initiated requests (sampling, elicitation, roots)</li>
       <li>Server returns <code>InputRequiredResult</code> with <code>resultType: "input_required"</code></li>
@@ -160,7 +174,7 @@
   </section>
 
   <section>
-    <h3>📦 More Changes</h3>
+    <h3>More Changes</h3>
     <ul class="spacious">
       <li><span class="highlight-blue"><code>subscriptions/listen</code></span>  replaces GET endpoint and resource subscriptions</li>
       <li><span class="highlight-blue">Removes</span> <code>ping</code>, <code>logging/setLevel</code>, <code>notifications/roots/list_changed</code></li>
@@ -169,6 +183,65 @@
       <li><span class="highlight-blue">Cache hints</span>  <code>ttlMs</code> and <code>cacheScope</code> on list results</li>
     </ul>
     <aside class="notes">The protocol is being simplified aggressively. Features that were part of the core are either deprecated or moved to extensions. The subscription model is consolidated into a single subscriptions/listen stream.</aside>
+  </section>
+
+  <section>
+    <h3>Extensions Framework</h3>
+    <p>Advanced behaviours modelled as <span class="highlight-blue">optional, self-contained modules</span>:</p>
+    <div class="twocol">
+      <div>
+        <div class="dbox blue">MCP Apps</div>
+        <ul class="spacious" style="font-size:0.6em; margin-top:0.8em;">
+          <li>Server declares interactive HTML UI</li>
+          <li>Rendered in sandboxed iframe in chat</li>
+          <li>Bidirectional comms via <code>postMessage</code> + JSON-RPC</li>
+          <li>Graceful degradation to plain text</li>
+        </ul>
+      </div>
+      <div>
+        <div class="dbox green">Tasks</div>
+        <ul class="spacious" style="font-size:0.6em; margin-top:0.8em;">
+          <li>Server returns durable <code>taskId</code></li>
+          <li>Client polls via <code>tasks/get</code></li>
+          <li>Mid-flight input via <code>tasks/update</code></li>
+          <li>Survives connection drops</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="notes">With the core lean and stateless, advanced behaviors are modelled as extensions. MCP Apps lets servers define interactive HTML that renders inside the chat. Tasks provides a standardised async pattern for long-running operations with durable handles that survive disconnects.</aside>
+  </section>
+
+  <section>
+    <h3>HTTP Routing Headers</h3>
+    <p>New headers for infrastructure-level routing:</p>
+    <pre style="font-size: 0.5em;"><code class="language-http">POST /mcp HTTP/1.1
+MCP-Protocol-Version: 2026-07-28
+Mcp-Method: tools/call
+Mcp-Name: search
+Content-Type: application/json
+</code></pre>
+    <div class="callout-blue">
+      <p><code>Mcp-Method</code> and <code>Mcp-Name</code> let load balancers and gateways route traffic by operation <em>without parsing the JSON body</em>.</p>
+    </div>
+    <aside class="notes">These headers are a practical concession to infrastructure. API gateways, WAFs, and load balancers can now route, rate-limit, or log MCP traffic based on headers alone, without needing to deserialize JSON-RPC payloads.</aside>
+  </section>
+
+  <section>
+    <h3>Stateless Protocol, Stateful Applications</h3>
+    <p class="small">Use <span class="highlight-green">explicit handles</span> instead of hidden session state:</p>
+    <pre style="font-size: 0.45em;"><code class="language-text">1. Client calls: create_checkout({items: ["widget-a", "widget-b"]})
+   Server returns: {basket_id: "bsk_8f3a", status: "created"}
+
+2. Client calls: add_shipping(basket_id: "bsk_8f3a", address: {...})
+   Server returns: {basket_id: "bsk_8f3a", status: "ready_to_pay"}
+
+3. Client calls: confirm_order(basket_id: "bsk_8f3a")
+   Server returns: {order_id: "ord_91cb", status: "confirmed"}
+</code></pre>
+    <div class="callout-green">
+      <p>The LLM can <em>reason about</em> explicit handles, compose them across tools, and hand them off between workflow steps. Hidden session state was invisible to the model.</p>
+    </div>
+    <aside class="notes">This is the standard HTTP API pattern. The protocol doesn't manage state for you, but it doesn't prevent you from managing it yourself via explicit identifiers returned in tool call results.</aside>
   </section>
 </section>
 
@@ -323,9 +396,9 @@ async def detect_anomalies(...) -&gt; str:
       <p><strong>Uplift complexity: LOW</strong></p>
     </div>
     <ul class="spacious">
-      <li>✅ Import renames (mechanical)</li>
-      <li>✅ Remove monkey-patching (simplification)</li>
-      <li>✅ Add ToolAnnotations (optional, additive)</li>
+      <li>Import renames (mechanical)</li>
+      <li>Remove monkey-patching (simplification)</li>
+      <li>Add ToolAnnotations (optional, additive)</li>
     </ul>
     <aside class="notes">The code changes are minimal and low-risk. Import renames are a search-and-replace. Removing monkey-patching actually simplifies the code.</aside>
   </section>
@@ -333,9 +406,9 @@ async def detect_anomalies(...) -&gt; str:
   <section>
     <h3>TMLL  Why It Was Easy</h3>
     <ul class="spacious">
-      <li>✅ No transport changes (stdio unchanged in spec)</li>
-      <li>✅ No session logic to remove (was already stateless)</li>
-      <li>✅ No server-initiated requests to refactor</li>
+      <li>No transport changes (stdio unchanged in spec)</li>
+      <li>No session logic to remove (was already stateless)</li>
+      <li>No server-initiated requests to refactor</li>
     </ul>
     <p class="small muted">Total: 1 commit, ~20 lines changed</p>
     <div class="callout-green">
@@ -350,7 +423,7 @@ async def detect_anomalies(...) -&gt; str:
   <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_06_D_web.jpg" data-background-size="contain">
     <h2>Case Study: Theia</h2>
     <p class="lead">MCP harness (client) uplift</p>
-    <aside class="notes">Theia is an MCP harness — a client that connects to many different MCP servers. Unlike a simple server like TMLL, a harness must handle multiple protocol versions simultaneously and be tested against servers at various spec levels.</aside>
+    <aside class="notes">Theia is an MCP harness - a client that connects to many different MCP servers. Unlike a simple server like TMLL, a harness must handle multiple protocol versions simultaneously and be tested against servers at various spec levels.</aside>
   </section>
 
   <section>
@@ -527,18 +600,65 @@ vscode.lm.registerMcpServerDefinitionProvider(
       <p><strong>Uplift complexity: HIGH</strong></p>
     </div>
     <ul class="spacious">
-      <li>✅ Stateless server transport (moderate  remove session map)</li>
-      <li>✅ StreamableHTTP client + SSE fallback (moderate)</li>
-      <li>⚠️ OAuth 2.1 full stack (high  +8K lines)</li>
-      <li>✅ Plugin API types for HTTP servers (low)</li>
-      <li>✅ SDK bump to 1.30.0 (low)</li>
+      <li>Stateless server transport (moderate  remove session map)</li>
+      <li>StreamableHTTP client + SSE fallback (moderate)</li>
+      <li>OAuth 2.1 full stack (high  +8K lines)</li>
+      <li>Plugin API types for HTTP servers (low)</li>
+      <li>SDK bump to 1.30.0 (low)</li>
     </ul>
     <p class="small muted">Total: multiple PRs, ~10K lines changed</p>
     <aside class="notes">The OAuth stack dominates the effort. If you only need stateless transport, the uplift is moderate. Full OAuth for remote servers is where the complexity lives.</aside>
   </section>
 </section>
 
-<!-- 6. Migration Checklist -->
+<!-- 6. Deprecation Policy -->
+<section>
+  <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_04_D_web.jpg" data-background-size="contain">
+    <h2>Deprecation Policy (SEP-2596 &amp; SEP-2577)</h2>
+    <p class="lead">Formal framework for protocol evolution</p>
+    <aside class="notes">The release candidate introduces a formal deprecation framework. No more breaking changes without warning.</aside>
+  </section>
+
+  <section>
+    <h3>The Policy (SEP-2596)</h3>
+    <ul class="spacious">
+      <li><span class="highlight">12-month minimum</span> deprecation window before removal</li>
+      <li>Public registry of deprecated features with clear timelines</li>
+      <li>Predictable migration windows for implementers</li>
+    </ul>
+    <aside class="notes">Protocol evolution is inevitable. Breaking changes without warning are unacceptable. This is the framework to manage that tension.</aside>
+  </section>
+
+  <section>
+    <h3>What's Deprecated (SEP-2577)</h3>
+    <table class="compare-table" style="font-size: 0.45em;">
+      <tr><th>Feature</th><th>Why Deprecated</th><th>Migration Path</th></tr>
+      <tr><td>Roots</td><td>Filesystem assumptions don't generalise to remote/cloud</td><td>Pass paths as tool params or server config</td></tr>
+      <tr><td>Sampling</td><td>Reverse dependency; complicates trust boundaries</td><td>Servers call LLM APIs directly</td></tr>
+      <tr><td>Logging</td><td>Redundant with existing observability infra</td><td>Use stderr or OpenTelemetry</td></tr>
+      <tr><td>Dynamic Client Reg.</td><td>Conflicts with enterprise-managed auth</td><td>Explicit OAuth app registration</td></tr>
+      <tr class="changed"><td>HTTP+SSE Transport</td><td>Superseded by Streamable HTTP</td><td>Migrate to Streamable HTTP</td></tr>
+    </table>
+    <div class="callout">
+      <p>Not a removal notice - these still work today. Earliest removal: <span class="highlight">July 28, 2027</span>.</p>
+    </div>
+    <aside class="notes">These features are deprecated as of 2026-07-28 with earliest removal after July 2027. New implementations should avoid them. The HTTP+SSE deprecation is notable - Streamable HTTP is the future for remote transports.</aside>
+  </section>
+
+  <section>
+    <h3>Timeline</h3>
+    <table class="compare-table">
+      <tr><th>Date</th><th>Milestone</th></tr>
+      <tr><td>May 2026</td><td>Release candidate published</td></tr>
+      <tr class="changed"><td>July 28, 2026</td><td>Final specification ships</td></tr>
+      <tr><td>July 28, 2027</td><td>Earliest removal date for deprecated features</td></tr>
+    </table>
+    <p class="small muted" style="margin-top: 1em;">Beta SDKs available for Python, TypeScript, Go, and C#</p>
+    <aside class="notes">The timeline gives a full year from spec release to any possible removal. Beta SDKs targeting the RC are available in four languages already.</aside>
+  </section>
+</section>
+
+<!-- 7. Migration Checklist -->
 <section>
   <section data-background-image="../poly-26-02/Ericsson_KV_C3_Still_Digital_16-9_IMG_07_D_web.jpg" data-background-size="contain">
     <h2>Migration Checklist</h2>
@@ -549,9 +669,9 @@ vscode.lm.registerMcpServerDefinitionProvider(
   <section>
     <h3>Server-Side Checklist (Protocol)</h3>
     <ul class="spacious">
-      <li>✅ <span class="highlight-blue">Bump SDK</span>  Python: <code>mcp&gt;=2.0.0</code> · TS: <code>@modelcontextprotocol/sdk@^1.30.0</code></li>
-      <li>✅ <span class="highlight-blue">Remove initialize handler</span>  no more handshake logic</li>
-      <li>✅ <span class="highlight-blue">Remove session tracking</span>  <code>Mcp-Session-Id</code> is gone</li>
+      <li><span class="highlight-blue">Bump SDK</span>  Python: <code>mcp&gt;=2.0.0</code> · TS: <code>@modelcontextprotocol/sdk@^1.30.0</code></li>
+      <li><span class="highlight-blue">Remove initialize handler</span>  no more handshake logic</li>
+      <li><span class="highlight-blue">Remove session tracking</span>  <code>Mcp-Session-Id</code> is gone</li>
     </ul>
     <aside class="notes">These are the mechanical changes. SDK bump gives you the new APIs, then you remove the initialize handler and session tracking code.</aside>
   </section>
@@ -559,9 +679,9 @@ vscode.lm.registerMcpServerDefinitionProvider(
   <section>
     <h3>Server-Side Checklist (Features)</h3>
     <ul class="spacious">
-      <li>✅ <span class="highlight-blue">Implement <code>server/discover</code></span>  required RPC for capability advertisement</li>
-      <li>✅ <span class="highlight-blue">Return <code>resultType</code></span> on all results ("complete" or "input_required")</li>
-      <li>⚠️ <span class="highlight">Replace server-initiated requests</span> with MRTR pattern (InputRequiredResult)</li>
+      <li><span class="highlight-blue">Implement <code>server/discover</code></span>  required RPC for capability advertisement</li>
+      <li><span class="highlight-blue">Return <code>resultType</code></span> on all results ("complete" or "input_required")</li>
+      <li><span class="highlight">Replace server-initiated requests</span> with MRTR pattern (InputRequiredResult)</li>
     </ul>
     <aside class="notes">The biggest server-side change is implementing server/discover and ensuring every result has a resultType field. If your server used sampling or elicitation, you need to switch to MRTR.</aside>
   </section>
@@ -569,9 +689,9 @@ vscode.lm.registerMcpServerDefinitionProvider(
   <section>
     <h3>Client-Side Checklist (Protocol)</h3>
     <ul class="spacious">
-      <li>✅ <span class="highlight-blue">Include <code>_meta</code></span> on every request (protocol version, capabilities)</li>
-      <li>✅ <span class="highlight-blue">Call <code>server/discover</code></span> for initial capability probing</li>
-      <li>✅ <span class="highlight-blue">Remove initialize/initialized</span> exchange</li>
+      <li><span class="highlight-blue">Include <code>_meta</code></span> on every request (protocol version, capabilities)</li>
+      <li><span class="highlight-blue">Call <code>server/discover</code></span> for initial capability probing</li>
+      <li><span class="highlight-blue">Remove initialize/initialized</span> exchange</li>
     </ul>
     <aside class="notes">The protocol-level changes for clients: every request must be self-describing, and you use server/discover instead of the old initialize handshake.</aside>
   </section>
@@ -579,9 +699,9 @@ vscode.lm.registerMcpServerDefinitionProvider(
   <section>
     <h3>Client-Side Checklist (Features)</h3>
     <ul class="spacious">
-      <li>✅ <span class="highlight-blue">Handle <code>InputRequiredResult</code></span>  retry with inputResponses</li>
-      <li>✅ <span class="highlight-blue">Use <code>subscriptions/listen</code></span> for server notifications</li>
-      <li>⚠️ <span class="highlight">Backward compat</span>  detect older servers, fall back to initialize</li>
+      <li><span class="highlight-blue">Handle <code>InputRequiredResult</code></span>  retry with inputResponses</li>
+      <li><span class="highlight-blue">Use <code>subscriptions/listen</code></span> for server notifications</li>
+      <li><span class="highlight">Backward compat</span>  detect older servers, fall back to initialize</li>
     </ul>
     <aside class="notes">Clients need to support both old and new servers during the transition. The spec defines a backward-compatibility detection mechanism for this.</aside>
   </section>
@@ -589,9 +709,9 @@ vscode.lm.registerMcpServerDefinitionProvider(
   <section>
     <h3>Testing &amp; Validation</h3>
     <ul class="spacious">
-      <li>🧪 <span class="highlight">MCP Inspector</span>  interactive testing tool</li>
-      <li>🧪 Verify requests work without <code>initialize</code> handshake</li>
-      <li>🧪 Test <code>server/discover</code> returns correct capabilities</li>
+      <li><span class="highlight">MCP Inspector</span>  interactive testing tool</li>
+      <li>Verify requests work without <code>initialize</code> handshake</li>
+      <li>Test <code>server/discover</code> returns correct capabilities</li>
     </ul>
     <div class="callout-blue">
       <p><code>npx @modelcontextprotocol/inspector</code>  test your server interactively</p>
@@ -602,10 +722,10 @@ vscode.lm.registerMcpServerDefinitionProvider(
   <section>
     <h3>Testing &amp; Validation (cont.)</h3>
     <ul class="spacious">
-      <li>🧪 Validate <code>resultType</code> on all tool call responses</li>
-      <li>🧪 Test MRTR flow if using elicitation/sampling</li>
-      <li>🧪 Backward compat: test against 2025-03-26 servers</li>
-      <li>🧪 Verify <code>_meta</code> fields propagate correctly</li>
+      <li>Validate <code>resultType</code> on all tool call responses</li>
+      <li>Test MRTR flow if using elicitation/sampling</li>
+      <li>Backward compat: test against 2025-03-26 servers</li>
+      <li>Verify <code>_meta</code> fields propagate correctly</li>
     </ul>
     <aside class="notes">Don't forget to test backward compatibility. Your client should gracefully fall back to the initialize handshake when talking to older servers.</aside>
   </section>
@@ -651,11 +771,11 @@ vscode.lm.registerMcpServerDefinitionProvider(
   <section>
     <h3>Recommendations</h3>
     <ul class="spacious">
-      <li>📌 <span class="highlight">Start with annotations</span>  low effort, high value for clients</li>
-      <li>📌 <span class="highlight">Design stateless-first</span>  avoid server-side session state</li>
-      <li>📌 <span class="highlight">Use outputSchema</span>  enables reliable agentic workflows</li>
-      <li>📌 <span class="highlight">Plan for OAuth</span> if deploying remote servers</li>
-      <li>📌 <span class="highlight">Test with Inspector</span> before claiming compliance</li>
+      <li><span class="highlight">Start with annotations</span>  low effort, high value for clients</li>
+      <li><span class="highlight">Design stateless-first</span>  avoid server-side session state</li>
+      <li><span class="highlight">Use outputSchema</span>  enables reliable agentic workflows</li>
+      <li><span class="highlight">Plan for OAuth</span> if deploying remote servers</li>
+      <li><span class="highlight">Test with Inspector</span> before claiming compliance</li>
     </ul>
     <aside class="notes">If you do nothing else, add ToolAnnotations and outputSchema. These are additive, non-breaking, and immediately useful to clients.</aside>
   </section>
@@ -666,12 +786,14 @@ vscode.lm.registerMcpServerDefinitionProvider(
   <h3>References</h3>
   <ul class="spacious">
     <li><span class="highlight-blue">Spec:</span> <a href="https://modelcontextprotocol.io/specification/2026-07-28">modelcontextprotocol.io/specification/2026-07-28</a></li>
+    <li><span class="highlight-blue">RC Blog:</span> <a href="https://blog.modelcontextprotocol.io/posts/2026-07-28-release-candidate/">MCP 2026-07-28 Release Candidate</a></li>
     <li><span class="highlight-blue">Blog:</span> <a href="https://daily.dev/posts/mcp-is-now-stateless-what-the-2026-07-28-update-changes-hc2vhg5ll">MCP Is Now Stateless  What the 2026-07-28 Update Changes</a></li>
     <li><span class="highlight-blue">Migration:</span> <a href="https://aaif.io/blog/mcp-2026-07-28-whats-changing-and-how-to-migrate">AAIF  What's Changing and How to Migrate</a></li>
+    <li><span class="highlight-blue">Milestone:</span> <a href="https://github.com/modelcontextprotocol/modelcontextprotocol/milestone/6">github.com/modelcontextprotocol  Milestone 6</a></li>
     <li><span class="highlight-blue">TMLL:</span> <code>tmll/mcp/server.py</code>  branch <code>mcp-2.0</code></li>
     <li><span class="highlight-blue">Theia:</span> commit <code>63218242f</code>  stateless protocol uplift</li>
   </ul>
-  <aside class="notes">The AAIF migration guide is the most practical reference. The spec itself is comprehensive but dense.</aside>
+  <aside class="notes">The AAIF migration guide is the most practical reference. The spec itself is comprehensive but dense. The GitHub milestone tracks all release work.</aside>
 </section>
 
 </div>
