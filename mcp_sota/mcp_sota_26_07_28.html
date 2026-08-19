@@ -186,6 +186,22 @@
   </section>
 
   <section>
+    <h3>Subscriptions Pattern</h3>
+    <p><span class="highlight-blue"><code>subscriptions/listen</code></span> consolidates all server→client notifications into one stream:</p>
+    <ul class="spacious">
+      <li><span class="highlight">Replaces</span> the old GET endpoint and per-resource subscriptions</li>
+      <li>Client opens a single listener; server pushes change notifications</li>
+      <li>Works with stateless model — no stored subscription state on server</li>
+      <li>Covers: resource changes, tool list updates, prompt list updates</li>
+    </ul>
+    <div class="callout-blue">
+      <p>One unified pattern for all server-initiated notifications. No more per-feature subscription APIs.</p>
+    </div>
+    <p class="tiny muted">Spec: <a href="https://modelcontextprotocol.io/specification/2026-07-28/basic/patterns/subscriptions">modelcontextprotocol.io/specification/2026-07-28/basic/patterns/subscriptions</a></p>
+    <aside class="notes">The subscriptions pattern replaces the scattered notification mechanisms from the old spec. Clients call subscriptions/listen to open a notification stream. The server uses this stream to push any change events. This is how you get reactive updates without polling in a stateless protocol.</aside>
+  </section>
+
+  <section>
     <h3>Extensions Framework</h3>
     <p>Advanced behaviours modelled as <span class="highlight-blue">optional, self-contained modules</span>:</p>
     <div class="twocol">
@@ -786,6 +802,7 @@ vscode.lm.registerMcpServerDefinitionProvider(
   <h3>References</h3>
   <ul class="spacious">
     <li><span class="highlight-blue">Spec:</span> <a href="https://modelcontextprotocol.io/specification/2026-07-28">modelcontextprotocol.io/specification/2026-07-28</a></li>
+    <li><span class="highlight-blue">Subscriptions:</span> <a href="https://modelcontextprotocol.io/specification/2026-07-28/basic/patterns/subscriptions">modelcontextprotocol.io/.../subscriptions</a></li>
     <li><span class="highlight-blue">RC Blog:</span> <a href="https://blog.modelcontextprotocol.io/posts/2026-07-28-release-candidate/">MCP 2026-07-28 Release Candidate</a></li>
     <li><span class="highlight-blue">Blog:</span> <a href="https://daily.dev/posts/mcp-is-now-stateless-what-the-2026-07-28-update-changes-hc2vhg5ll">MCP Is Now Stateless  What the 2026-07-28 Update Changes</a></li>
     <li><span class="highlight-blue">Migration:</span> <a href="https://aaif.io/blog/mcp-2026-07-28-whats-changing-and-how-to-migrate">AAIF  What's Changing and How to Migrate</a></li>
