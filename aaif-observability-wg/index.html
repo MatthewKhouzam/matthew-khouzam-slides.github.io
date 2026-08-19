@@ -59,13 +59,13 @@
   <aside class="notes">Core message: you need full stack observability. OTel is necessary but not sufficient. Know everything exists first, then select a subset if appropriate. These people are technical and higher-level management.</aside>
 </section>
 
-<div class="slide-footer">Matthew Khouzam | Ericsson — AAIF Observability WG</div>
+<div class="slide-footer">Matthew Khouzam | Ericsson  -  AAIF Observability WG</div>
 
 <!-- The Thesis -->
 <section data-background-gradient="linear-gradient(135deg, #0d1117 0%, #1a1040 100%)">
   <h2>The Thesis</h2>
   <ol class="spacious" style="font-size:0.9em;">
-    <li><span class="highlight">Know everything that exists</span> — the full stack from silicon to agent</li>
+    <li><span class="highlight">Know everything that exists</span>  -  the full stack from silicon to agent</li>
     <li><span class="highlight-purple">Then select</span> the subset appropriate for your use case</li>
     <li><span class="highlight-red">Never start by limiting</span> what you can see</li>
   </ol>
@@ -73,20 +73,47 @@
     <strong>You can't optimize what you can't observe.</strong><br>
     You can't observe what you don't know exists.
   </div>
-  <aside class="notes">The working group needs to understand that subsetting is fine — but you need to know the full landscape first. Starting with only OTel means you've already made a choice about what you'll never see.</aside>
+  <aside class="notes">The working group needs to understand that subsetting is fine  -  but you need to know the full landscape first. Starting with only OTel means you've already made a choice about what you'll never see.</aside>
+</section>
+
+<!-- Why Observability Is Foundational -->
+<section data-background-gradient="linear-gradient(135deg, #0d1117 0%, #161b22 100%)">
+  <h2>Observability Is Foundational</h2>
+  <p style="font-size:0.9em;">Security, performance, and accuracy of a workflow <strong>all rely on observability</strong>.</p>
+  <div class="twocol" style="margin-top:1.5em; font-size:0.8em;">
+    <div>
+      <ul class="spacious">
+        <li><span class="highlight-red">Security</span>  -  you can't detect anomalies, unauthorized access, or data exfiltration without visibility into what's happening</li>
+        <li><span class="highlight-yellow">Performance</span>  -  you can't optimize latency, throughput, or resource usage without measuring them across every layer</li>
+        <li><span class="highlight-purple">Accuracy</span>  -  you can't validate that an AI workflow produces correct results without observing its intermediate steps and decisions</li>
+      </ul>
+    </div>
+    <div>
+      <div class="callout-warn">
+        <strong>Without observability:</strong><br>
+        Security is blind guessing.<br>
+        Performance is wishful thinking.<br>
+        Accuracy is unverifiable.
+      </div>
+      <div class="callout" style="margin-top:1em;">
+        <strong>Observability isn't a feature  - <br>it's the foundation the other pillars stand on.</strong>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">This is the key framing for the working group: observability isn't just another concern alongside security, performance, and accuracy  -  it's the prerequisite that makes the others achievable. You cannot secure what you cannot see. You cannot optimize what you cannot measure. You cannot verify what you cannot observe.</aside>
 </section>
 
 <!-- The Stack -->
 <section data-background-gradient="linear-gradient(135deg, #0d1117 0%, #161b22 100%)">
   <h2>The AI Observability Stack</h2>
   <div style="display:flex; flex-direction:column; gap:0.4em; font-size:0.75em; max-width:85%; margin:0 auto;">
-    <div class="layer-box layer-5"><strong>05 — AI Agent Observability</strong><br>OTel, Langfuse, Datadog, TRACE attestation</div>
-    <div class="layer-box layer-4"><strong>04 — Network</strong><br>Wireshark, MQTT, NCCL traffic</div>
-    <div class="layer-box layer-3"><strong>03 — Hardware Accelerators</strong><br>NVIDIA Nsight, AMD rocprof, PyTorch Profiler</div>
-    <div class="layer-box layer-2"><strong>02 — Kernel Tracing</strong><br>LTTng, perf, ftrace, eBPF, driver tracing</div>
-    <div class="layer-box layer-1"><strong>01 — Foundations</strong><br>CTF binary format, Trace Compass analysis</div>
+    <div class="layer-box layer-5"><strong>05  -  AI Agent Observability</strong><br>OTel, Langfuse, Datadog, TRACE attestation</div>
+    <div class="layer-box layer-4"><strong>04  -  Network</strong><br>Wireshark, MQTT, NCCL traffic</div>
+    <div class="layer-box layer-3"><strong>03  -  Hardware Accelerators</strong><br>NVIDIA Nsight, AMD rocprof, PyTorch Profiler</div>
+    <div class="layer-box layer-2"><strong>02  -  Kernel Tracing</strong><br>LTTng, perf, ftrace, eBPF, driver tracing</div>
+    <div class="layer-box layer-1"><strong>01  -  Foundations</strong><br>CTF binary format, Trace Compass analysis</div>
   </div>
-  <p class="small muted" style="margin-top:1em;">Each layer builds on the one below. Skip a layer → blind spot.</p>
+  <p class="small muted" style="margin-top:1em;">Each layer builds on the one below. Skip a layer -> blind spot.</p>
   <aside class="notes">This is the full stack from the AAIF reference architectures. Each layer provides data that the layers above cannot generate on their own.</aside>
 </section>
 
@@ -95,7 +122,7 @@
   <h2>What OTel Sees</h2>
   <div class="twocol">
     <div>
-      <h3 class="highlight" style="font-size:0.9em;">✓ Strengths</h3>
+      <h3 class="highlight" style="font-size:0.9em;">[yes] Strengths</h3>
       <ul class="spacious small">
         <li>Distributed traces across services</li>
         <li>W3C Trace Context propagation</li>
@@ -105,7 +132,7 @@
       </ul>
     </div>
     <div>
-      <h3 class="highlight-red" style="font-size:0.9em;">✗ Gaps</h3>
+      <h3 class="highlight-red" style="font-size:0.9em;">[no] Gaps</h3>
       <ul class="spacious small">
         <li>No kernel-level context</li>
         <li>No GPU hardware counters</li>
@@ -117,7 +144,7 @@
       </ul>
     </div>
   </div>
-  <aside class="notes">OTel is excellent at what it does — application-level distributed tracing. But it operates at layer 5 only. Everything below is invisible to it.</aside>
+  <aside class="notes">OTel is excellent at what it does  -  application-level distributed tracing. But it operates at layer 5 only. Everything below is invisible to it.</aside>
 </section>
 
 <!-- The Hidden 95ms -->
@@ -129,10 +156,10 @@
   </div>
   <p style="margin-top:1em; font-size:0.85em;">Application-level spans report <strong>wall-clock time</strong> that <em>includes</em> all scheduling distortion:</p>
   <ul class="spacious small">
-    <li><span class="highlight-red">CFS throttling</span> — 100ms gaps per quota period, invisible to the app</li>
-    <li><span class="highlight-red">vCPU pre-emption</span> — hypervisor steals time, guest never knows</li>
-    <li><span class="highlight-red">Noisy neighbors</span> — runqueue contention inflates latency</li>
-    <li><span class="highlight-red">GPU queueing</span> — kernels waiting for SM allocation</li>
+    <li><span class="highlight-red">CFS throttling</span>  -  100ms gaps per quota period, invisible to the app</li>
+    <li><span class="highlight-red">vCPU pre-emption</span>  -  hypervisor steals time, guest never knows</li>
+    <li><span class="highlight-red">Noisy neighbors</span>  -  runqueue contention inflates latency</li>
+    <li><span class="highlight-red">GPU queueing</span>  -  kernels waiting for SM allocation</li>
   </ul>
   <p class="small muted" style="margin-top:1em;">Only kernel tracepoints (sched_switch, sched_stat_wait) can decompose wall-clock into CPU-time vs throttle vs wait.</p>
   <aside class="notes">This is the killer example. When you see a slow span in Jaeger/Grafana, you have no idea WHY it's slow without kernel-level data. Is it your code? Is it the scheduler? Is it the hypervisor? OTel can't tell you.</aside>
@@ -143,11 +170,11 @@
   <h2>What Each Layer Reveals</h2>
   <table class="stack-table">
     <tr><th>Layer</th><th>Reveals</th><th>OTel Equivalent</th></tr>
-    <tr><td class="highlight-purple">Agent (05)</td><td>LLM calls, token usage, tool invocations</td><td>✓ gen_ai.* spans</td></tr>
-    <tr><td style="color:#6bc5ff">Network (04)</td><td>Wire-level: NCCL collectives, API latency, packet loss</td><td>✗ None</td></tr>
-    <tr><td class="highlight-yellow">GPU (03)</td><td>Tensor core utilization, memory bandwidth, kernel stalls</td><td>✗ None</td></tr>
-    <tr><td class="highlight-red">Kernel (02)</td><td>Scheduler decisions, CFS throttle, memory pressure, I/O</td><td>✗ None</td></tr>
-    <tr><td class="highlight">Foundations (01)</td><td>Nanosecond precision, zero-copy binary traces, cross-layer sync</td><td>✗ None</td></tr>
+    <tr><td class="highlight-purple">Agent (05)</td><td>LLM calls, token usage, tool invocations</td><td>[yes] gen_ai.* spans</td></tr>
+    <tr><td style="color:#6bc5ff">Network (04)</td><td>Wire-level: NCCL collectives, API latency, packet loss</td><td>[no] None</td></tr>
+    <tr><td class="highlight-yellow">GPU (03)</td><td>Tensor core utilization, memory bandwidth, kernel stalls</td><td>[no] None</td></tr>
+    <tr><td class="highlight-red">Kernel (02)</td><td>Scheduler decisions, CFS throttle, memory pressure, I/O</td><td>[no] None</td></tr>
+    <tr><td class="highlight">Foundations (01)</td><td>Nanosecond precision, zero-copy binary traces, cross-layer sync</td><td>[no] None</td></tr>
   </table>
   <p class="small" style="margin-top:1em;"><span class="highlight">4 out of 5 layers</span> are invisible to OTel-only observability.</p>
   <aside class="notes">When the working group defines observability standards, if they only standardize the top layer, they're defining how to observe 20% of the system.</aside>
@@ -158,16 +185,16 @@
   <h2>Cross-Layer Synergies</h2>
   <p style="font-size:0.85em;">When layers share context, you get answers <strong>none can provide alone</strong>:</p>
   <ul class="spacious" style="font-size:0.75em;">
-    <li><span class="highlight">Kernel sched_switch</span> + pcap → every packet attributed to a process (free)</li>
-    <li><span class="highlight">Kernel sched_switch</span> + Intel PT → full per-process instruction traces</li>
-    <li><span class="highlight">GPU tracepoints</span> + kernel scheduler → GPU commands attributed to owner processes</li>
-    <li><span class="highlight">OTel spans</span> + LTTng sched → decompose span duration into CPU vs wait vs throttle</li>
-    <li><span class="highlight">PyTorch Profiler</span> + DCGM + kernel → operator → GPU kernel → scheduling end-to-end</li>
+    <li><span class="highlight">Kernel sched_switch</span> + pcap -> every packet attributed to a process (free)</li>
+    <li><span class="highlight">Kernel sched_switch</span> + Intel PT -> full per-process instruction traces</li>
+    <li><span class="highlight">GPU tracepoints</span> + kernel scheduler -> GPU commands attributed to owner processes</li>
+    <li><span class="highlight">OTel spans</span> + LTTng sched -> decompose span duration into CPU vs wait vs throttle</li>
+    <li><span class="highlight">PyTorch Profiler</span> + DCGM + kernel -> operator -> GPU kernel -> scheduling end-to-end</li>
   </ul>
   <div class="callout-purple" style="margin-top:1em;">
     <strong>The kernel trace is the shared index.</strong> It knows which TID runs on which CPU at every context switch. Every other layer references this without duplicating context.
   </div>
-  <aside class="notes">This is where the real power emerges. A single kernel trace provides the context that eliminates per-event overhead across all other layers. It's not just about having more data — the layers make each other more valuable.</aside>
+  <aside class="notes">This is where the real power emerges. A single kernel trace provides the context that eliminates per-event overhead across all other layers. It's not just about having more data  -  the layers make each other more valuable.</aside>
 </section>
 
 <!-- Overhead Reality -->
@@ -184,7 +211,7 @@
     <tr><td>perf stat (hardware counters)</td><td class="highlight">~0%</td><td>Counting mode</td></tr>
   </table>
   <p class="small muted" style="margin-top:0.8em;">Combined always-on overhead: &lt; 5%. You can observe everything in production.</p>
-  <aside class="notes">The key design principle across all these tools: zero overhead when disabled, minimal when active. NOP patching, static branches, per-CPU lock-free buffers. This isn't 2005 anymore — modern tracing is production-safe.</aside>
+  <aside class="notes">The key design principle across all these tools: zero overhead when disabled, minimal when active. NOP patching, static branches, per-CPU lock-free buffers. This isn't 2005 anymore  -  modern tracing is production-safe.</aside>
 </section>
 
 <!-- The OTel-Only Trap -->
@@ -215,29 +242,29 @@
   <h2>The Approach</h2>
   <h3 style="font-size:1em; margin-top:1em;">Know everything. Then select.</h3>
   <ol class="spacious" style="font-size:0.8em; margin-top:1em;">
-    <li><strong>Instrument all layers</strong> — compile in tracepoints, annotations, probes<br>
+    <li><strong>Instrument all layers</strong>  -  compile in tracepoints, annotations, probes<br>
         <span class="small muted">Cost when disabled: literally zero (NOP patching, static branches)</span></li>
-    <li><strong>Always-on lightweight collection</strong> — flight recorders, 1Hz monitors, counting mode<br>
+    <li><strong>Always-on lightweight collection</strong>  -  flight recorders, 1Hz monitors, counting mode<br>
         <span class="small muted">Cost: &lt; 5% combined. You get continuous baseline.</span></li>
-    <li><strong>On-demand deep-dive</strong> — enable detailed collection when anomaly detected<br>
-        <span class="small muted">Nsight Compute, Intel PT, full PyTorch profiling — staging/dev only for these.</span></li>
-    <li><strong>Correlate across layers</strong> — Trace Compass, TMLL, or custom analysis<br>
+    <li><strong>On-demand deep-dive</strong>  -  enable detailed collection when anomaly detected<br>
+        <span class="small muted">Nsight Compute, Intel PT, full PyTorch profiling  -  staging/dev only for these.</span></li>
+    <li><strong>Correlate across layers</strong>  -  Trace Compass, TMLL, or custom analysis<br>
         <span class="small muted">The unified view is where root causes emerge.</span></li>
   </ol>
-  <aside class="notes">The message isn't "OTel is bad." OTel is great — for its layer. The message is: instrument everything, collect lightweight always, deep-dive on demand, and correlate across layers for the full picture.</aside>
+  <aside class="notes">The message isn't "OTel is bad." OTel is great  -  for its layer. The message is: instrument everything, collect lightweight always, deep-dive on demand, and correlate across layers for the full picture.</aside>
 </section>
 
 <!-- What This WG Should Standardize -->
 <section data-background-gradient="linear-gradient(135deg, #0d1117 0%, #161b22 100%)">
   <h2>What This WG Should Consider</h2>
   <ul class="spacious" style="font-size:0.8em;">
-    <li><span class="highlight">Correlation IDs across layers</span> — how does an OTel trace_id link to a kernel trace session?</li>
-    <li><span class="highlight">Minimum observable surface</span> — what MUST be observable for an AI agent deployment to be considered "instrumented"?</li>
-    <li><span class="highlight">Privacy at emission</span> — PII sanitization at the source, not the storage</li>
-    <li><span class="highlight">Governance evidence</span> — TRACE spec: hardware-attested records of what executed, where, under which policy</li>
-    <li><span class="highlight">Subsetting guidance</span> — which layers to activate for which use case (cost-optimized, latency-critical, compliance)</li>
+    <li><span class="highlight">Correlation IDs across layers</span>  -  how does an OTel trace_id link to a kernel trace session?</li>
+    <li><span class="highlight">Minimum observable surface</span>  -  what MUST be observable for an AI agent deployment to be considered "instrumented"?</li>
+    <li><span class="highlight">Privacy at emission</span>  -  PII sanitization at the source, not the storage</li>
+    <li><span class="highlight">Governance evidence</span>  -  TRACE spec: hardware-attested records of what executed, where, under which policy</li>
+    <li><span class="highlight">Subsetting guidance</span>  -  which layers to activate for which use case (cost-optimized, latency-critical, compliance)</li>
   </ul>
-  <aside class="notes">The working group can add unique value by defining the cross-layer correlation standards and minimum observable surface. Nobody else is doing this — OTel defines layer 5, but who defines what "observable" means across all layers?</aside>
+  <aside class="notes">The working group can add unique value by defining the cross-layer correlation standards and minimum observable surface. Nobody else is doing this  -  OTel defines layer 5, but who defines what "observable" means across all layers?</aside>
 </section>
 
 <!-- Key Takeaways -->
@@ -245,7 +272,7 @@
   <h2>Key Takeaways</h2>
   <div style="font-size:0.85em; text-align:left; max-width:80%; margin:0 auto;">
     <div class="callout" style="margin-bottom:1em;">
-      <strong>1.</strong> OTel is necessary but not sufficient — it's layer 5 of 5
+      <strong>1.</strong> OTel is necessary but not sufficient  -  it's layer 5 of 5
     </div>
     <div class="callout-warn" style="margin-bottom:1em;">
       <strong>2.</strong> 80% of root causes live below the application layer
@@ -254,7 +281,7 @@
       <strong>3.</strong> Full-stack always-on observability costs &lt; 5% total overhead
     </div>
     <div class="callout" style="margin-bottom:1em;">
-      <strong>4.</strong> Know everything exists → select the right subset → never start blind
+      <strong>4.</strong> Know everything exists -> select the right subset -> never start blind
     </div>
   </div>
   <aside class="notes">Leave them with these four points. The working group's role should be defining the full observable surface, not just ratifying what OTel already provides.</aside>
