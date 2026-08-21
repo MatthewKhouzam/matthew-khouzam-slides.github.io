@@ -23,6 +23,7 @@
 <!-- ============================================================ -->
 <!-- PART 1: FOUNDATIONS                                           -->
 <!-- ============================================================ -->
+<section>
 
 <section class="center-slide">
     <h2>Part 1: Foundations</h2>
@@ -250,9 +251,12 @@ output = W_down @ hidden // FFN compress</code></pre>
 </section>
 
 
+</section> <!-- END Part 1 -->
+
 <!-- ============================================================ -->
 <!-- PART 2: SOFTWARE STACK                                        -->
 <!-- ============================================================ -->
+<section>
 
 <section class="center-slide">
     <h2>Part 2: The Software Stack</h2>
@@ -368,9 +372,12 @@ output = W_down @ hidden // FFN compress</code></pre>
 </section>
 
 
+</section> <!-- END Part 2 -->
+
 <!-- ============================================================ -->
 <!-- PART 3: MEMORY HARDWARE                                       -->
 <!-- ============================================================ -->
+<section>
 
 <section class="center-slide">
     <h2>Part 3: Memory Hardware</h2>
@@ -380,18 +387,19 @@ output = W_down @ hidden // FFN compress</code></pre>
 
 <!-- SRAM -->
 <section>
-    <h2>SRAM - Static RAM (On-Chip)</h2>
+    <h2>SRAM - Static RAM</h2>
     <ul class="spacious">
         <li><strong>6 transistors per bit</strong> - fast, no refresh needed, but enormous area cost</li>
         <li>Used for: register files, L1/L2 cache, shared memory</li>
-        <li>Bandwidth: <span class="highlight-green">10-80 TB/s</span> aggregate across SMs</li>
-        <li>Capacity: KB (registers) to ~96 MB (L2 cache on B200)</li>
-        <li>Latency: 1-20 cycles</li>
+        <li>Can be <span class="highlight-blue">on-chip</span> (registers, L1, shared memory) or <span class="highlight-green">off-chip</span> (external SRAM, Cerebras wafer-scale)</li>
+        <li>Bandwidth: <span class="highlight-green">10-80 TB/s</span> aggregate across SMs (on-chip)</li>
+        <li>Capacity: KB (registers) to ~96 MB (L2 cache on B200); off-chip SRAM can be larger but slower</li>
+        <li>Latency: 1-20 cycles (on-chip), higher off-chip</li>
     </ul>
     <div class="callout-blue">
-        SRAM is 100-1000x faster than DRAM but 100-1000x more expensive per bit. You cannot store an LLM in SRAM (yet).
+        SRAM is 100-1000x faster than DRAM but 100-1000x more expensive per bit. You cannot store an LLM in SRAM (yet) — though Cerebras' wafer-scale approach uses massive off-chip SRAM arrays.
     </div>
-    <aside class="notes">The H100 has 50MB of L2 SRAM. A 7B Q4 model needs ~3.5GB. We're still 70x short of fitting even a small model on-chip. Cerebras tries a different approach with wafer-scale SRAM.</aside>
+    <aside class="notes">The H100 has 50MB of L2 SRAM. A 7B Q4 model needs ~3.5GB. We're still 70x short of fitting even a small model on-chip. Cerebras tries a different approach with wafer-scale SRAM. Off-chip SRAM (like in networking equipment) trades the latency advantage for larger capacity.</aside>
 </section>
 
 <!-- DRAM Basics -->
@@ -492,14 +500,24 @@ output = W_down @ hidden // FFN compress</code></pre>
 </section>
 
 
+</section> <!-- END Part 3 -->
+
 <!-- ============================================================ -->
 <!-- PART 4: GPU ARCHITECTURES                                     -->
 <!-- ============================================================ -->
-
+<section>
 <section class="center-slide">
     <h2>Part 4: GPU Architectures</h2>
     <p class="lead">From Volta to Blackwell, MI50 to MI400, Larrabee to Gaudi, Apple Silicon, and Chinese alternatives</p>
     <aside class="notes">We'll cover every major GPU architecture relevant to LLM inference, starting from 2017's Volta.</aside>
+</section>
+</section>
+
+<!-- Part 4 subgroup: NVIDIA -->
+<section>
+<section class="center-slide">
+    <h2>Part 4a: NVIDIA</h2>
+    <p class="lead">Volta to Blackwell — defining the AI accelerator</p>
 </section>
 
 <!-- NVIDIA Volta -->
@@ -578,6 +596,15 @@ output = W_down @ hidden // FFN compress</code></pre>
         Blackwell doubles everything: bandwidth, compute, memory. The B200's 8 TB/s means a 70B Q4 model at ~1100 tok/s theoretical.
     </div>
     <aside class="notes">The GB200 NVL72 is designed for trillion-parameter models. 72 GPUs with unified NVLink fabric can serve models that would otherwise need complex tensor parallelism.</aside>
+</section>
+
+</section> <!-- END Part 4: NVIDIA -->
+
+<!-- Part 4 subgroup: AMD -->
+<section>
+<section class="center-slide">
+    <h2>Part 4b: AMD</h2>
+    <p class="lead">MI50 to MI400 — challenging NVIDIA with bandwidth and capacity</p>
 </section>
 
 <!-- AMD MI50 -->
@@ -666,6 +693,15 @@ output = W_down @ hidden // FFN compress</code></pre>
     <aside class="notes">AMD's roadmap shows aggressive yearly releases. The MI350 with CDNA 4 is expected to compete directly with Blackwell on performance per dollar.</aside>
 </section>
 
+</section> <!-- END Part 4: AMD -->
+
+<!-- Part 4 subgroup: Intel -->
+<section>
+<section class="center-slide">
+    <h2>Part 4c: Intel</h2>
+    <p class="lead">Larrabee legacy, Xe/Arc, and the Gaudi AI accelerator</p>
+</section>
+
 <!-- Intel Larrabee -->
 <section>
     <h2>Intel Larrabee (2008-2012) - The Road Not Taken</h2>
@@ -724,6 +760,15 @@ output = W_down @ hidden // FFN compress</code></pre>
         Gaudi offers competitive price/performance for LLM inference but Intel's AI accelerator strategy has been volatile.
     </div>
     <aside class="notes">Gaudi 3 is competitive with H100 on LLM inference benchmarks at lower cost. But Intel's repeated strategy changes have scared away some customers.</aside>
+</section>
+
+</section> <!-- END Part 4: Intel -->
+
+<!-- Part 4 subgroup: Others & Apple -->
+<section>
+<section class="center-slide">
+    <h2>Part 4d: Others &amp; Apple Silicon</h2>
+    <p class="lead">Chinese alternatives, Huawei Ascend, and Apple's unified memory approach</p>
 </section>
 
 <!-- Moore Threads -->
@@ -796,6 +841,15 @@ output = W_down @ hidden // FFN compress</code></pre>
     <aside class="notes">MLX framework from Apple is optimized for unified memory. llama.cpp Metal backend also works well. The sweet spot is 70B models that don't fit in a 4090 but run well on M4 Max at ~18 tok/s.</aside>
 </section>
 
+</section> <!-- END Part 4: Others & Apple -->
+
+<!-- Part 4 subgroup: Comparison -->
+<section>
+<section class="center-slide">
+    <h2>Part 4e: Comparison</h2>
+    <p class="lead">All vendors side by side</p>
+</section>
+
 <!-- GPU Comparison Table -->
 <section>
     <h2>GPU Architecture Comparison (2024-2026)</h2>
@@ -818,10 +872,12 @@ output = W_down @ hidden // FFN compress</code></pre>
     <aside class="notes">The bandwidth column tells the inference story. Apple trades bandwidth for capacity - lower tok/s but fits larger models. MI300X and H200 are close in bandwidth but MI300X has more memory.</aside>
 </section>
 
+</section> <!-- END Part 4: Comparison -->
 
 <!-- ============================================================ -->
 <!-- PART 5: POWER AND THERMAL CONCERNS                            -->
 <!-- ============================================================ -->
+<section>
 
 <section class="center-slide">
     <h2>Part 5: Power and Thermal Concerns</h2>
@@ -951,9 +1007,12 @@ output = W_down @ hidden // FFN compress</code></pre>
 </section>
 
 
+</section> <!-- END Part 5 -->
+
 <!-- ============================================================ -->
 <!-- PART 6: LLM INFERENCE PERFORMANCE                             -->
 <!-- ============================================================ -->
+<section>
 
 <section class="center-slide">
     <h2>Part 6: LLM Inference Performance</h2>
@@ -1229,6 +1288,13 @@ output = W_down @ hidden // FFN compress</code></pre>
     <aside class="notes">This is the practical decision matrix. Cost is the other factor - an M4 Max MacBook Pro is cheaper than a single H100 but can't match it on speed for models that fit in both.</aside>
 </section>
 
+</section> <!-- END Part 6 -->
+
+<!-- ============================================================ -->
+<!-- REFERENCES & CLOSING                                           -->
+<!-- ============================================================ -->
+<section>
+
 <!-- References -->
 <section>
     <h2>References</h2>
@@ -1261,6 +1327,8 @@ output = W_down @ hidden // FFN compress</code></pre>
     <p class="muted tiny">Questions?</p>
     <aside class="notes">Open for questions about GPU architectures, inference optimization, or specific hardware recommendations.</aside>
 </section>
+
+</section> <!-- END References & Closing -->
 
 <!-- ============================================================ -->
 <!-- CHART.JS SCRIPTS                                              -->

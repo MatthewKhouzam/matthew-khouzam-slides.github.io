@@ -176,25 +176,25 @@
   <!-- The Loop Indicator (circular arrow) -->
   <!-- ========================================= -->
   <!-- Circular loop around center to show iteration -->
-  <path d="M 500 150 A 200 200 0 1 1 495 148" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="30" stroke-linecap="round"/>
+  <path d="M 600 120 A 230 230 0 1 1 595 118" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="30" stroke-linecap="round"/>
 
   <!-- Animated loop pulse -->
-  <circle r="8" fill="#4fc3f7" filter="url(#glow)">
+  <circle cx="0" cy="0" r="8" fill="#4fc3f7" filter="url(#glow)">
     <animateMotion dur="6s" repeatCount="indefinite">
       <mpath href="#loopPath"/>
     </animateMotion>
   </circle>
-  <path id="loopPath" d="M 600 100 Q 850 100 870 350 Q 870 550 600 540 Q 330 530 330 350 Q 330 140 600 100" fill="none" stroke="none"/>
+  <path id="loopPath" d="M 600 135 Q 830 135 850 350 Q 850 530 600 510 Q 350 500 350 350 Q 350 160 600 135" fill="none" stroke="none"/>
 
   <!-- Second pulse (offset) -->
-  <circle r="6" fill="#66bb6a" filter="url(#glow)">
+  <circle cx="0" cy="0" r="6" fill="#66bb6a" filter="url(#glow)">
     <animateMotion dur="6s" repeatCount="indefinite" begin="2s">
       <mpath href="#loopPath"/>
     </animateMotion>
   </circle>
 
   <!-- Third pulse (offset) -->
-  <circle r="6" fill="#ffab40" filter="url(#glow)">
+  <circle cx="0" cy="0" r="6" fill="#ffab40" filter="url(#glow)">
     <animateMotion dur="6s" repeatCount="indefinite" begin="4s">
       <mpath href="#loopPath"/>
     </animateMotion>
