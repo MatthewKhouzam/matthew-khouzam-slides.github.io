@@ -143,6 +143,14 @@ output = W_down @ hidden // FFN compress</code></pre>
     <aside class="notes">Watch the data flow: token enters, gets embedded, passes through every transformer layer (each reading its weights from HBM), through the LM head, softmax, and out comes one new token. Then the whole thing repeats. The weight reads are 99% of the time.</aside>
 </section>
 
+<!-- Animated Diagram: Agentic AI -->
+<section>
+    <h2>Animated: How Agentic AI Works</h2>
+    <object type="image/svg+xml" data="agentic-ai-animation.svg" style="width:100%; height:580px;"></object>
+    <p class="tiny muted">The LLM is the reasoning engine at the center. A harness orchestrates the loop: prompt → reason → act (tool call) → observe (feedback) → repeat until the goal is achieved.</p>
+    <aside class="notes">Agentic AI puts the LLM in a loop. Instead of a single prompt-response, the harness keeps calling the LLM, letting it invoke tools (search, code execution, file I/O, APIs), then feeding the results back as context. The loop continues until the task is complete. This is how modern coding assistants, research agents, and autonomous workflows operate.</aside>
+</section>
+
 <!-- The Fundamental Equation -->
 <section>
     <h2>The Fundamental Equation</h2>
