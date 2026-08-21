@@ -184,7 +184,7 @@
       <mpath href="#loopPath"/>
     </animateMotion>
   </circle>
-  <path id="loopPath" d="M 600 135 Q 830 135 850 350 Q 850 530 600 510 Q 350 500 350 350 Q 350 160 600 135" fill="none" stroke="none"/>
+  <path id="loopPath" d="M 350 120 Q 580 120 580 350 Q 580 580 350 580 Q 120 580 120 350 Q 120 120 350 120" fill="none" stroke="none"/>
 
   <!-- Second pulse (offset) -->
   <circle cx="0" cy="0" r="6" fill="#66bb6a" filter="url(#glow)">
