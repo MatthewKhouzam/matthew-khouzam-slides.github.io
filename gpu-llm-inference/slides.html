@@ -1097,6 +1097,21 @@ output = W_down @ hidden // FFN compress</code></pre>
     <aside class="notes">Even the B200 drops below 30 tok/s for 405B. This is why you need 8-GPU nodes for large model serving. Batched inference helps throughput but not per-user latency.</aside>
 </section>
 
+<!-- Interactive: All GPUs Performance Chart with Log Toggle -->
+<section>
+    <h2>All GPUs: Expected Inference Performance</h2>
+    <div style="position: relative; width: 100%; height: 500px;">
+        <canvas id="allGpuPerfChart"></canvas>
+    </div>
+    <div style="text-align: center; margin-top: 0.3em;">
+        <button id="toggleLogScale" style="font-size: 0.7em; padding: 0.4em 1.2em; border-radius: 6px; border: 2px solid #4fc3f7; background: rgba(79,195,247,0.15); color: #4fc3f7; cursor: pointer; font-family: inherit; transition: all 0.2s;">
+            Switch to Linear Scale
+        </button>
+    </div>
+    <p class="tiny muted">Theoretical max tok/s for 7B Q4_K_M at ~70% BW efficiency. Bandwidth specs from <a href="https://www.techpowerup.com/gpu-specs/" style="color:#4fc3f7;">TechPowerUp GPU Database</a> and <a href="https://www.nvidia.com/en-us/data-center/dgx-gb300/" style="color:#4fc3f7;">NVIDIA DGX GB300</a>. Click button to toggle log/linear Y-axis.</p>
+    <aside class="notes">Interactive chart - toggle between log and linear scale. Log scale shows relative differences between tiers; linear shows the absolute dominance of datacenter GPUs. Data sourced from vendor specs and TechPowerUp GPU database.</aside>
+</section>
+
 <!-- Quantization Impact -->
 <section>
     <h2>Quantization: Speed vs Quality Tradeoff</h2>
@@ -1503,11 +1518,147 @@ output = W_down @ hidden // FFN compress</code></pre>
         });
     }
 
+    // ---- Interactive All GPU Performance Chart with Log/Linear Toggle ----
+    var allGpuChart = null;
+    var allGpuLogScale = true;
+    var allGpuCreated = false;
+
+    function createAllGpuPerfChart() {
+        if (allGpuCreated) return;
+        var ctx = document.getElementById('allGpuPerfChart');
+        if (!ctx) return;
+        allGpuCreated = true;
+
+        // GPU data: name, bandwidth GB/s, estimated 7B Q4 tok/s at ~70% efficiency, category
+        // Bandwidth specs sourced from TechPowerUp GPU Database (techpowerup.com/gpu-specs)
+        var gpuData = [
+            { name: 'RTX 3060', bw: 360, toks: 52, cat: 'consumer-nvidia' },
+            { name: 'Arc A770', bw: 560, toks: 81, cat: 'consumer-intel' },
+            { name: 'RTX 3070 Ti', bw: 608, toks: 87, cat: 'consumer-nvidia' },
+            { name: 'RTX 4070 Ti S', bw: 672, toks: 97, cat: 'consumer-nvidia' },
+            { name: 'M4 Max', bw: 546, toks: 79, cat: 'apple' },
+            { name: 'M4 Ultra', bw: 819, toks: 118, cat: 'apple' },
+            { name: 'M1 Ultra', bw: 800, toks: 115, cat: 'apple' },
+            { name: 'V100 32GB', bw: 900, toks: 130, cat: 'dc-nvidia' },
+            { name: 'RTX 3090', bw: 936, toks: 135, cat: 'consumer-nvidia' },
+            { name: 'RX 7900 XTX', bw: 960, toks: 138, cat: 'consumer-amd' },
+            { name: 'RTX 4090', bw: 1008, toks: 145, cat: 'consumer-nvidia' },
+            { name: 'MI50', bw: 1024, toks: 148, cat: 'dc-amd' },
+            { name: 'RTX 5090', bw: 1792, toks: 258, cat: 'consumer-nvidia' },
+            { name: 'A100 80GB', bw: 2039, toks: 294, cat: 'dc-nvidia' },
+            { name: 'MI250X', bw: 3277, toks: 472, cat: 'dc-amd' },
+            { name: 'H100 80GB', bw: 3350, toks: 483, cat: 'dc-nvidia' },
+            { name: 'Gaudi 3', bw: 3700, toks: 533, cat: 'dc-intel' },
+            { name: 'H200 141GB', bw: 4800, toks: 692, cat: 'dc-nvidia' },
+            { name: 'MI300X', bw: 5300, toks: 764, cat: 'dc-amd' },
+            { name: 'MI325X', bw: 6000, toks: 865, cat: 'dc-amd' },
+            { name: 'B200', bw: 8000, toks: 1153, cat: 'dc-nvidia' },
+            { name: 'B300', bw: 12000, toks: 1730, cat: 'dc-nvidia' }
+        ];
+
+        // Sort by tok/s for clean bar chart
+        gpuData.sort(function(a, b) { return a.toks - b.toks; });
+
+        var labels = gpuData.map(function(g) { return g.name; });
+        var data = gpuData.map(function(g) { return g.toks; });
+        var colors = gpuData.map(function(g) {
+            switch(g.cat) {
+                case 'consumer-nvidia': return '#66bb6a';
+                case 'dc-nvidia': return '#2e7d32';
+                case 'consumer-amd': return '#ef5350';
+                case 'dc-amd': return '#b71c1c';
+                case 'consumer-intel': return '#42a5f5';
+                case 'dc-intel': return '#1565c0';
+                case 'apple': return '#ab47bc';
+                default: return '#78909c';
+            }
+        });
+
+        allGpuChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Estimated tok/s (7B Q4_K_M)',
+                    data: data,
+                    backgroundColor: colors,
+                    borderWidth: 0,
+                    borderRadius: 3
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    title: {
+                        display: true,
+                        text: 'All GPUs: 7B Q4_K_M Inference (tok/s) — Log Scale',
+                        color: '#fafafa',
+                        font: { size: 13 }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            afterLabel: function(context) {
+                                var gpu = gpuData[context.dataIndex];
+                                return 'Bandwidth: ' + gpu.bw + ' GB/s';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'logarithmic',
+                        title: { display: true, text: 'tok/s (log scale)', color: '#aaa' },
+                        ticks: { color: '#aaa' },
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        min: 30
+                    },
+                    y: {
+                        ticks: { color: '#ccc', font: { size: 11 } },
+                        grid: { color: 'rgba(255,255,255,0.05)' }
+                    }
+                },
+                onClick: function(evt, elements) {
+                    if (elements.length > 0) {
+                        var idx = elements[0].index;
+                        var gpu = gpuData[idx];
+                        console.log(gpu.name + ': ' + gpu.toks + ' tok/s, ' + gpu.bw + ' GB/s bandwidth');
+                    }
+                }
+            }
+        });
+
+        // Toggle button handler
+        var btn = document.getElementById('toggleLogScale');
+        if (btn) {
+            btn.addEventListener('click', function() {
+                allGpuLogScale = !allGpuLogScale;
+                if (allGpuLogScale) {
+                    allGpuChart.options.scales.x.type = 'logarithmic';
+                    allGpuChart.options.scales.x.title.text = 'tok/s (log scale)';
+                    allGpuChart.options.scales.x.min = 30;
+                    allGpuChart.options.plugins.title.text = 'All GPUs: 7B Q4_K_M Inference (tok/s) — Log Scale';
+                    btn.textContent = 'Switch to Linear Scale';
+                } else {
+                    allGpuChart.options.scales.x.type = 'linear';
+                    allGpuChart.options.scales.x.title.text = 'tok/s (linear scale)';
+                    allGpuChart.options.scales.x.min = 0;
+                    allGpuChart.options.plugins.title.text = 'All GPUs: 7B Q4_K_M Inference (tok/s) — Linear Scale';
+                    btn.textContent = 'Switch to Log Scale';
+                }
+                allGpuChart.update();
+            });
+        }
+    }
+
     // Initialize charts
     createBwChart();
     createTdpChart();
     createConsumerChart();
     createDcChart();
+    createAllGpuPerfChart();
 
     // Also trigger on slide change for lazy loading
     if (typeof Reveal !== 'undefined') {
@@ -1516,6 +1667,7 @@ output = W_down @ hidden // FFN compress</code></pre>
             createTdpChart();
             createConsumerChart();
             createDcChart();
+            createAllGpuPerfChart();
         });
     }
 })();
