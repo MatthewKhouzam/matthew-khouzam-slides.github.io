@@ -483,18 +483,7 @@ output = W_down @ hidden // FFN compress</code></pre>
 <!-- Bandwidth Bottleneck Math -->
 <section>
     <h2>The Bandwidth Bottleneck: Real Numbers</h2>
-    <table style="font-size:0.65em;">
-        <tr><th>GPU</th><th>BW (GB/s)</th><th>VRAM</th><th>Max Model (Q4)</th><th>7B Q4 tok/s</th><th>70B Q4 tok/s</th></tr>
-        <tr><td>RTX 3090 (NVIDIA)</td><td>936</td><td>24 GB</td><td>~48B params</td><td>~192</td><td>N/A (too big)</td></tr>
-        <tr><td>RX 7900 XTX (AMD)</td><td>960</td><td>24 GB</td><td>~48B params</td><td>~197</td><td>N/A</td></tr>
-        <tr><td>RTX 4090 (NVIDIA)</td><td>1008</td><td>24 GB</td><td>~48B params</td><td>~207</td><td>N/A</td></tr>
-        <tr><td>M4 Max (Apple)</td><td>546</td><td>128 GB</td><td>~256B params</td><td>~112</td><td>~11</td></tr>
-        <tr><td>M4 Ultra (Apple)</td><td>~819</td><td>256 GB</td><td>~512B params</td><td>~168</td><td>~17</td></tr>
-        <tr><td>RTX 5090 (NVIDIA)</td><td>1792</td><td>32 GB</td><td>~64B params</td><td>~368</td><td>N/A</td></tr>
-        <tr><td>A100 80GB (NVIDIA)</td><td>2039</td><td>80 GB</td><td>~160B params</td><td>~419</td><td>~42</td></tr>
-        <tr><td>MI300X (AMD)</td><td>5300</td><td>192 GB</td><td>~384B params</td><td>~1088</td><td>~109</td></tr>
-        <tr><td>B200 (NVIDIA)</td><td>8000</td><td>192 GB</td><td>~384B params</td><td>~1642</td><td>~164</td></tr>
-    </table>
+    <div id="bw-bottleneck-table"></div>
     <p class="tiny muted">tok/s = theoretical max at 100% bandwidth utilization. Real-world is ~50-70% of these values.</p>
     <aside class="notes">Apple Silicon has lower bandwidth but massive memory capacity - it can run models that don't fit in any consumer GPU. The tradeoff is speed vs model size flexibility.</aside>
 </section>
@@ -853,21 +842,7 @@ output = W_down @ hidden // FFN compress</code></pre>
 <!-- GPU Comparison Table -->
 <section>
     <h2>GPU Architecture Comparison (2024-2026)</h2>
-    <table style="font-size:0.55em;">
-        <tr><th>GPU</th><th>Vendor</th><th>Year</th><th>VRAM</th><th>BW (TB/s)</th><th>FP16 TFLOPS</th><th>TDP (W)</th><th>Process</th></tr>
-        <tr><td>V100</td><td>NVIDIA</td><td>2017</td><td>32 GB HBM2</td><td>0.9</td><td>125</td><td>300</td><td>12nm</td></tr>
-        <tr><td>A100</td><td>NVIDIA</td><td>2020</td><td>80 GB HBM2e</td><td>2.0</td><td>312</td><td>400</td><td>7nm</td></tr>
-        <tr><td>H100</td><td>NVIDIA</td><td>2022</td><td>80 GB HBM3</td><td>3.35</td><td>1979</td><td>700</td><td>4nm</td></tr>
-        <tr><td>H200</td><td>NVIDIA</td><td>2024</td><td>141 GB HBM3e</td><td>4.8</td><td>1979</td><td>700</td><td>4nm</td></tr>
-        <tr><td>B200</td><td>NVIDIA</td><td>2024</td><td>192 GB HBM3e</td><td>8.0</td><td>4500</td><td>1000</td><td>4nm</td></tr>
-        <tr><td>MI300X</td><td>AMD</td><td>2023</td><td>192 GB HBM3</td><td>5.3</td><td>1307</td><td>750</td><td>5nm</td></tr>
-        <tr><td>MI325X</td><td>AMD</td><td>2024</td><td>256 GB HBM3e</td><td>6.0</td><td>1307</td><td>750</td><td>5nm</td></tr>
-        <tr><td>Gaudi 3</td><td>Intel</td><td>2024</td><td>128 GB HBM2e</td><td>3.7</td><td>~900</td><td>600</td><td>5nm</td></tr>
-        <tr><td>M4 Max</td><td>Apple</td><td>2024</td><td>128 GB Unified</td><td>0.55</td><td>~53</td><td>~75</td><td>3nm</td></tr>
-        <tr><td>M4 Ultra</td><td>Apple</td><td>2025</td><td>256 GB Unified</td><td>~0.82</td><td>~106</td><td>~150</td><td>3nm</td></tr>
-        <tr><td>Atlas 350</td><td>Huawei</td><td>2025</td><td>112 GB HBM</td><td>~3.2</td><td>~780 (est)</td><td>~550</td><td>7nm</td></tr>
-        <tr><td>MTT S4000</td><td>Moore Threads</td><td>2024</td><td>48 GB GDDR6</td><td>~0.8</td><td>~200 (est)</td><td>300</td><td>12nm</td></tr>
-    </table>
+    <div id="arch-comparison-table"></div>
     <p class="tiny muted">Apple Silicon TFLOPS are GPU-only estimates. Some Chinese GPU specs are estimates. Apple TDP is whole-SoC.</p>
     <aside class="notes">The bandwidth column tells the inference story. Apple trades bandwidth for capacity - lower tok/s but fits larger models. MI300X and H200 are close in bandwidth but MI300X has more memory.</aside>
 </section>
@@ -898,18 +873,7 @@ output = W_down @ hidden // FFN compress</code></pre>
 <!-- Power Efficiency -->
 <section>
     <h2>Power Efficiency: tok/s per Watt</h2>
-    <table style="font-size:0.65em;">
-        <tr><th>GPU</th><th>TDP</th><th>BW (TB/s)</th><th>7B Q4 tok/s (est)</th><th>tok/s/W</th><th>GB/s per W</th></tr>
-        <tr><td>V100 (NVIDIA)</td><td>300W</td><td>0.9</td><td>~130</td><td>0.43</td><td>3.0</td></tr>
-        <tr><td>A100 (NVIDIA)</td><td>400W</td><td>2.0</td><td>~290</td><td>0.72</td><td>5.1</td></tr>
-        <tr><td>H100 (NVIDIA)</td><td>700W</td><td>3.35</td><td>~480</td><td>0.69</td><td>4.8</td></tr>
-        <tr><td>MI300X (AMD)</td><td>750W</td><td>5.3</td><td>~760</td><td>1.01</td><td>7.1</td></tr>
-        <tr><td>B200 (NVIDIA)</td><td>1000W</td><td>8.0</td><td>~1150</td><td>1.15</td><td>8.0</td></tr>
-        <tr><td>RTX 4090 (NVIDIA)</td><td>450W</td><td>1.0</td><td>~145</td><td>0.32</td><td>2.2</td></tr>
-        <tr><td>RX 7900 XTX (AMD)</td><td>355W</td><td>0.96</td><td>~138</td><td>0.39</td><td>2.7</td></tr>
-        <tr><td>M4 Max (Apple)</td><td>~75W</td><td>0.55</td><td>~79</td><td>1.05</td><td>7.3</td></tr>
-        <tr><td>M4 Ultra (Apple)</td><td>~150W</td><td>0.82</td><td>~118</td><td>0.79</td><td>5.5</td></tr>
-    </table>
+    <div id="power-efficiency-table"></div>
     <p class="tiny muted">tok/s estimates assume ~70% bandwidth efficiency on 7B Q4_K_M model. Apple TDP is whole-SoC.</p>
     <aside class="notes">Apple Silicon's power efficiency is remarkable - the M4 Max achieves >1 tok/s per watt because LPDDR5X has much lower power per bit than GDDR6X or HBM. This makes Macs excellent for always-on local inference.</aside>
 </section>
@@ -1043,18 +1007,7 @@ output = W_down @ hidden // FFN compress</code></pre>
 <!-- Consumer GPU tok/s -->
 <section>
     <h2>Consumer / Workstation: Estimated tok/s (Q4_K_M)</h2>
-    <table style="font-size:0.6em;">
-        <tr><th>GPU</th><th>BW (GB/s)</th><th>VRAM</th><th>1B</th><th>2B</th><th>4B</th><th>8B</th><th>16B</th><th>32B</th><th>70B</th></tr>
-        <tr><td>RTX 3060 12GB</td><td>360</td><td>12 GB</td><td>463</td><td>231</td><td>116</td><td>58</td><td>29</td><td>-</td><td>-</td></tr>
-        <tr><td>Arc A770 (Intel)</td><td>560</td><td>16 GB</td><td>720</td><td>360</td><td>180</td><td>90</td><td>45</td><td>-</td><td>-</td></tr>
-        <tr><td>M4 Max (Apple)</td><td>546</td><td>128 GB</td><td>702</td><td>351</td><td>175</td><td>88</td><td>44</td><td>22</td><td>10</td></tr>
-        <tr><td>RTX 4070 Ti S</td><td>672</td><td>16 GB</td><td>864</td><td>432</td><td>216</td><td>108</td><td>54</td><td>-</td><td>-</td></tr>
-        <tr><td>M4 Ultra (Apple)</td><td>~819</td><td>256 GB</td><td>1052</td><td>526</td><td>263</td><td>131</td><td>66</td><td>33</td><td>15</td></tr>
-        <tr><td>RTX 3090</td><td>936</td><td>24 GB</td><td>1203</td><td>601</td><td>301</td><td>150</td><td>75</td><td>38</td><td>-</td></tr>
-        <tr><td>RX 7900 XTX (AMD)</td><td>960</td><td>24 GB</td><td>1234</td><td>617</td><td>309</td><td>154</td><td>77</td><td>39</td><td>-</td></tr>
-        <tr><td>RTX 4090</td><td>1008</td><td>24 GB</td><td>1296</td><td>648</td><td>324</td><td>162</td><td>81</td><td>40</td><td>-</td></tr>
-        <tr><td>RTX 5090</td><td>1792</td><td>32 GB</td><td>2303</td><td>1152</td><td>576</td><td>288</td><td>144</td><td>72</td><td>-</td></tr>
-    </table>
+    <div id="consumer-toks-table"></div>
     <p class="tiny muted">Theoretical max at 100% BW utilization. Real-world: multiply by 0.55-0.70. "-" = model does not fit in VRAM. Apple can run 70B because of unified memory capacity.</p>
     <aside class="notes">Apple Silicon shows the bandwidth vs capacity tradeoff clearly. The M4 Max is slower per-token than a 4090 but can run 70B locally which no 24GB card can. The M4 Ultra handles 120B+.</aside>
 </section>
@@ -1062,17 +1015,7 @@ output = W_down @ hidden // FFN compress</code></pre>
 <!-- Datacenter GPU tok/s -->
 <section>
     <h2>Datacenter GPUs: Estimated tok/s (Q4_K_M)</h2>
-    <table style="font-size:0.65em;">
-        <tr><th>GPU</th><th>BW (TB/s)</th><th>VRAM</th><th>7B</th><th>13B</th><th>34B</th><th>70B</th><th>120B</th><th>405B</th></tr>
-        <tr><td>V100 32GB</td><td>0.9</td><td>32 GB</td><td>165</td><td>89</td><td>34</td><td>-</td><td>-</td><td>-</td></tr>
-        <tr><td>A100 80GB</td><td>2.0</td><td>80 GB</td><td>367</td><td>197</td><td>75</td><td>37</td><td>21</td><td>-</td></tr>
-        <tr><td>H100 80GB</td><td>3.35</td><td>80 GB</td><td>614</td><td>331</td><td>126</td><td>61</td><td>36</td><td>-</td></tr>
-        <tr><td>H200 141GB</td><td>4.8</td><td>141 GB</td><td>880</td><td>474</td><td>181</td><td>88</td><td>51</td><td>-</td></tr>
-        <tr><td>MI300X</td><td>5.3</td><td>192 GB</td><td>971</td><td>523</td><td>200</td><td>97</td><td>57</td><td>17</td></tr>
-        <tr><td>MI325X</td><td>6.0</td><td>256 GB</td><td>1100</td><td>592</td><td>226</td><td>110</td><td>64</td><td>19</td></tr>
-        <tr><td>B200</td><td>8.0</td><td>192 GB</td><td>1467</td><td>790</td><td>302</td><td>147</td><td>86</td><td>25</td></tr>
-        <tr><td>Gaudi 3</td><td>3.7</td><td>128 GB</td><td>678</td><td>365</td><td>140</td><td>68</td><td>40</td><td>-</td></tr>
-    </table>
+    <div id="dc-toks-table"></div>
     <p class="tiny muted">Theoretical max tok/s. Real-world: 50-70% of these values. "-" = does not fit in single GPU.</p>
     <aside class="notes">Notice MI300X can run 405B because it has 192GB VRAM. The B200 has same memory but nearly 2x bandwidth. Multi-GPU with NVLink can serve 405B on H100 (8x) but at reduced per-token throughput.</aside>
 </section>
@@ -1540,32 +1483,190 @@ output = W_down @ hidden // FFN compress</code></pre>
     var allGpuLogScale = true;
     var allGpuCreated = false;
 
-    // GPU data: name, bandwidth GB/s, estimated 7B Q4 tok/s at ~70% efficiency, category
+    // GPU data: comprehensive dataset for all tables and charts
     // Bandwidth specs sourced from TechPowerUp GPU Database (techpowerup.com/gpu-specs)
+    // Q4_K_M: 0.56 bytes/param. Theoretical max tok/s = bw / (0.56 * params_in_billions)
+    // "toks" field = estimated real-world 7B Q4 tok/s at ~70% BW efficiency
     var gpuData = [
-        { name: 'RTX 3060', bw: 360, tops: 102, toks: 48, price: 329, power: 170, cat: 'consumer-nvidia' },
-        { name: 'Arc A770', bw: 560, tops: 221, toks: 68, price: 349, power: 225, cat: 'consumer-intel' },
-        { name: 'RTX 3070 Ti', bw: 608, tops: 174, toks: 82, price: 599, power: 290, cat: 'consumer-nvidia' },
-        { name: 'RTX 4070 Ti S', bw: 672, tops: 352, toks: 98, price: 799, power: 285, cat: 'consumer-nvidia' },
-        { name: 'M4 Max', bw: 546, tops: 38, toks: 76, price: 3199, power: 100, cat: 'apple' },
-        { name: 'M1 Ultra', bw: 800, tops: 22, toks: 94, price: 3999, power: 215, cat: 'apple' },
-        { name: 'M4 Ultra', bw: 819, tops: 76, toks: 128, price: 6999, power: 250, cat: 'apple' },
-        { name: 'V100 32GB', bw: 900, tops: 125, toks: 120, price: 10000, power: 300, cat: 'dc-nvidia' },
-        { name: 'RTX 3090', bw: 936, tops: 285, toks: 135, price: 1499, power: 350, cat: 'consumer-nvidia' },
-        { name: 'RX 7900 XTX', bw: 960, tops: 246, toks: 130, price: 999, power: 355, cat: 'consumer-amd' },
-        { name: 'RTX 4090', bw: 1008, tops: 661, toks: 165, price: 1599, power: 450, cat: 'consumer-nvidia' },
-        { name: 'MI50', bw: 1024, tops: 53, toks: 105, price: 7500, power: 300, cat: 'dc-amd' },
-        { name: 'RTX 5090', bw: 1792, tops: 1675, toks: 275, price: 1999, power: 600, cat: 'consumer-nvidia' },
-        { name: 'A100 80GB', bw: 2039, tops: 624, toks: 320, price: 15000, power: 400, cat: 'dc-nvidia' },
-        { name: 'MI250X', bw: 3277, tops: 383, toks: 480, price: 15000, power: 560, cat: 'dc-amd' },
-        { name: 'H100 80GB', bw: 3350, tops: 1979, toks: 540, price: 30000, power: 700, cat: 'dc-nvidia' },
-        { name: 'Gaudi 3', bw: 3700, tops: 1835, toks: 560, price: 15600, power: 900, cat: 'dc-intel' },
-        { name: 'H200 141GB', bw: 4800, tops: 1979, toks: 780, price: 40000, power: 700, cat: 'dc-nvidia' },
-        { name: 'MI300X', bw: 5300, tops: 2614, toks: 890, price: 15000, power: 750, cat: 'dc-amd' },
-        { name: 'MI325X', bw: 6000, tops: 2614, toks: 1020, price: 20000, power: 1000, cat: 'dc-amd' },
-        { name: 'B200', bw: 8000, tops: 4500, toks: 1350, price: 35000, power: 1000, cat: 'dc-nvidia' },
-        { name: 'B300', bw: 8000, tops: 7000, toks: 1400, price: 45000, power: 1200, cat: 'dc-nvidia' }
+        { name: 'RTX 3060 12GB', bw: 360, tops: 102, toks: 48, price: 329, power: 170, cat: 'consumer-nvidia', vram: '12 GB', vramGB: 12, year: 2021, process: '8nm', vendor: 'NVIDIA' },
+        { name: 'Arc A770', bw: 560, tops: 221, toks: 68, price: 349, power: 225, cat: 'consumer-intel', vram: '16 GB', vramGB: 16, year: 2022, process: '6nm', vendor: 'Intel' },
+        { name: 'RTX 3070 Ti', bw: 608, tops: 174, toks: 82, price: 599, power: 290, cat: 'consumer-nvidia', vram: '8 GB', vramGB: 8, year: 2021, process: '8nm', vendor: 'NVIDIA' },
+        { name: 'RTX 4070 Ti S', bw: 672, tops: 352, toks: 98, price: 799, power: 285, cat: 'consumer-nvidia', vram: '16 GB', vramGB: 16, year: 2024, process: '4nm', vendor: 'NVIDIA' },
+        { name: 'M4 Max', bw: 546, tops: 53, toks: 76, price: 3199, power: 75, cat: 'apple', vram: '128 GB Unified', vramGB: 128, year: 2024, process: '3nm', vendor: 'Apple' },
+        { name: 'M1 Ultra', bw: 800, tops: 22, toks: 94, price: 3999, power: 215, cat: 'apple', vram: '128 GB Unified', vramGB: 128, year: 2022, process: '5nm', vendor: 'Apple' },
+        { name: 'M4 Ultra', bw: 819, tops: 106, toks: 128, price: 6999, power: 150, cat: 'apple', vram: '256 GB Unified', vramGB: 256, year: 2025, process: '3nm', vendor: 'Apple' },
+        { name: 'V100 32GB', bw: 900, tops: 125, toks: 120, price: 10000, power: 300, cat: 'dc-nvidia', vram: '32 GB HBM2', vramGB: 32, year: 2017, process: '12nm', vendor: 'NVIDIA' },
+        { name: 'RTX 3090', bw: 936, tops: 285, toks: 135, price: 1499, power: 350, cat: 'consumer-nvidia', vram: '24 GB', vramGB: 24, year: 2020, process: '8nm', vendor: 'NVIDIA' },
+        { name: 'RX 7900 XTX', bw: 960, tops: 246, toks: 130, price: 999, power: 355, cat: 'consumer-amd', vram: '24 GB', vramGB: 24, year: 2022, process: '5nm', vendor: 'AMD' },
+        { name: 'RTX 4090', bw: 1008, tops: 661, toks: 165, price: 1599, power: 450, cat: 'consumer-nvidia', vram: '24 GB', vramGB: 24, year: 2022, process: '4nm', vendor: 'NVIDIA' },
+        { name: 'MI50', bw: 1024, tops: 53, toks: 105, price: 7500, power: 300, cat: 'dc-amd', vram: '32 GB HBM2', vramGB: 32, year: 2018, process: '7nm', vendor: 'AMD' },
+        { name: 'RTX 5090', bw: 1792, tops: 1675, toks: 275, price: 1999, power: 575, cat: 'consumer-nvidia', vram: '32 GB', vramGB: 32, year: 2025, process: '4nm', vendor: 'NVIDIA' },
+        { name: 'A100 80GB', bw: 2039, tops: 624, toks: 320, price: 15000, power: 400, cat: 'dc-nvidia', vram: '80 GB HBM2e', vramGB: 80, year: 2020, process: '7nm', vendor: 'NVIDIA' },
+        { name: 'MI250X', bw: 3277, tops: 383, toks: 480, price: 15000, power: 560, cat: 'dc-amd', vram: '128 GB HBM2e', vramGB: 128, year: 2021, process: '6nm', vendor: 'AMD' },
+        { name: 'H100 80GB', bw: 3350, tops: 1979, toks: 540, price: 30000, power: 700, cat: 'dc-nvidia', vram: '80 GB HBM3', vramGB: 80, year: 2022, process: '4nm', vendor: 'NVIDIA' },
+        { name: 'Gaudi 3', bw: 3700, tops: 1835, toks: 560, price: 15600, power: 600, cat: 'dc-intel', vram: '128 GB HBM2e', vramGB: 128, year: 2024, process: '5nm', vendor: 'Intel' },
+        { name: 'H200 141GB', bw: 4800, tops: 1979, toks: 780, price: 40000, power: 700, cat: 'dc-nvidia', vram: '141 GB HBM3e', vramGB: 141, year: 2024, process: '4nm', vendor: 'NVIDIA' },
+        { name: 'MI300X', bw: 5300, tops: 2614, toks: 890, price: 15000, power: 750, cat: 'dc-amd', vram: '192 GB HBM3', vramGB: 192, year: 2023, process: '5nm', vendor: 'AMD' },
+        { name: 'MI325X', bw: 6000, tops: 2614, toks: 1020, price: 20000, power: 750, cat: 'dc-amd', vram: '256 GB HBM3e', vramGB: 256, year: 2024, process: '5nm', vendor: 'AMD' },
+        { name: 'B200', bw: 8000, tops: 4500, toks: 1350, price: 35000, power: 1000, cat: 'dc-nvidia', vram: '192 GB HBM3e', vramGB: 192, year: 2024, process: '4nm', vendor: 'NVIDIA' },
+        { name: 'B300', bw: 8000, tops: 7000, toks: 1400, price: 45000, power: 1200, cat: 'dc-nvidia', vram: '288 GB HBM3e', vramGB: 288, year: 2025, process: '3nm', vendor: 'NVIDIA' },
+        { name: 'Atlas 350', bw: 3200, tops: 780, toks: 450, price: 20000, power: 550, cat: 'dc-other', vram: '112 GB HBM', vramGB: 112, year: 2025, process: '7nm', vendor: 'Huawei' },
+        { name: 'MTT S4000', bw: 800, tops: 200, toks: 95, price: 5000, power: 300, cat: 'dc-other', vram: '48 GB GDDR6', vramGB: 48, year: 2024, process: '12nm', vendor: 'Moore Threads' }
     ];
+
+    // Helper: compute theoretical max tok/s for a given model size (params in billions)
+    // Formula: BW_GB_s / (bytes_per_param * params_B) where Q4_K_M ~ 0.56 bytes/param
+    function theoreticalToks(bwGBs, paramsBillions) {
+        return Math.round(bwGBs / (0.56 * paramsBillions));
+    }
+
+    // Helper: check if a model fits in VRAM (Q4_K_M needs ~0.56 * params GB + overhead)
+    function modelFits(vramGB, paramsBillions) {
+        var modelSizeGB = 0.56 * paramsBillions * 1.15; // 15% overhead for KV cache etc
+        return vramGB >= modelSizeGB;
+    }
+
+    // Helper: max model params (Q4) that fits in VRAM
+    function maxModelParams(vramGB) {
+        return Math.floor(vramGB / 0.56 / 1.15); // rough: ~vram / 0.64
+    }
+
+    // ---- Table Generation Functions ----
+
+    // Table 1: Bandwidth Bottleneck: Real Numbers
+    function generateBandwidthBottleneckTable() {
+        var container = document.getElementById('bw-bottleneck-table');
+        if (!container) return;
+        var subset = gpuData.filter(function(g) {
+            return ['RTX 3090','RX 7900 XTX','RTX 4090','M4 Max','M4 Ultra','RTX 5090','A100 80GB','MI300X','B200'].indexOf(g.name) !== -1;
+        });
+        subset.sort(function(a, b) { return a.bw - b.bw; });
+
+        var html = '<table style="font-size:0.65em;">';
+        html += '<tr><th>GPU</th><th>BW (GB/s)</th><th>VRAM</th><th>Max Model (Q4)</th><th>7B Q4 tok/s</th><th>70B Q4 tok/s</th></tr>';
+        subset.forEach(function(g) {
+            var maxP = maxModelParams(g.vramGB);
+            var toks7b = theoreticalToks(g.bw, 7);
+            var toks70b = modelFits(g.vramGB, 70) ? theoreticalToks(g.bw, 70) : 'N/A';
+            var maxLabel = (maxP >= 1000) ? '~' + Math.round(maxP) + 'B params' : '~' + maxP + 'B params';
+            html += '<tr><td>' + g.name + ' (' + g.vendor + ')</td><td>' + g.bw + '</td><td>' + g.vram + '</td><td>' + maxLabel + '</td><td>~' + toks7b + '</td><td>' + (toks70b === 'N/A' ? 'N/A (too big)' : '~' + toks70b) + '</td></tr>';
+        });
+        html += '</table>';
+        container.innerHTML = html;
+    }
+
+    // Table 2: Power Efficiency: tok/s per Watt
+    function generatePowerEfficiencyTable() {
+        var container = document.getElementById('power-efficiency-table');
+        if (!container) return;
+        var subset = gpuData.filter(function(g) {
+            return ['V100 32GB','A100 80GB','H100 80GB','MI300X','B200','RTX 4090','RX 7900 XTX','M4 Max','M4 Ultra'].indexOf(g.name) !== -1;
+        });
+        subset.sort(function(a, b) { return a.bw - b.bw; });
+
+        var html = '<table style="font-size:0.65em;">';
+        html += '<tr><th>GPU</th><th>TDP</th><th>BW (TB/s)</th><th>7B Q4 tok/s (est)</th><th>tok/s/W</th><th>GB/s per W</th></tr>';
+        subset.forEach(function(g) {
+            // Estimated real-world tok/s at ~70% efficiency
+            var estToks = Math.round(theoreticalToks(g.bw, 7) * 0.7);
+            var toksPerW = (estToks / g.power).toFixed(2);
+            var gbsPerW = (g.bw / g.power).toFixed(1);
+            var bwTBs = (g.bw / 1000).toFixed(g.bw >= 1000 ? 1 : 2);
+            html += '<tr><td>' + g.name + ' (' + g.vendor + ')</td><td>' + g.power + 'W</td><td>' + bwTBs + '</td><td>~' + estToks + '</td><td>' + toksPerW + '</td><td>' + gbsPerW + '</td></tr>';
+        });
+        html += '</table>';
+        container.innerHTML = html;
+    }
+
+    // Table 3: Consumer / Workstation: Estimated tok/s (Q4_K_M)
+    function generateConsumerToksTable() {
+        var container = document.getElementById('consumer-toks-table');
+        if (!container) return;
+        var modelSizes = [1, 2, 4, 8, 16, 32, 70];
+        var subset = gpuData.filter(function(g) {
+            return ['RTX 3060 12GB','Arc A770','M4 Max','RTX 4070 Ti S','M4 Ultra','RTX 3090','RX 7900 XTX','RTX 4090','RTX 5090'].indexOf(g.name) !== -1;
+        });
+        subset.sort(function(a, b) { return a.bw - b.bw; });
+
+        var html = '<table style="font-size:0.6em;">';
+        html += '<tr><th>GPU</th><th>BW (GB/s)</th><th>VRAM</th>';
+        modelSizes.forEach(function(s) { html += '<th>' + s + 'B</th>'; });
+        html += '</tr>';
+        subset.forEach(function(g) {
+            html += '<tr><td>' + g.name + '</td><td>' + g.bw + '</td><td>' + g.vram + '</td>';
+            modelSizes.forEach(function(s) {
+                if (modelFits(g.vramGB, s)) {
+                    html += '<td>' + theoreticalToks(g.bw, s) + '</td>';
+                } else {
+                    html += '<td>-</td>';
+                }
+            });
+            html += '</tr>';
+        });
+        html += '</table>';
+        container.innerHTML = html;
+    }
+
+    // Table 4: Datacenter GPUs: Estimated tok/s (Q4_K_M)
+    function generateDcToksTable() {
+        var container = document.getElementById('dc-toks-table');
+        if (!container) return;
+        var modelSizes = [7, 13, 34, 70, 120, 405];
+        var subset = gpuData.filter(function(g) {
+            return ['V100 32GB','A100 80GB','H100 80GB','H200 141GB','MI300X','MI325X','B200','Gaudi 3'].indexOf(g.name) !== -1;
+        });
+        subset.sort(function(a, b) { return a.bw - b.bw; });
+
+        var html = '<table style="font-size:0.65em;">';
+        html += '<tr><th>GPU</th><th>BW (TB/s)</th><th>VRAM</th>';
+        modelSizes.forEach(function(s) { html += '<th>' + s + 'B</th>'; });
+        html += '</tr>';
+        subset.forEach(function(g) {
+            var bwTBs = (g.bw / 1000).toFixed(1);
+            html += '<tr><td>' + g.name + '</td><td>' + bwTBs + '</td><td>' + g.vram + '</td>';
+            modelSizes.forEach(function(s) {
+                if (modelFits(g.vramGB, s)) {
+                    html += '<td>' + theoreticalToks(g.bw, s) + '</td>';
+                } else {
+                    html += '<td>-</td>';
+                }
+            });
+            html += '</tr>';
+        });
+        html += '</table>';
+        container.innerHTML = html;
+    }
+
+    // Table 5: GPU Architecture Comparison (2024-2026)
+    function generateArchComparisonTable() {
+        var container = document.getElementById('arch-comparison-table');
+        if (!container) return;
+        var subset = gpuData.filter(function(g) {
+            return ['V100 32GB','A100 80GB','H100 80GB','H200 141GB','B200','MI300X','MI325X','Gaudi 3','M4 Max','M4 Ultra','Atlas 350','MTT S4000'].indexOf(g.name) !== -1;
+        });
+        subset.sort(function(a, b) { return a.year - b.year || a.bw - b.bw; });
+
+        var html = '<table style="font-size:0.55em;">';
+        html += '<tr><th>GPU</th><th>Vendor</th><th>Year</th><th>VRAM</th><th>BW (TB/s)</th><th>FP16 TFLOPS</th><th>TDP (W)</th><th>Process</th></tr>';
+        subset.forEach(function(g) {
+            var bwTBs = (g.bw / 1000).toFixed(g.bw >= 1000 ? 1 : 2);
+            var topsLabel = g.cat === 'dc-other' ? '~' + g.tops + ' (est)' : String(g.tops);
+            html += '<tr><td>' + g.name + '</td><td>' + g.vendor + '</td><td>' + g.year + '</td><td>' + g.vram + '</td><td>' + bwTBs + '</td><td>' + topsLabel + '</td><td>' + g.power + '</td><td>' + g.process + '</td></tr>';
+        });
+        html += '</table>';
+        container.innerHTML = html;
+    }
+
+    // Generate all tables
+    function generateAllTables() {
+        generateBandwidthBottleneckTable();
+        generatePowerEfficiencyTable();
+        generateConsumerToksTable();
+        generateDcToksTable();
+        generateArchComparisonTable();
+    }
+
+    generateAllTables();
 
     var metricLabels = {
         toks: 'tok/s (7B Q4_K_M)',
