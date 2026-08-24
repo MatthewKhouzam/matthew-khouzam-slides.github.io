@@ -1531,31 +1531,30 @@ output = W_down @ hidden // FFN compress</code></pre>
 
         // GPU data: name, bandwidth GB/s, estimated 7B Q4 tok/s at ~70% efficiency, category
         // Bandwidth specs sourced from TechPowerUp GPU Database (techpowerup.com/gpu-specs)
-        var gpuData = [
-            { name: 'RTX 3060', bw: 360, toks: 52, cat: 'consumer-nvidia' },
-            { name: 'Arc A770', bw: 560, toks: 81, cat: 'consumer-intel' },
-            { name: 'RTX 3070 Ti', bw: 608, toks: 87, cat: 'consumer-nvidia' },
-            { name: 'RTX 4070 Ti S', bw: 672, toks: 97, cat: 'consumer-nvidia' },
-            { name: 'M4 Max', bw: 546, toks: 79, cat: 'apple' },
-            { name: 'M4 Ultra', bw: 819, toks: 118, cat: 'apple' },
-            { name: 'M1 Ultra', bw: 800, toks: 115, cat: 'apple' },
-            { name: 'V100 32GB', bw: 900, toks: 130, cat: 'dc-nvidia' },
-            { name: 'RTX 3090', bw: 936, toks: 135, cat: 'consumer-nvidia' },
-            { name: 'RX 7900 XTX', bw: 960, toks: 138, cat: 'consumer-amd' },
-            { name: 'RTX 4090', bw: 1008, toks: 145, cat: 'consumer-nvidia' },
-            { name: 'MI50', bw: 1024, toks: 148, cat: 'dc-amd' },
-            { name: 'RTX 5090', bw: 1792, toks: 258, cat: 'consumer-nvidia' },
-            { name: 'A100 80GB', bw: 2039, toks: 294, cat: 'dc-nvidia' },
-            { name: 'MI250X', bw: 3277, toks: 472, cat: 'dc-amd' },
-            { name: 'H100 80GB', bw: 3350, toks: 483, cat: 'dc-nvidia' },
-            { name: 'Gaudi 3', bw: 3700, toks: 533, cat: 'dc-intel' },
-            { name: 'H200 141GB', bw: 4800, toks: 692, cat: 'dc-nvidia' },
-            { name: 'MI300X', bw: 5300, toks: 764, cat: 'dc-amd' },
-            { name: 'MI325X', bw: 6000, toks: 865, cat: 'dc-amd' },
-            { name: 'B200', bw: 8000, toks: 1153, cat: 'dc-nvidia' },
-            { name: 'B300', bw: 12000, toks: 1730, cat: 'dc-nvidia' }
-        ];
-
+	var gpuData = [
+	    { name: 'RTX 3060', bw: 360, tops: 102, toks: 48, cat: 'consumer-nvidia' },
+	    { name: 'Arc A770', bw: 560, tops: 221, toks: 68, cat: 'consumer-intel' },
+	    { name: 'M4 Max', bw: 546, tops: 38, toks: 76, cat: 'apple' },
+	    { name: 'RTX 3070 Ti', bw: 608, tops: 174, toks: 82, cat: 'consumer-nvidia' },
+	    { name: 'M1 Ultra', bw: 800, tops: 22, toks: 94, cat: 'apple' },
+	    { name: 'RTX 4070 Ti S', bw: 672, tops: 352, toks: 98, cat: 'consumer-nvidia' },
+	    { name: 'MI50', bw: 1024, tops: 53, toks: 105, cat: 'dc-amd' },
+	    { name: 'M4 Ultra', bw: 819, tops: 76, toks: 128, cat: 'apple' },
+	    { name: 'V100 32GB', bw: 900, tops: 125, toks: 120, cat: 'dc-nvidia' },
+	    { name: 'RTX 3090', bw: 936, tops: 285, toks: 135, cat: 'consumer-nvidia' },
+	    { name: 'RX 7900 XTX', bw: 960, tops: 246, toks: 130, cat: 'consumer-amd' },
+	    { name: 'RTX 4090', bw: 1008, tops: 661, toks: 165, cat: 'consumer-nvidia' },
+	    { name: 'RTX 5090', bw: 1792, tops: 1675, toks: 275, cat: 'consumer-nvidia' },
+	    { name: 'A100 80GB', bw: 2039, tops: 624, toks: 320, cat: 'dc-nvidia' },
+	    { name: 'MI250X', bw: 3277, tops: 383, toks: 480, cat: 'dc-amd' },
+	    { name: 'H100 80GB', bw: 3350, tops: 1979, toks: 540, cat: 'dc-nvidia' },
+	    { name: 'Gaudi 3', bw: 3700, tops: 1835, toks: 560, cat: 'dc-intel' },
+	    { name: 'H200 141GB', bw: 4800, tops: 1979, toks: 780, cat: 'dc-nvidia' },
+	    { name: 'MI300X', bw: 5300, tops: 2614, toks: 890, cat: 'dc-amd' },
+	    { name: 'MI325X', bw: 6000, tops: 2614, toks: 1020, cat: 'dc-amd' },
+	    { name: 'B200', bw: 8000, tops: 4500, toks: 1350, cat: 'dc-nvidia' },
+	    { name: 'B300', bw: 8000, tops: 7000, toks: 1400, cat: 'dc-nvidia' }
+	];
         // Sort by tok/s for clean bar chart
         gpuData.sort(function(a, b) { return a.toks - b.toks; });
 
