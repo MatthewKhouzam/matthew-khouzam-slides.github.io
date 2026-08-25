@@ -5,29 +5,301 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Matthew Khouzam - Public Talks</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
-        h1 { color: #333; text-align: center; }
-        .talks { list-style: none; padding: 0; }
-        .talks li { margin: 15px 0; }
-        .talks a { display: block; padding: 15px; background: #f5f5f5; text-decoration: none; color: #333; border-radius: 5px; transition: background 0.3s; }
-        .talks a:hover { background: #e0e0e0; }
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 960px;
+            margin: 50px auto;
+            padding: 20px;
+            color: #222;
+            line-height: 1.6;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 0.3em;
+            color: #111;
+        }
+        .subtitle {
+            text-align: center;
+            color: #444;
+            margin-bottom: 2em;
+            font-size: 1.05em;
+        }
+        .info-box {
+            background: #fff;
+            border: 2px solid #333;
+            border-radius: 6px;
+            padding: 20px 24px;
+            margin-bottom: 2em;
+        }
+        .info-box p {
+            margin: 0.5em 0;
+            font-size: 1em;
+            color: #333;
+        }
+        .info-box code {
+            background: #f4f4f4;
+            border: 1px solid #ccc;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.95em;
+            color: #111;
+        }
+        .info-box-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 0.5em;
+        }
+        .info-box-header h2 {
+            margin: 0;
+            font-size: 1.1em;
+            color: #111;
+        }
+        .copy-btn {
+            background: #e2e2e2;
+            border: 1px solid #bbb;
+            border-radius: 4px;
+            padding: 5px 12px;
+            font-size: 0.8em;
+            cursor: pointer;
+            color: #333;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+        .copy-btn:hover {
+            background: #ccc;
+        }
+        .info-box pre {
+            background: #f8f8f8;
+            border: 1px solid #ccc;
+            color: #111;
+            padding: 14px 18px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 1em;
+            margin: 0.8em 0 0.5em;
+            line-height: 1.8;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .info-box pre code {
+            background: none;
+            border: none;
+            padding: 0;
+            font-size: inherit;
+            color: inherit;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1em;
+        }
+        th {
+            background: #eee;
+            text-align: left;
+            padding: 12px 10px;
+            border-bottom: 2px solid #aaa;
+            font-size: 1em;
+            color: #111;
+        }
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #ddd;
+            font-size: 1em;
+            vertical-align: middle;
+        }
+        tr:hover {
+            background: #f5f5f5;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .tooltip {
+            position: relative;
+            cursor: help;
+            border-bottom: 1px dotted #555;
+        }
+        .tooltip::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 130%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #222;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            z-index: 10;
+        }
+        .tooltip::before {
+            content: '';
+            position: absolute;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #222;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            z-index: 10;
+        }
+        .tooltip:hover::after,
+        .tooltip:hover::before {
+            opacity: 1;
+        }
+        .license {
+            text-align: center;
+            margin-top: 2.5em;
+            padding-top: 1.5em;
+            border-top: 1px solid #ccc;
+            font-size: 0.95em;
+            color: #444;
+        }
+        .license a {
+            color: #0969da;
+        }
     </style>
 </head>
 <body>
     <h1>Matthew Khouzam - Public Talks</h1>
-    <ul class="talks">
-        <li><a href="./gpu-llm-inference/index.html">Modern GPUs and LLM Inference</a></li>
-        <li><a href="./aaif-observability-wg/index.html">AAIF Observability WG: Full-Stack Observability for AI Agents</a></li>
-        <li><a href="./mcp_sota/mcp_sota_26_07_28.html">MCP 2026-07-28: Stateless, Streamable &amp; How We Uplifted</a></li>
-        <li><a href="./fund_mtl/intern_funding_slides.html">Subsidized Interns &amp; Research Funding - Montreal Opportunities</a></li>
-        <li><a href="./MCP_vs_Skills/index.html">MCP vs Skills: When to Use Which</a></li>
-        <li><a href="./ocx26/index.html">AI-Powered Trace Analysis - Adding MCP to TMLL</a></li>
-        <li><a href="./agent_tutorial/index.html">Building AI Agents - Gemini CLI, Kiro CLI &amp; Goose</a></li>
-        <li><a href="./poly-26-07/index.html">Polytechnique Progress Report H2 2026</a></li>
-        <li><a href="./poly-26-02/index.html">Polytechnique Progress Report H1 2026</a></li>
-        <li><a href="./tracingsummit2025/tracing_summit_2025.html">Tracing Summit 2025</a></li>
-        <li><a href="./theiacon2025/theiacon_2025.html">Theia Con 2025</a></li>
-    </ul>
+    <p class="subtitle">All slides are built with <span class="tooltip" data-tooltip="A framework for creating HTML presentations with speaker notes, animations, and more">Reveal.js</span></p>
+
+    <div class="info-box">
+        <div class="info-box-header">
+            <h2>📄 To download slides as PDF, run the following commands:</h2>
+            <button class="copy-btn" onclick="copyCode()">📋 Copy</button>
+        </div>
+        <pre><code>npm install -g decktape
+decktape &lt;slide-url&gt; output.pdf</code></pre>
+        <p>Replace <code>&lt;slide-url&gt;</code> with the full URL of the presentation you want to export.</p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Talk</th>
+                <th>Event</th>
+                <th>Slides</th>
+                <th>Video</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><span class="tooltip" data-tooltip="How modern GPU architectures enable efficient LLM inference at scale">Modern GPUs and LLM Inference</span></td>
+                <td><a href="https://www.ericsson.com">internal-ericsson</a></td>
+                <td><a href="./gpu-llm-inference/index.html">🖥️ View</a></td>
+                <td>—</td>
+            </tr>
+            <tr>
+                <td><span class="tooltip" data-tooltip="Full-stack observability for AI agents — AAIF Observability Working Group">AAIF Observability WG</span></td>
+                <td><a href="https://aaif.io">AAIF</a></td>
+                <td><a href="./aaif-observability-wg/index.html">🖥️ View</a></td>
+                <td>—</td>
+            </tr>
+            <tr>
+                <td><span class="tooltip" data-tooltip="MCP spec updates: stateless architecture, streamable transport, and how we uplifted">MCP State of the Art (2026-07-28)</span></td>
+                <td><a href="https://www.ericsson.com">internal-ericsson</a></td>
+                <td><a href="./mcp_sota/mcp_sota_26_07_28.html">🖥️ View</a></td>
+                <td>—</td>
+            </tr>
+            <tr>
+                <td><span class="tooltip" data-tooltip="How to access subsidized intern programs and research funding opportunities in Montreal">Subsidized Interns &amp; Research Funding – Montreal</span></td>
+                <td><a href="https://www.ericsson.com">internal-ericsson</a></td>
+                <td><a href="./fund_mtl/intern_funding_slides.html">🖥️ View</a></td>
+                <td>—</td>
+            </tr>
+            <tr>
+                <td><span class="tooltip" data-tooltip="Comparing Model Context Protocol and Agent Skills — when to reach for which">MCP vs Skills: When to Use Which</span></td>
+                <td><a href="https://www.ericsson.com">internal-ericsson</a></td>
+                <td><a href="./MCP_vs_Skills/index.html">🖥️ View</a></td>
+                <td>—</td>
+            </tr>
+            <tr>
+                <td><span class="tooltip" data-tooltip="Adding MCP support to TMLL for AI-powered trace analysis">AI-Powered Trace Analysis – Adding MCP to TMLL</span></td>
+                <td><a href="https://ocxconf.org">OCX 2026</a></td>
+                <td><a href="./ocx26/index.html">🖥️ View</a></td>
+                <td><a href="https://www.youtube.com/watch?v=IupF6Ja2hpY&pp=ygUXbWF0dGhldyBraG91emFtIHRyYWNpbmc%3D">▶️ Watch</a></td>
+            </tr>
+            <tr>
+                <td><span class="tooltip" data-tooltip="Hands-on tutorial building AI agents with Gemini CLI, Kiro CLI, and Goose">Building AI Agents – Gemini CLI, Kiro CLI &amp; Goose</span></td>
+                <td><a href="https://www.ericsson.com">internal-ericsson</a></td>
+                <td><a href="./agent_tutorial/index.html">🖥️ View</a></td>
+                <td>—</td>
+            </tr>
+            <tr>
+                <td><span class="tooltip" data-tooltip="Ericsson–Polytechnique research collaboration progress update, second half 2026">Polytechnique Progress Report H2 2026</span></td>
+                <td><a href="https://dorsal.polymtl.ca/en/evenements/july2026/">Polytechnique</a></td>
+                <td><a href="./poly-26-07/index.html">🖥️ View</a></td>
+                <td>—</td>
+            </tr>
+            <tr>
+                <td><span class="tooltip" data-tooltip="Ericsson–Polytechnique research collaboration progress update, first half 2026">Polytechnique Progress Report H1 2026</span></td>
+                <td><a href="https://dorsal.polymtl.ca/en/evenements/february2026/">Polytechnique</a></td>
+                <td><a href="./poly-26-02/index.html">🖥️ View</a></td>
+                <td>—</td>
+            </tr>
+            <tr>
+                <td><span class="tooltip" data-tooltip="Trace Compass performance and architecture improvements presented at Tracing Summit">Tracing Summit 2025</span></td>
+                <td><a href="https://tracingsummit.org">Tracing Summit 2025</a></td>
+                <td><a href="./tracingsummit2025/tracing_summit_2025.html">🖥️ View</a></td>
+                <td><a href="https://www.youtube.com/watch?v=Q9i_et_gbKY&list=PLuo4E47p5_7aNSHtlh_obRUr51BHMUfyQ">▶️ Watch</a></td>
+            </tr>
+            <tr>
+                <td><span class="tooltip" data-tooltip="Theia-based trace analysis tooling and the Trace Compass cloud viewer">Theia Con 2025</span></td>
+                <td><a href="https://www.eclipse.org/events/2025/theiacon/">TheiaCon 2025</a></td>
+                <td><a href="./theiacon2025/theiacon_2025.html">🖥️ View</a></td>
+                <td><a href="https://www.youtube.com/watch?v=TdspuNdCqpM">▶️ Watch</a></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="license">
+        <p>All slides are licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)</a>.</p>
+        <p>You are free to share and adapt these materials with appropriate credit.</p>
+    </div>
+
+    <script>
+        function copyCode() {
+            var text = "npm install -g decktape\ndecktape <slide-url> output.pdf";
+            var btn = document.querySelector('.copy-btn');
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(function() {
+                    btn.textContent = '✅ Copied!';
+                    setTimeout(function() { btn.textContent = '📋 Copy'; }, 2000);
+                }, function() {
+                    fallbackCopy(text, btn);
+                });
+            } else {
+                fallbackCopy(text, btn);
+            }
+        }
+
+        function fallbackCopy(text, btn) {
+            var textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                btn.textContent = '✅ Copied!';
+                setTimeout(function() { btn.textContent = '📋 Copy'; }, 2000);
+            } catch (e) {
+                btn.textContent = '❌ Failed';
+                setTimeout(function() { btn.textContent = '📋 Copy'; }, 2000);
+            }
+            document.body.removeChild(textarea);
+        }
+    </script>
 </body>
 </html>
-
