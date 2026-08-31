@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Performance Impact of Virtualization - Ericsson 2026</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css" id="theme" />
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@latest/dist/reveal.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <style>
+        @font-face {
+            font-family: 'Hilda';
+            src: url('../EricssonHilda-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        body,
+        .reveal {
+            font-family: 'Hilda', sans-serif;
+        }
+
+        .logo {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            z-index: 10;
+        }
+
+        .logo img {
+            width: 100px;
+            height: auto;
+        }
+
+        section[data-background-image] h1,
+        section[data-background-image] h2,
+        section[data-background-image] h3,
+        section[data-background-image] p,
+        section[data-background-image] li {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .reveal table {
+            margin: 0.5em auto;
+            border-collapse: collapse;
+        }
+
+        .reveal table th,
+        .reveal table td {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 0.3em 0.6em;
+            text-align: left;
+        }
+
+        .reveal table th {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .spacious li {
+            margin-bottom: 0.5em;
+        }
+
+        .lead {
+            font-size: 1.15em;
+            color: #aaa;
+        }
+
+        .muted {
+            color: #888;
+        }
+
+        .tiny {
+            font-size: 0.5em;
+        }
+
+        .small {
+            font-size: 0.6em;
+        }
+
+        .highlight {
+            color: #ff6b6b;
+        }
+
+        .highlight-blue {
+            color: #4fc3f7;
+        }
+
+        .highlight-green {
+            color: #81c784;
+        }
+
+        .callout {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid #ff6b6b;
+            border-radius: 8px;
+            padding: 0.8em 1.2em;
+            margin: 0.5em 0;
+        }
+
+        .callout-blue {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid #4fc3f7;
+            border-radius: 8px;
+            padding: 0.8em 1.2em;
+            margin: 0.5em 0;
+        }
+
+        .callout-green {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid #81c784;
+            border-radius: 8px;
+            padding: 0.8em 1.2em;
+            margin: 0.5em 0;
+        }
+
+        .twocol {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1em;
+            text-align: left;
+        }
+
+        .threecol {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1em;
+            text-align: left;
+        }
+
+        .dbox {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 0.8em;
+            text-align: center;
+        }
+
+        .dbox.red { border-color: #ff6b6b; }
+        .dbox.green { border-color: #81c784; }
+        .dbox.blue { border-color: #4fc3f7; }
+        .dbox.yellow { border-color: #ffd54f; }
+
+        .reveal h1 {
+            font-size: 2.2em;
+        }
+
+        .reveal h2 {
+            font-size: 1.6em;
+        }
+
+        .reveal h3 {
+            font-size: 1.2em;
+        }
+
+        .reveal ul, .reveal ol {
+            font-size: 0.85em;
+        }
+
+        .center-slide {
+            text-align: center;
+        }
+
+        .reveal pre {
+            width: 100%;
+            font-size: 0.5em;
+        }
+
+        .reveal pre code {
+            max-height: 450px;
+        }
+
+        /* Virtualization stack diagram */
+        .virt-stack {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.2em;
+        }
+
+        .virt-stack .layer {
+            border-radius: 6px;
+            padding: 0.5em 1em;
+            text-align: center;
+            font-size: 0.75em;
+            font-weight: bold;
+        }
+
+        .virt-stack .app    { background: #4fc3f7; color: #111; width: 40%; }
+        .virt-stack .guest  { background: #81c784; color: #111; width: 55%; }
+        .virt-stack .hyp    { background: #ffd54f; color: #111; width: 70%; }
+        .virt-stack .host   { background: #ff9800; color: #111; width: 85%; }
+        .virt-stack .hw     { background: #ff6b6b; color: #111; width: 100%; }
+
+        /* Overhead bar styles */
+        .overhead-bar {
+            display: flex;
+            align-items: center;
+            margin: 0.3em 0;
+            font-size: 0.75em;
+        }
+        .overhead-bar .label {
+            width: 220px;
+            text-align: right;
+            padding-right: 1em;
+        }
+        .overhead-bar .bar {
+            height: 28px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            padding-left: 0.5em;
+            font-weight: bold;
+            color: #111;
+        }
+    </style>
+</head>
+<body>
+    <div class="logo">
+        <img src="../ERI_vertical_RGB.svg" alt="Ericsson Logo">
+    </div>
+    <div class="reveal">
+        <div class="slides" id="slides-container">
+            <!-- Slides will be loaded here -->
+        </div>
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('#slides-container').load('slides.html', function() {
+                Reveal.initialize({
+                    controls: true,
+                    slideNumber: true,
+                    center: true,
+                    transition: 'slide',
+                    hash: true,
+                    width: 1920,
+                    height: 1080
+                });
+
+                // Chart defaults for dark theme
+                Chart.defaults.color = '#ccc';
+                Chart.defaults.borderColor = 'rgba(255,255,255,0.1)';
+            });
+        });
+    </script>
+</body>
+</html>

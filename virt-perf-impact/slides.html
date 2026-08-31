@@ -1,0 +1,775 @@
+<!-- Title Slide -->
+<section class="center-slide">
+    <h1>Performance Impact of Virtualization</h1>
+    <p class="lead">The "5% overhead" myth and what the research actually shows</p>
+    <p class="tiny">Matthew Khouzam | Ericsson Software Technology | 2026</p>
+    <aside class="notes">Everyone says KVM has about 5% overhead. But that number is misleading. The real overhead depends entirely on the workload. We will walk through the research from DORSAL lab at Polytechnique Montreal and Foutse Khomh's group to show what actually happens.</aside>
+</section>
+
+<!-- The Myth -->
+<section>
+    <h2>The "5% Overhead" Myth</h2>
+    <ul class="spacious">
+        <li>Common claim: <span class="highlight">"KVM adds about 5% overhead"</span></li>
+        <li>Based on CPU-bound benchmarks like SPEC CPU - pure compute, no I/O</li>
+        <li>Reality: overhead ranges from <span class="highlight-green">under 1%</span> to <span class="highlight">over 80%</span> depending on workload</li>
+        <li>Syscall-heavy, I/O-heavy, and scheduling-sensitive workloads see dramatically more</li>
+    </ul>
+    <div class="callout">
+        A single number cannot describe virtualization overhead. The overhead depends on how the workload interacts with the hardware.
+    </div>
+    <aside class="notes">If you run a tight loop doing math, the hypervisor barely touches it. But the moment you start doing syscalls, I/O, or anything that crosses privilege boundaries, the cost spikes. This talk breaks down exactly where and why.</aside>
+</section>
+
+<!-- Agenda -->
+<section>
+    <h2>Agenda</h2>
+    <ol class="spacious">
+        <li>The virtualization stack and where overhead hides</li>
+        <li>CPU and syscall overhead</li>
+        <li>Scheduling - the double scheduler problem</li>
+        <li>Memory virtualization</li>
+        <li>I/O - virtio, emulation, passthrough</li>
+        <li>GPU virtualization</li>
+        <li>Cloud patterns and energy impact</li>
+        <li>Measuring it all - tracing and observability</li>
+    </ol>
+    <aside class="notes">About 30 minutes of content. Each section maps to a category of overhead and the research that quantifies it.</aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- PART 1: VIRTUALIZATION STACK                                  -->
+<!-- ============================================================ -->
+
+<section class="center-slide">
+    <h2>Part 1: The Virtualization Stack</h2>
+    <p class="lead">Where does overhead come from?</p>
+    <aside class="notes">Before diving into specific overheads, let us understand the layers involved.</aside>
+</section>
+
+<!-- Stack Diagram -->
+<section>
+    <h2>The KVM/QEMU Virtualization Stack</h2>
+    <div class="virt-stack">
+        <div class="layer app">Guest Application</div>
+        <div class="layer guest">Guest OS Kernel (Linux)</div>
+        <div class="layer hyp">KVM (Hypervisor in host kernel)</div>
+        <div class="layer host">Host OS Kernel (Linux)</div>
+        <div class="layer hw">Hardware (VT-x/VT-d, EPT, IOMMU)</div>
+    </div>
+    <p class="small muted" style="margin-top: 0.8em; text-align: center;">Every boundary crossing has a cost. The question is: how often does your workload cross them?</p>
+    <aside class="notes">The guest application runs in user mode inside the guest. When it does a syscall, it traps to the guest kernel. When the guest kernel does something the hypervisor must handle (I/O, page faults, privileged instructions), a VM-exit occurs. That VM-exit is where the overhead lives.</aside>
+</section>
+
+<!-- VM-Exit -->
+<section>
+    <h2>The VM-Exit: Root Cause of Overhead</h2>
+    <div class="twocol">
+        <div>
+            <h3>What triggers a VM-Exit</h3>
+            <ul>
+                <li>I/O port access</li>
+                <li>MSR reads/writes</li>
+                <li>Certain privileged instructions</li>
+                <li>External interrupts</li>
+                <li>EPT violations (page faults)</li>
+                <li>CPUID, HLT, INVLPG</li>
+            </ul>
+        </div>
+        <div>
+            <h3>Cost per VM-Exit</h3>
+            <ul>
+                <li>Save full guest CPU state</li>
+                <li>Restore host CPU state</li>
+                <li>KVM handles the exit reason</li>
+                <li>Restore guest CPU state</li>
+                <li>Resume guest execution</li>
+            </ul>
+            <div class="callout" style="font-size: 0.85em;">
+                ~1-3 microseconds per round-trip on modern hardware
+            </div>
+        </div>
+    </div>
+    <aside class="notes">A VM-exit on an Intel Skylake takes roughly 1 to 3 microseconds depending on the exit reason and how much state needs to be saved. That sounds small, but if you are doing 100,000 I/O operations per second, it adds up fast. Benbachir and Dagenais documented these transitions precisely using hypertracing.</aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- PART 2: CPU AND SYSCALL OVERHEAD                              -->
+<!-- ============================================================ -->
+
+<section class="center-slide">
+    <h2>Part 2: CPU and Syscall Overhead</h2>
+    <p class="lead">Pure compute vs. kernel-intensive workloads</p>
+    <aside class="notes">Let us start with the simplest case: CPU-bound work.</aside>
+</section>
+
+<!-- CPU Compute -->
+<section>
+    <h2>CPU-Bound Workloads: Near-Zero Overhead</h2>
+    <ul class="spacious">
+        <li>Pure arithmetic in user space runs <span class="highlight-green">at native speed</span></li>
+        <li>VT-x allows guest code to execute directly on the CPU</li>
+        <li>No VM-exits unless the guest touches privileged state</li>
+        <li>SPEC CPU 2017 integer: <span class="highlight-green">0.5-2% overhead</span></li>
+    </ul>
+    <div class="callout-green">
+        This is where the "5% overhead" number comes from. It is real - but only for this one class of workload.
+    </div>
+    <aside class="notes">If your workload is a tight loop doing floating point math, matrix multiplications, or other pure compute, you will see nearly no overhead. The hardware virtualization extensions let the guest run directly on the CPU. This is what vendors benchmark.</aside>
+</section>
+
+<!-- Syscall Overhead -->
+<section>
+    <h2>Syscall-Heavy Workloads: A Different Story</h2>
+    <ul class="spacious">
+        <li>Each syscall in the guest <span class="highlight-blue">may</span> trigger VM-exits (I/O, page faults, timers)</li>
+        <li>Paravirtualization (virtio, PV clock) reduces but does not eliminate exits</li>
+        <li>High-frequency syscalls: getpid, gettimeofday, read/write on pipes</li>
+        <li>Overhead scales with <span class="highlight">syscall rate</span>, not CPU utilization</li>
+    </ul>
+    <div class="callout-blue">
+        A web server doing 50,000 req/s with 10 syscalls per request = 500,000 potential VM-exit triggers per second.
+    </div>
+    <p class="small muted">Benbachir &amp; Dagenais, "Hypertracing: Tracing through virtualization layers," IEEE TCC, 2018</p>
+    <aside class="notes">Benbachir and Dagenais showed that you can trace through the hypervisor boundary to see exactly which syscalls cause VM-exits and which are handled without leaving the guest. This gives precise per-syscall overhead measurements.</aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- PART 3: SCHEDULING                                            -->
+<!-- ============================================================ -->
+
+<section class="center-slide">
+    <h2>Part 3: The Double Scheduling Problem</h2>
+    <p class="lead">Two schedulers, one CPU, many surprises</p>
+    <aside class="notes">Scheduling is where virtualization overhead becomes invisible but devastating.</aside>
+</section>
+
+<!-- Double Scheduling -->
+<section>
+    <h2>Two Schedulers, One CPU</h2>
+    <div class="twocol">
+        <div>
+            <h3>Guest Scheduler</h3>
+            <ul>
+                <li>Sees N vCPUs</li>
+                <li>Schedules guest threads onto vCPUs</li>
+                <li>Thinks it has dedicated CPUs</li>
+                <li>Has no visibility into host decisions</li>
+            </ul>
+        </div>
+        <div>
+            <h3>Host Scheduler</h3>
+            <ul>
+                <li>Sees vCPUs as threads</li>
+                <li>Schedules vCPUs onto pCPUs</li>
+                <li>Can preempt a vCPU at any time</li>
+                <li>Has no visibility into guest priorities</li>
+            </ul>
+        </div>
+    </div>
+    <div class="callout">
+        Neither scheduler has full information. The guest may schedule a high-priority task onto a vCPU that the host is about to preempt.
+    </div>
+    <aside class="notes">Gebai, Giraldeau, and Dagenais published detailed preemption analysis showing that when the host preempts a vCPU holding a spinlock, every other vCPU waiting on that lock spins uselessly. This is called lock holder preemption and it can cause latency spikes of several milliseconds.</aside>
+</section>
+
+<!-- Scheduling: Research -->
+<section>
+    <h2>Measuring the Scheduling Gap</h2>
+    <ul class="spacious">
+        <li><strong>Lock holder preemption</strong>: vCPU preempted while holding a spinlock stalls all waiters</li>
+        <li><strong>NUMA unawareness</strong>: guest does not know host NUMA topology, causes remote memory access</li>
+        <li><strong>Timer coalescing</strong>: virtual timer interrupts arrive in bursts, distorting latency</li>
+        <li><strong>Mitigation</strong>: vCPU pinning, NUMA-aware placement, pause-loop exiting</li>
+    </ul>
+    <p class="small muted">Gebai, Giraldeau &amp; Dagenais, "Fine-grained preemption analysis for latency investigation across VMs," JCC, 2014</p>
+    <p class="small muted">Nemati &amp; Dagenais, "VM processes state detection by hypervisor tracing," SysCon, 2018</p>
+    <p class="small muted">Khomh et al., "A Dynamic and Failure-Aware Task Scheduling Framework for Hadoop," IEEE TCC, 2020</p>
+    <aside class="notes">Nemati and Dagenais showed that you can reconstruct the full scheduling picture by tracing at the host hypervisor level. You can see exactly when a vCPU is preempted and correlate it with guest-level events. Khomh's group showed that scheduling failures in cloud environments like Hadoop are predictable if you have the right telemetry.</aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- PART 4: MEMORY VIRTUALIZATION                                 -->
+<!-- ============================================================ -->
+
+<section class="center-slide">
+    <h2>Part 4: Memory Virtualization</h2>
+    <p class="lead">Two-level page tables and TLB pressure</p>
+    <aside class="notes">Memory is often overlooked but can be a major source of overhead, especially for large working sets.</aside>
+</section>
+
+<!-- Memory: EPT -->
+<section>
+    <h2>Extended Page Tables (EPT/NPT)</h2>
+    <ul class="spacious">
+        <li>Guest has its own page tables: Guest Virtual to Guest Physical (GVA to GPA)</li>
+        <li>Host adds a second level: Guest Physical to Host Physical (GPA to HPA)</li>
+        <li>Hardware walks <span class="highlight">both</span> page table levels on a TLB miss</li>
+        <li>A TLB miss in the guest = up to <span class="highlight">24 memory accesses</span> (4-level x 4-level + final page)</li>
+        <li>On bare metal, the same miss costs at most <span class="highlight-green">5 memory accesses</span></li>
+    </ul>
+    <div class="callout">
+        EPT/NPT page walks are 4-5x more expensive than native. For workloads with large, sparse memory access patterns, this is devastating.
+    </div>
+    <aside class="notes">The nested page walk is the single most expensive per-event overhead in memory virtualization. Each level of the guest page table requires a full walk of the host page table. With 4-level paging on both sides, worst case is 4 times 4 plus 4 memory accesses. Huge pages help because they reduce paging levels.</aside>
+</section>
+
+<!-- Memory: Mitigations -->
+<section>
+    <h2>Memory Overhead Mitigations</h2>
+    <table>
+        <thead>
+            <tr><th>Technique</th><th>What It Does</th><th>Tradeoff</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Huge Pages (2MB/1GB)</td><td>Reduces page table depth</td><td>Fragmentation, less flexibility</td></tr>
+            <tr><td>NUMA Pinning</td><td>Keep guest memory on local node</td><td>Harder live migration</td></tr>
+            <tr><td>KSM (Kernel Same-page Merging)</td><td>Deduplicates identical pages</td><td>CPU overhead for scanning</td></tr>
+            <tr><td>Memory Ballooning</td><td>Dynamic memory reclaim</td><td>Guest performance variance</td></tr>
+        </tbody>
+    </table>
+    <p class="small muted">Biancheri &amp; Dagenais, "Fine-grained Multilayer Virtualized Systems Analysis," JCC, 2016</p>
+    <p class="small muted">Daoud &amp; Dagenais, "Dynamic trace-based sampling algorithm for memory usage tracking," HPEC, 2017</p>
+    <aside class="notes">Biancheri and Dagenais showed that you can trace through multiple virtualization layers simultaneously to see exactly how memory operations cascade through the guest kernel, hypervisor, and host kernel. This multilayer analysis is essential for diagnosing memory performance issues.</aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- PART 5: I/O                                                   -->
+<!-- ============================================================ -->
+
+<section class="center-slide">
+    <h2>Part 5: I/O Performance</h2>
+    <p class="lead">Emulated, paravirtualized, and passthrough</p>
+    <aside class="notes">I/O is where virtualization overhead hits hardest. Every I/O operation potentially crosses the hypervisor boundary.</aside>
+</section>
+
+<!-- I/O: Three Approaches -->
+<section>
+    <h2>Three I/O Approaches</h2>
+    <div class="threecol">
+        <div class="dbox red">
+            <h3>Emulated</h3>
+            <p class="small">QEMU traps every I/O access</p>
+            <p class="small">VM-exit per operation</p>
+            <p class="small"><span class="highlight">30-80% overhead</span></p>
+        </div>
+        <div class="dbox yellow">
+            <h3>Paravirtual (virtio)</h3>
+            <p class="small">Shared ring buffers</p>
+            <p class="small">Batched notifications</p>
+            <p class="small"><span class="highlight-blue">5-20% overhead</span></p>
+        </div>
+        <div class="dbox green">
+            <h3>Passthrough (VFIO)</h3>
+            <p class="small">Direct device access</p>
+            <p class="small">IOMMU for isolation</p>
+            <p class="small"><span class="highlight-green">0-3% overhead</span></p>
+        </div>
+    </div>
+    <p class="small muted" style="margin-top: 0.5em; text-align: center;">Belkhiri et al., "Performance analysis of DPDK-based applications through tracing," JPDC, 2023</p>
+    <aside class="notes">The choice of I/O strategy dominates the performance picture. Emulated devices are the worst case because QEMU must intercept every single I/O instruction. Virtio is the standard choice and is quite good. VFIO passthrough gives near-native performance but you lose live migration for that device.</aside>
+</section>
+
+<!-- I/O: Network Deep Dive -->
+<section>
+    <h2>Network I/O: The Overhead Spectrum</h2>
+    <div style="position: relative; width: 100%; height: 480px;">
+        <canvas id="networkChart"></canvas>
+    </div>
+    <p class="tiny muted">Typical throughput for 64-byte packets. Higher is better. Based on published benchmarks and DPDK documentation.</p>
+    <aside class="notes">Network I/O shows the widest range of overhead. With emulated e1000, you might get 1 Gbps. With virtio-net, 10-15 Gbps. With DPDK and VFIO passthrough, you can reach line rate on a 100G NIC. The choice of I/O backend is far more impactful than the hypervisor itself. Belkhiri and Dagenais showed how to trace DPDK-based applications to identify exactly where the overhead occurs.</aside>
+</section>
+
+<!-- VFIO Deep Dive -->
+<section>
+    <h2>VFIO / Device Passthrough</h2>
+    <ul class="spacious">
+        <li><strong>IOMMU</strong> maps guest physical addresses to host physical for DMA</li>
+        <li><strong>SR-IOV</strong> creates multiple Virtual Functions from one physical NIC</li>
+        <li>Guest driver talks <span class="highlight-green">directly to hardware</span> - no hypervisor in the data path</li>
+        <li>Interrupts delivered via posted interrupts (no VM-exit)</li>
+    </ul>
+    <div class="twocol" style="margin-top: 0.5em;">
+        <div class="callout-green" style="font-size: 0.85em;">
+            <strong>When to use:</strong> Telecom NFV, high-frequency trading, real-time workloads
+        </div>
+        <div class="callout" style="font-size: 0.85em;">
+            <strong>Tradeoff:</strong> No live migration, device tied to one VM, limited scalability
+        </div>
+    </div>
+    <aside class="notes">VFIO passthrough is the answer when you need bare-metal I/O performance. For telecom workloads in 5G, this is non-negotiable. But it comes at a cost: you cannot live-migrate a VM with a passed-through device (though some solutions like NVIDIA DOCA and vDPA are working on this).</aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- PART 6: GPU VIRTUALIZATION                                    -->
+<!-- ============================================================ -->
+
+<section class="center-slide">
+    <h2>Part 6: GPU Virtualization</h2>
+    <p class="lead">Passthrough, vGPU, and the ML inference question</p>
+    <aside class="notes">GPU virtualization is increasingly important as ML workloads move into virtualized environments.</aside>
+</section>
+
+<!-- GPU: Approaches -->
+<section>
+    <h2>GPU Virtualization Approaches</h2>
+    <div class="threecol">
+        <div class="dbox green">
+            <h3>Passthrough</h3>
+            <p class="small">Entire GPU to one VM</p>
+            <p class="small"><span class="highlight-green">0-2% overhead</span></p>
+            <p class="small">No sharing</p>
+        </div>
+        <div class="dbox yellow">
+            <h3>vGPU (NVIDIA GRID)</h3>
+            <p class="small">Time-sliced sharing</p>
+            <p class="small"><span class="highlight-blue">5-15% overhead</span></p>
+            <p class="small">Multiple VMs per GPU</p>
+        </div>
+        <div class="dbox red">
+            <h3>API Remoting</h3>
+            <p class="small">Intercept CUDA/OpenCL calls</p>
+            <p class="small"><span class="highlight">15-40% overhead</span></p>
+            <p class="small">Most flexible</p>
+        </div>
+    </div>
+    <p class="small muted" style="margin-top: 0.5em; text-align: center;">Belkhiri &amp; Dagenais, "Analyzing GPU Performance in Virtualized Environments: A Case Study," Future Internet, 2024</p>
+    <aside class="notes">Belkhiri and Dagenais conducted a detailed case study showing that GPU virtualization overhead varies significantly by approach and by workload. Compute-bound GPU kernels see very little overhead with passthrough, while memory-transfer-heavy workloads see more because the DMA path goes through the IOMMU. With API remoting, every CUDA call is intercepted, serialized, and forwarded, which is expensive for fine-grained kernel launches.</aside>
+</section>
+
+<!-- GPU: Chart -->
+<section>
+    <h2>GPU Overhead by Workload Type</h2>
+    <div style="position: relative; width: 100%; height: 480px;">
+        <canvas id="gpuChart"></canvas>
+    </div>
+    <p class="tiny muted">Relative performance (bare metal = 100%). Based on Belkhiri &amp; Dagenais 2024, Darche &amp; Dagenais 2024.</p>
+    <aside class="notes">This chart shows the key insight: compute-heavy GPU workloads see nearly no overhead with passthrough, but memory-transfer-heavy workloads see more because every DMA operation goes through the IOMMU. API remoting adds a constant per-call cost that dominates when you have many small kernel launches. Darche and Dagenais also showed that low-overhead profiling of GPU kernels is possible without significantly impacting performance.</aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- PART 7: THE BIG PICTURE CHART                                 -->
+<!-- ============================================================ -->
+
+<section class="center-slide">
+    <h2>The Big Picture</h2>
+    <p class="lead">Overhead depends on the workload, not the hypervisor</p>
+    <aside class="notes">Now let us put it all together and see the full range of overhead across workload types.</aside>
+</section>
+
+<!-- Summary Chart -->
+<section>
+    <h2>KVM Overhead by Workload Category</h2>
+    <div style="position: relative; width: 100%; height: 520px;">
+        <canvas id="overviewChart"></canvas>
+    </div>
+    <p class="tiny muted">Typical overhead ranges for KVM with standard configurations. Actual values depend on hardware, kernel version, and tuning.</p>
+    <aside class="notes">This is the chart that kills the 5% myth. CPU-bound workloads sit at the left end. I/O-intensive workloads with emulated devices sit at the right end. Most real-world workloads are somewhere in between. The key takeaway: you must benchmark YOUR workload, not rely on generic numbers.</aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- PART 8: CLOUD PATTERNS AND ENERGY                             -->
+<!-- ============================================================ -->
+
+<section class="center-slide">
+    <h2>Part 7: Cloud Patterns and Energy</h2>
+    <p class="lead">Architecture decisions have measurable performance and energy cost</p>
+    <aside class="notes">Foutse Khomh's group has done extensive work on how cloud deployment patterns affect performance and energy.</aside>
+</section>
+
+<!-- Cloud Patterns -->
+<section>
+    <h2>Cloud Patterns Affect Performance</h2>
+    <ul class="spacious">
+        <li><strong>Message queuing</strong> vs. <strong>direct invocation</strong> - adds latency, reduces coupling</li>
+        <li><strong>Auto-scaling</strong> - improves throughput but cold starts add tail latency</li>
+        <li><strong>Database patterns</strong> - CQRS, sharding, caching each have distinct overhead profiles</li>
+        <li><strong>Container orchestration</strong> - Kubernetes vs. OpenShift have measurable differences</li>
+    </ul>
+    <p class="small muted">Khomh et al., "Understanding the impact of cloud patterns on performance and energy consumption," JSS, 2018</p>
+    <p class="small muted">Khomh et al., "Kubernetes or OpenShift? Which Technology Best Suits Eclipse Hono IoT Deployments," SOCA, 2018</p>
+    <aside class="notes">Khomh and colleagues showed that the choice of cloud patterns has a measurable impact on both performance and energy consumption. For example, message queuing patterns add 10-30ms of latency per hop but improve fault tolerance. The choice of Kubernetes vs OpenShift matters for specific workloads like IoT with Eclipse Hono.</aside>
+</section>
+
+<!-- Energy -->
+<section>
+    <h2>Virtualization and Energy Cost</h2>
+    <ul class="spacious">
+        <li>Virtualization overhead = more CPU cycles = more energy per operation</li>
+        <li>Cloud pattern choice can <span class="highlight">double</span> energy consumption vs. optimal pattern</li>
+        <li>Data-access anti-patterns compound: N+1 queries, missing indexes, unneeded data loading</li>
+        <li>In data centers, 40% of energy goes to cooling - inefficient VMs make this worse</li>
+    </ul>
+    <p class="small muted">Khomh et al., "A Study of the Energy Consumption of Databases and Cloud Patterns," ICSOC, 2016</p>
+    <p class="small muted">Khomh et al., "Data-access performance anti-patterns in data-intensive systems," ESEJ, 2024</p>
+    <aside class="notes">Khomh's group demonstrated that cloud patterns significantly affect energy consumption. Anti-patterns in database access compound the problem: an N+1 query pattern inside a virtualized database can consume 10x the energy of a properly batched query. The infrastructure overhead multiplies application-level inefficiency.</aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- PART 9: MEASURING IT                                          -->
+<!-- ============================================================ -->
+
+<section class="center-slide">
+    <h2>Part 8: Measuring Virtualization Overhead</h2>
+    <p class="lead">Tracing across the hypervisor boundary</p>
+    <aside class="notes">If you cannot measure it, you cannot improve it. DORSAL's core contribution is tools and techniques for measuring virtualization overhead precisely.</aside>
+</section>
+
+<!-- Tracing Across Layers -->
+<section>
+    <h2>Hypertracing: Seeing Through the VM Boundary</h2>
+    <ul class="spacious">
+        <li><strong>LTTng</strong> in guest and host, correlated by timestamp</li>
+        <li><strong>KVM tracepoints</strong>: kvm_entry, kvm_exit, kvm_mmio, kvm_msr</li>
+        <li><strong>Hypertracing</strong>: unified trace spanning guest, hypervisor, and host</li>
+        <li>Enables precise attribution: which guest event caused which VM-exit?</li>
+    </ul>
+    <div class="callout-blue">
+        Without cross-layer tracing, you see symptoms (slow VM) but not causes (lock holder preemption, EPT violations, I/O traps).
+    </div>
+    <p class="small muted">Benbachir &amp; Dagenais, "Hypertracing: Tracing through virtualization layers," IEEE TCC, 2018</p>
+    <aside class="notes">Benbachir and Dagenais developed hypertracing, which instruments both guest and host kernels with LTTng and correlates the traces through shared timestamps. This lets you see that a 50ms latency spike in the guest was caused by a specific VM-exit that led to a host page fault. Without this, you are guessing.</aside>
+</section>
+
+<!-- Analysis Techniques -->
+<section>
+    <h2>Analysis Techniques</h2>
+    <div class="twocol">
+        <div>
+            <h3>What to Measure</h3>
+            <ul>
+                <li>VM-exit frequency and duration</li>
+                <li>vCPU steal time</li>
+                <li>EPT violation rate</li>
+                <li>Virtio ring buffer occupancy</li>
+                <li>Interrupt delivery latency</li>
+            </ul>
+        </div>
+        <div>
+            <h3>Tools</h3>
+            <ul>
+                <li><strong>LTTng</strong> - low-overhead kernel tracing</li>
+                <li><strong>perf kvm</strong> - VM-exit profiling</li>
+                <li><strong>eBPF</strong> - dynamic probes on KVM</li>
+                <li><strong>Trace Compass</strong> - visualization</li>
+                <li><strong>virtFlow</strong> - guest-independent analysis</li>
+            </ul>
+        </div>
+    </div>
+    <p class="small muted">Nemati &amp; Dagenais, "virtFlow: Guest independent execution flow analysis across virtualized environments," IEEE TCC, 2020</p>
+    <p class="small muted">Khomh et al., "Tracing Optimization for Performance Modeling and Regression Detection," ACM TOSEM, 2026</p>
+    <aside class="notes">Nemati and Dagenais developed virtFlow, which can analyze guest execution flow purely from host-side traces without any instrumentation inside the guest. This is powerful for production environments where you cannot modify the guest. Khomh's recent work on tracing optimization shows how to reduce trace volume while preserving the ability to detect performance regressions. Also see the ICPE 2025 paper on kernel-level event-based performance anomaly detection.</aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- PART 10: KEY TAKEAWAYS                                        -->
+<!-- ============================================================ -->
+
+<section class="center-slide">
+    <h2>Key Takeaways</h2>
+    <p class="lead">What to remember from this talk</p>
+    <aside class="notes">Let us wrap up with the main points.</aside>
+</section>
+
+<!-- Takeaway Summary -->
+<section>
+    <h2>Virtualization Overhead is Not a Number</h2>
+    <table>
+        <thead>
+            <tr><th>Workload Type</th><th>Typical Overhead</th><th>Dominant Factor</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>CPU-bound compute</td><td class="highlight-green">0.5-2%</td><td>Almost none (VT-x)</td></tr>
+            <tr><td>Memory-intensive</td><td class="highlight-blue">5-15%</td><td>EPT page walks, TLB misses</td></tr>
+            <tr><td>Scheduling-sensitive</td><td class="highlight-blue">10-30%</td><td>Lock holder preemption, NUMA</td></tr>
+            <tr><td>Network I/O (virtio)</td><td style="color: #ffd54f;">5-20%</td><td>Virtio overhead, vhost-net</td></tr>
+            <tr><td>Storage I/O (virtio-blk)</td><td style="color: #ffd54f;">5-15%</td><td>Block layer overhead</td></tr>
+            <tr><td>Emulated I/O</td><td class="highlight">30-80%</td><td>VM-exit per I/O operation</td></tr>
+        </tbody>
+    </table>
+    <div class="callout-blue" style="margin-top: 0.5em;">
+        Benchmark your actual workload. Use tracing to identify which overhead category dominates.
+    </div>
+    <aside class="notes">This table is the single most important slide. When someone says KVM has 5% overhead, point them here. The overhead depends on the workload. A database server sees different overhead than a compute cluster. Measure, do not assume.</aside>
+</section>
+
+<!-- Practical Advice -->
+<section>
+    <h2>Practical Recommendations</h2>
+    <ol class="spacious">
+        <li><strong>Use virtio everywhere</strong> - never use emulated devices in production</li>
+        <li><strong>Pin vCPUs to pCPUs</strong> - eliminates scheduling jitter</li>
+        <li><strong>Enable huge pages</strong> - reduces EPT walk cost by 4x</li>
+        <li><strong>NUMA-aware placement</strong> - keep memory local to the CPU</li>
+        <li><strong>VFIO for latency-critical I/O</strong> - when you need bare-metal I/O performance</li>
+        <li><strong>Trace, do not guess</strong> - LTTng + Trace Compass shows where time goes</li>
+    </ol>
+    <aside class="notes">These are the six things you should do for any production KVM deployment. Most of the overhead people complain about comes from not following these practices. Especially points 1 and 2: using emulated devices or not pinning vCPUs accounts for most performance complaints.</aside>
+</section>
+
+<!-- References -->
+<section>
+    <h2>References</h2>
+    <div class="twocol" style="font-size: 0.55em;">
+        <div>
+            <h3>DORSAL Lab (Polytechnique Montreal)</h3>
+            <ul style="font-size: 0.95em;">
+                <li>Benbachir &amp; Dagenais, "Hypertracing," IEEE TCC, 2018</li>
+                <li>Nemati &amp; Dagenais, "virtFlow," IEEE TCC, 2020</li>
+                <li>Nemati et al., "VM workload characterization using hypervisor trace mining," TOMPECS, 2021</li>
+                <li>Nemati et al., "Critical path analysis through hierarchical distributed virtualized environments," IEEE TCC, 2019</li>
+                <li>Gebai et al., "Fine-grained preemption analysis for latency investigation across VMs," JCC, 2014</li>
+                <li>Belkhiri &amp; Dagenais, "Analyzing GPU Performance in Virtualized Environments," Future Internet, 2024</li>
+                <li>Belkhiri et al., "Performance analysis of DPDK-based applications through tracing," JPDC, 2023</li>
+                <li>Biancheri &amp; Dagenais, "Fine-grained Multilayer Virtualized Systems Analysis," JCC, 2016</li>
+                <li>Darche &amp; Dagenais, "Low-overhead trace collection on GPU compute kernels," ACM TOPC, 2024</li>
+            </ul>
+        </div>
+        <div>
+            <h3>Khomh et al. (Polytechnique Montreal)</h3>
+            <ul style="font-size: 0.95em;">
+                <li>"Tracing Optimization for Performance Modeling and Regression Detection," ACM TOSEM, 2026</li>
+                <li>"Kernel-Level Event-Based Performance Anomaly Detection," ICPE, 2025</li>
+                <li>"Understanding the impact of cloud patterns on performance and energy consumption," JSS, 2018</li>
+                <li>"A Dynamic and Failure-Aware Task Scheduling Framework for Hadoop," IEEE TCC, 2020</li>
+                <li>"Kubernetes or OpenShift? Which Technology Best Suits Eclipse Hono IoT Deployments," SOCA, 2018</li>
+                <li>"A Study of the Energy Consumption of Databases and Cloud Patterns," ICSOC, 2016</li>
+                <li>"Data-access performance anti-patterns in data-intensive systems," ESEJ, 2024</li>
+                <li>"Infrastructure fault detection and prediction in edge cloud environments," SEC, 2019</li>
+            </ul>
+        </div>
+    </div>
+    <aside class="notes">Full reference list. The DORSAL papers focus on tracing and measurement techniques. Khomh's papers focus on cloud patterns, scheduling, and the software engineering aspects of performance. Together they give a complete picture of virtualization overhead from hardware to application.</aside>
+</section>
+
+<!-- Thank You -->
+<section class="center-slide">
+    <h2>Thank You</h2>
+    <p class="lead">Ericsson Software Technology</p>
+    <p><a href="https://www.est.tech/">est.tech</a></p>
+    <p class="muted tiny">Questions?</p>
+    <aside class="notes">Open for questions. Key message: virtualization overhead depends on the workload. Measure it with tracing. Do not trust generic benchmarks.</aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- CHART SCRIPTS                                                 -->
+<!-- ============================================================ -->
+
+<script>
+// Network I/O Chart
+(function() {
+    var chartCreated = false;
+    function createChart() {
+        if (chartCreated) return;
+        var ctx = document.getElementById('networkChart');
+        if (!ctx) return;
+        chartCreated = true;
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Emulated e1000', 'virtio-net', 'vhost-net', 'VFIO Passthrough', 'VFIO + DPDK', 'Bare Metal'],
+                datasets: [{
+                    label: 'Throughput (Mpps, 64-byte packets)',
+                    data: [0.5, 3.2, 8.5, 12.0, 14.2, 14.8],
+                    backgroundColor: [
+                        'rgba(255, 107, 107, 0.7)',
+                        'rgba(255, 213, 79, 0.7)',
+                        'rgba(79, 195, 247, 0.7)',
+                        'rgba(129, 199, 132, 0.7)',
+                        'rgba(129, 199, 132, 0.9)',
+                        'rgba(255, 255, 255, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 107, 107, 1)',
+                        'rgba(255, 213, 79, 1)',
+                        'rgba(79, 195, 247, 1)',
+                        'rgba(129, 199, 132, 1)',
+                        'rgba(129, 199, 132, 1)',
+                        'rgba(255, 255, 255, 0.8)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                var overhead = [96.6, 78.4, 42.6, 18.9, 4.1, 0];
+                                return ctx.raw + ' Mpps (' + (overhead[ctx.dataIndex] > 0 ? overhead[ctx.dataIndex] + '% overhead' : 'baseline') + ')';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Million Packets Per Second (Mpps)', color: '#aaa' },
+                        ticks: { color: '#aaa' },
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        max: 16
+                    },
+                    y: {
+                        ticks: { color: '#ccc', font: { size: 14 } },
+                        grid: { color: 'rgba(255,255,255,0.05)' }
+                    }
+                }
+            }
+        });
+    }
+    createChart();
+    if (typeof Reveal !== 'undefined') Reveal.on('slidechanged', createChart);
+})();
+
+// GPU Overhead Chart
+(function() {
+    var chartCreated = false;
+    function createChart() {
+        if (chartCreated) return;
+        var ctx = document.getElementById('gpuChart');
+        if (!ctx) return;
+        chartCreated = true;
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Compute-heavy\n(matrix ops)', 'Mixed\n(training)', 'Memory-transfer\n(data loading)', 'Many small\nkernels'],
+                datasets: [
+                    {
+                        label: 'Passthrough',
+                        data: [99, 97, 93, 95],
+                        backgroundColor: 'rgba(129, 199, 132, 0.7)',
+                        borderColor: 'rgba(129, 199, 132, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'vGPU (GRID)',
+                        data: [95, 90, 85, 82],
+                        backgroundColor: 'rgba(255, 213, 79, 0.7)',
+                        borderColor: 'rgba(255, 213, 79, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'API Remoting',
+                        data: [88, 78, 72, 60],
+                        backgroundColor: 'rgba(255, 107, 107, 0.7)',
+                        borderColor: 'rgba(255, 107, 107, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { color: '#ccc', font: { size: 14 } } },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                return ctx.dataset.label + ': ' + ctx.raw + '% of bare metal (' + (100 - ctx.raw) + '% overhead)';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        title: { display: true, text: '% of Bare Metal Performance', color: '#aaa' },
+                        ticks: { color: '#aaa' },
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        min: 50,
+                        max: 100
+                    },
+                    x: {
+                        ticks: { color: '#ccc', font: { size: 13 } },
+                        grid: { color: 'rgba(255,255,255,0.05)' }
+                    }
+                }
+            }
+        });
+    }
+    createChart();
+    if (typeof Reveal !== 'undefined') Reveal.on('slidechanged', createChart);
+})();
+
+// Overview Chart - the big picture
+(function() {
+    var chartCreated = false;
+    function createChart() {
+        if (chartCreated) return;
+        var ctx = document.getElementById('overviewChart');
+        if (!ctx) return;
+        chartCreated = true;
+
+        var categories = [
+            'CPU Compute\n(SPEC CPU)',
+            'Memory-intensive\n(large dataset)',
+            'Scheduling-sensitive\n(latency-critical)',
+            'Storage I/O\n(virtio-blk)',
+            'Network I/O\n(virtio-net)',
+            'Syscall-heavy\n(web server)',
+            'Emulated I/O\n(e1000/IDE)'
+        ];
+        var minOverhead = [0.5,  5,  10, 5,  5,  15, 30];
+        var maxOverhead = [2,   15,  30, 15, 20, 40, 80];
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: categories,
+                datasets: [
+                    {
+                        label: 'Minimum overhead (%)',
+                        data: minOverhead,
+                        backgroundColor: 'rgba(129, 199, 132, 0.7)',
+                        borderColor: 'rgba(129, 199, 132, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Maximum overhead (%)',
+                        data: maxOverhead.map(function(v, i) { return v - minOverhead[i]; }),
+                        backgroundColor: 'rgba(255, 107, 107, 0.5)',
+                        borderColor: 'rgba(255, 107, 107, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { color: '#ccc', font: { size: 14 } } },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                if (ctx.datasetIndex === 0) {
+                                    return 'Min overhead: ' + ctx.raw + '%';
+                                } else {
+                                    return 'Max overhead: ' + (ctx.raw + minOverhead[ctx.dataIndex]) + '%';
+                                }
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        ticks: { color: '#ccc', font: { size: 12 } },
+                        grid: { color: 'rgba(255,255,255,0.05)' }
+                    },
+                    y: {
+                        stacked: true,
+                        title: { display: true, text: 'Overhead (%)', color: '#aaa' },
+                        ticks: { color: '#aaa' },
+                        grid: { color: 'rgba(255,255,255,0.1)' },
+                        max: 85
+                    }
+                }
+            }
+        });
+    }
+    createChart();
+    if (typeof Reveal !== 'undefined') Reveal.on('slidechanged', createChart);
+})();
+</script>
